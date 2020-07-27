@@ -1,4 +1,4 @@
-name 'ros_buildfarm_deployment'
+name 'ros_buildfarm'
 maintainer 'The Authors'
 maintainer_email 'you@example.com'
 license 'Apache-2.0'
