@@ -108,3 +108,6 @@ CODE_OF_CONDUCT*
 ###########
 .vagrant
 Vagrantfile
+
+.kitchen/
+kitchen*.yml

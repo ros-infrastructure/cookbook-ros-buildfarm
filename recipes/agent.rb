@@ -36,7 +36,7 @@ remote_file "/home/#{agent_username}/swarm-client-#{swarm_client_version}.jar" d
   mode '0444'
 end
 
-package 'python-empy'
+package 'python3-empy'
 
 directory "/home/#{agent_username}/.ccache" do
   group agent_username
