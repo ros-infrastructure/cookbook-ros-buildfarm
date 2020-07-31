@@ -18,5 +18,5 @@ suites:
       - recipe[ros_buildfarm::agent]
     verifier:
       inspec_tests:
-        - test/integration/default
+        - test/integration/agent
     attributes:
