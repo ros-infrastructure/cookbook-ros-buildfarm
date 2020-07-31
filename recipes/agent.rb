@@ -55,15 +55,15 @@ package 'qemu-user-static'
 template '/etc/default/jenkins-agent' do
   source 'jenkins-agent.env.erb'
   variables Hash[
-    java_args: node['ros_buildfarm']['jenkins-agent']['linux']['java-args'],
+    java_args: node['ros_buildfarm']['agent']['java-args'],
     jarfile: swarm_client_url,
-    username: node['ros_buildfarm']['jenkins-agent']['username'],
-    password: node['ros_buildfarm']['jenkins-agent']['password'],
-    name: node['ros_buildfarm']['jenkins-agent']['nodename'],
-    description: node['ros_buildfarm']['jenkins-agent']['description'],
-    executors: node['ros_buildfarm']['jenkins-agent']['executors'],
+    username: node['ros_buildfarm']['agent']['username'],
+    password: node['ros_buildfarm']['agent']['password'],
+    name: node['ros_buildfarm']['agent']['nodename'],
+    description: node['ros_buildfarm']['agent']['description'],
+    executors: node['ros_buildfarm']['agent']['executors'],
     user_home: agent_homedir,
-    labels: node['ros_buildfarm']['jenkins-agent']['labels'],
+    labels: node['ros_buildfarm']['agent']['labels'],
   ]
 
 end
