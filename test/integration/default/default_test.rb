@@ -23,7 +23,7 @@ describe package('bzr') do
   it { should be_installed }
 end
 
-describe package('git') do         
+describe package('git') do
   it { should be_installed }
 end
 
@@ -37,4 +37,4 @@ end
 
 describe package('qemu-user-static') do
   it { should be_installed }
-end 
+end
