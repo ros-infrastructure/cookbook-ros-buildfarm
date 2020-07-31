@@ -3,14 +3,38 @@
 # The InSpec reference, with examples and extensive documentation, can be
 # found at https://www.inspec.io/docs/reference/resources/
 
-unless os.windows?
-  # This is an example test, replace with your own test.
-  describe user('root'), :skip do
-    it { should exist }
-  end
-end
-
-# This is an example test, replace it with your own test.
 describe port(80), :skip do
   it { should_not be_listening }
 end
+
+describe package('docker.io') do
+  it { should be_installed }
+end
+
+describe package('openjdk-8-jdk-headless') do
+  it { should be_installed }
+end
+
+describe package('python3-empy') do
+  it { should be_installed }
+end
+
+describe package('bzr') do
+  it { should be_installed }
+end
+
+describe package('git') do         
+  it { should be_installed }
+end
+
+describe package('mercurial') do
+  it { should be_installed }
+end
+
+describe package('subversion') do
+  it { should be_installed }
+end
+
+describe package('qemu-user-static') do
+  it { should be_installed }
+end 

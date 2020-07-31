@@ -1,6 +1,7 @@
 package 'docker.io'
 
 agent_username = node['ros_buildfarm']['agent']['agent_username']
+agent_homedir = "/home/#{agent_username}"
 
 user agent_username do
   manage_home true
@@ -28,6 +29,7 @@ package 'openjdk-8-jdk-headless'
 swarm_client_version = node['ros_buildfarm']['jenkins']['plugins']['swarm']
 swarm_client_url = "https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/#{swarm_client_version}/swarm-client-#{swarm_client_version}.jar"
 
+
 # Download swarm client program from url and install it to the jenkins-agent user's home directory.
 remote_file "/home/#{agent_username}/swarm-client-#{swarm_client_version}.jar" do
   source swarm_client_url
@@ -50,3 +52,36 @@ end
 
 # TODO install this only on amd64?
 package 'qemu-user-static'
+template '/etc/default/jenkins-agent' do
+  source 'jenkins-agent.env.erb'
+  variables Hash[
+    java_args: node['ros_buildfarm']['jenkins-agent']['linux']['java-args'],
+    jarfile: swarm_client_url,
+    username: node['ros_buildfarm']['jenkins-agent']['username'],
+    password: node['ros_buildfarm']['jenkins-agent']['password'],
+    name: node['ros_buildfarm']['jenkins-agent']['nodename'],
+    description: node['ros_buildfarm']['jenkins-agent']['description'],
+    executors: node['ros_buildfarm']['jenkins-agent']['executors'],
+    user_home: agent_homedir,
+    labels: node['ros_buildfarm']['jenkins-agent']['labels'],
+  ]
+
+end
+
+template '/etc/systemd/system/jenkins-agent.service' do
+  source 'jenkins-agent.service.erb'
+  variables Hash[
+    service_name: 'jenkins-agent',
+    username: agent_username,
+  ]
+  notifies :run, 'execute[systemctl-daemon-reload]', :immediately
+end
+
+execute 'systemctl-daemon-reload' do
+  command 'systemctl daemon-reload'
+  action :nothing
+end
+
+service 'jenkins-agent' do
+  action [:start, :enable]
+end
