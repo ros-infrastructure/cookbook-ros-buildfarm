@@ -8,9 +8,15 @@ provisioner:
 platforms:
   - name: ubuntu-20.04
 
+verifier:
+  name: inspec
+
 suites:
   - name: agent
     data_bags_path: "test/integration/data_bags"
     run_list:
       - recipe[ros_buildfarm::agent]
+    verifier:
+      inspec_tests:
+        - test/integration/agent
     attributes:
