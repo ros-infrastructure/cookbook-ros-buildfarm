@@ -1,11 +1,9 @@
-# ros_buildfarm_deployment CHANGELOG
+# ros_buildfarm CHANGELOG
 
-This file is used to list changes made in each version of the ros_buildfarm_deployment cookbook.
+This file is used to list changes made in each version of the ros_buildfarm cookbook.
 
 # 0.1.0
 
 Initial release.
-
-- change 0
-- change 1
+- Add recipe for linux agents.
 
