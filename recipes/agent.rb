@@ -28,10 +28,10 @@ package 'openjdk-8-jdk-headless'
 
 swarm_client_version = node['ros_buildfarm']['jenkins']['plugins']['swarm']
 swarm_client_url = "https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/#{swarm_client_version}/swarm-client-#{swarm_client_version}.jar"
-
+swarm_client_jarfile_path = "/home/#{agent_username}/swarm-client-#{swarm_client_version}.jar"
 
 # Download swarm client program from url and install it to the jenkins-agent user's home directory.
-remote_file "/home/#{agent_username}/swarm-client-#{swarm_client_version}.jar" do
+remote_file swarm_client_jarfile_path do
   source swarm_client_url
   owner agent_username
   group agent_username
@@ -56,7 +56,8 @@ template '/etc/default/jenkins-agent' do
   source 'jenkins-agent.env.erb'
   variables Hash[
     java_args: node['ros_buildfarm']['agent']['java-args'],
-    jarfile: swarm_client_url,
+    jarfile: swarm_client_jarfile_path,
+    jenkins_url: node['ros_buildfarm']['jenkins-url'],
     username: node['ros_buildfarm']['agent']['username'],
     password: node['ros_buildfarm']['agent']['password'],
     name: node['ros_buildfarm']['agent']['nodename'],
