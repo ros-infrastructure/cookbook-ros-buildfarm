@@ -57,6 +57,7 @@ template '/etc/default/jenkins-agent' do
   variables Hash[
     java_args: node['ros_buildfarm']['agent']['java-args'],
     jarfile: swarm_client_jarfile_path,
+    jenkins_url: node['ros_buildfarm']['jenkins-url'],
     username: node['ros_buildfarm']['agent']['username'],
     password: node['ros_buildfarm']['agent']['password'],
     name: node['ros_buildfarm']['agent']['nodename'],
