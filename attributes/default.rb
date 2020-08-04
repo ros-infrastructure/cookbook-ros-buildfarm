@@ -1,1 +1,1 @@
-default['ros_buildfarm']['jenkins-url'] = ''
+default['ros_buildfarm']['jenkins_url'] = ''
