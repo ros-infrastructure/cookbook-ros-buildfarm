@@ -36,4 +36,7 @@ suites:
     data_bags_path: "test/integration/data_bags"
     run_list:
       - recipe[ros_buildfarm::repo]
+    verifier:
+      inspec_tests:
+        - test/integration/repo
     attributes:
