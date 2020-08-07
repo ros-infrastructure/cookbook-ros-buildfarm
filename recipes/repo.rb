@@ -41,3 +41,6 @@ end
     mode "0755"
   end
 end
+
+package "python3-yaml"
+package "python3-debian"
