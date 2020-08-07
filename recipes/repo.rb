@@ -21,3 +21,23 @@ node.default['ros_buildfarm']['agent']['executors'] = 1
 node.default['ros_buildfarm']['agent']['labels'] = ["building_repository"]
 include_recipe "ros_buildfarm::agent"
 
+agent_username = node["ros_buildfarm"]["agent"]["agent_username"]
+
+# Create web root and web directories
+# TODO: why are these two 644 and the next two 755?
+# For now culting it from the puppet config.
+%w(/var/repos /var/repos/ubuntu) do |dir|
+  directory dir do
+    owner agent_username
+    group agent_username
+    mode "0644"
+  end
+end
+
+%(docs rosdistro_cache status_page).each do |dir|
+  directory "/var/repos/#{dir}" do
+    owner agent_username
+    group agent_username
+    mode "0755"
+  end
+end
