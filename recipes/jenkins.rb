@@ -18,12 +18,10 @@ node.default['ros_buildfarm']['agent']['labels'] = ["agent_on_master"]
 
 include_recipe '::agent' 
 
-#idk if this is required but the plugin says this environement variable needs to be defined
-execute 'CASC_JENKINS_CONFIG' do
-  environment ({'CASC_JENKINS_CONFIG' => '/var/jenkins/casc_configs/jenkins.yaml'})
+template '/var/lib/jenkins/casc_configs/jenkins.yaml' do
+  group node['jenkins']['master']['group']
+  source 'jenkins.yaml.erb'
 end
-
-#user directories, attribute or variable here? not needed for now
 
 #authentication TODO
 jenkins_user 'admin' do
