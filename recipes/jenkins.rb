@@ -12,14 +12,11 @@ node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   end
 end
 
-include_recipe '::agent' #ros buildfarm agent recipe, TODO: change attributes in this recipe before including 
+node.default['ros_buildfarm']['agent']['nodename'] = "agent_on_master"
+node.default['ros_buildfarm']['agent']['executors'] = 1
+node.default['ros_buildfarm']['agent']['labels'] = ["agent_on_master"]
 
-#jenkins config as code do i need to do more like make the contents of the yaml file
-#copy configuration file from config file to template 
-template '/var/jenkins/casc_configs/jenkins.yaml' do
-  group node['jenkins']['master']['group']
-  source 'jenkins.yaml.erb' #idk what this file should be named
-end
+include_recipe '::agent' 
 
 #idk if this is required but the plugin says this environement variable needs to be defined
 execute 'CASC_JENKINS_CONFIG' do
