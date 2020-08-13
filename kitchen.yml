@@ -16,8 +16,15 @@ suites:
     data_bags_path: "test/integration/data_bags"
     run_list:
       - recipe[ros_buildfarm::agent]
-      - recipe[ros_buildfarm::jenkins]
     verifier:
       inspec_tests:
         - test/integration/agent
+    attributes:
+  - name: jenkins
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[ros_buildfarm::jenkins]
+    verifier:
+      inspec_tests:
+        - test/integration/jenkins
     attributes:
