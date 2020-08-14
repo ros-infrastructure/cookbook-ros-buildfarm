@@ -18,6 +18,7 @@ node.default['ros_buildfarm']['agent']['labels'] = ["agent_on_master"]
 
 include_recipe '::agent' 
 
+directory '/var/lib/jenkins/casc_configs'
 template '/var/lib/jenkins/casc_configs/jenkins.yaml' do
   group node['jenkins']['master']['group']
   source 'jenkins.yaml.erb'
