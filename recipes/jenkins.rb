@@ -1,9 +1,8 @@
 ##JENKINS SERVER##
   
+package 'openjdk-8-jdk-headless'
 include_recipe 'jenkins::master'
 
-#rosplugins need to download plugin TODO
-#copy loop into recipe use node['ros_buildfarm']['jenkins_plugins']
 node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   jenkins_plugin plugin do
     version ver
