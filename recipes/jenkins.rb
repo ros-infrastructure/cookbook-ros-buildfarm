@@ -23,10 +23,68 @@ template '/var/lib/jenkins/casc_configs/jenkins.yaml' do
   source 'jenkins.yaml.erb'
 end
 
-#authentication TODO
-jenkins_user 'admin' do
-  email 'todo@something.com'
-  public_keys [node['ros_buildfarm']['jenkins']['admin']['key']]
+# Jenkins authentication.
+# This cookbook currently supports two modes of authentication:
+# * Jenkins default:
+#   This method uses the Jenkins internal user database and manages permissions directly with chef.
+# * Groovy scripted:
+#   This method can be used to enable more complex authentication / authorization strategies and security realms.
+if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
+  auth_strategy_script = data_bag_item("ros_buildfarm_jenkins_scripts", "auth_strategy")
+  if auth_strategy_script.nil?
+    Chef::Log.fatal("No auth strategy script in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
+    raise
+  end
+  jenkins_script 'auth_strategy' do
+    command auth_strategy_script['command']
+  end
+elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
+  # Aggregate permissions to assign to each user with a groovy script.
+  permissions = []
+  data_bag('ros_buildfarm_jenkins_users').each do |id|
+    user = data_bag_item('ros_buildfarm_jenkins_users', id)
+    # Generate randomized password for chef jenkins user
+    # which should only use ssh authentication.
+    #if user['chef_user']
+      #user['password'] = SecureRandom.uuid
+    #entchend
+
+    if user['permissions'].nil?
+      user['permissions'].each do |perm|
+        permissions << [perm, user['username']]
+      end
+    end
+
+    jenkins_user user['username'] do
+      password user['password']
+      public_keys user['public_keys']
+      email user['email'] if user['email']
+    end
+
+  end
+  jenkins_script 'matrix_authentication_permissions' do
+    command <<-GROOVY.gsub %r(^ {6}), ''
+      import hudson.model.*
+      import jenkins.model.*
+      import hudson.security.ProjectMatrixAuthorizationStrategy
+
+      def jenkins = Jenkins.getInstance()
+      matrix_auth = new ProjectMatrixAuthorizationStrategy()
+
+      #{permissions.map{|u,p| "matrix_auth.add(#{p}, \"#{u}\")"}.join "\n"}
+      matrix_auth.add(Jenkins.READ, "anonymous")
+      matrix_auth.add(Job.DISCOVER, "anonymous")
+      matrix_auth.add(Job.READ, "anonymous")
+      matrix_auth.add(View.READ, "anonymous")
+
+      if (!matrix_auth.equals(jenkins.getAuthorizationStrategy())) {
+        jenkins.setAuthorizationStrategy(matrix_auth)
+        jenkins.save()
+      }
+    GROOVY
+  end
+else
+  Chef::Log.warn("Jenkins auth_strategy attribute `#{node['ros_buildfarm']['jenkins']['auth_strategy']}` is unknown. No authentication will be configured.")
 end
 
 timezone node['ros_buildfarm']['jenkins']['timezone']
