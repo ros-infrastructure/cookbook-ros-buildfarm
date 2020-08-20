@@ -1,5 +1,9 @@
 ##JENKINS SERVER##
-  
+
+# Run an apt update if one hasn't been run in 24 hours (the default frequency).
+# Without this the recipe fails on AWS instances with empty apt caches.
+apt_update
+
 package 'openjdk-8-jdk-headless'
 include_recipe 'jenkins::master'
 
