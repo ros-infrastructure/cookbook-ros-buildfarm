@@ -1,0 +1,41 @@
+---
+driver:
+  name: ec2
+  subnet_filter:
+    tag: "test_kitchen_target"
+    value: "true"
+  instance_type: t3.medium
+  # To use this driver you need to:
+  # * have a subnet matching the above filter
+  # * specify a keypair name in the environment variable AWS_SSH_KEY_ID
+  # * specify a region in the AWS_REGION environment variable
+
+provisioner:
+  name: chef_solo
+  product: chef
+  product_version: 15
+  require_chef_omnibus: 15
+
+platforms:
+  - name: ubuntu-20.04
+
+verifier:
+  name: inspec
+
+suites:
+  - name: agent
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[ros_buildfarm::agent]
+    verifier:
+      inspec_tests:
+        - test/integration/agent
+    attributes:
+  - name: jenkins
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[ros_buildfarm::jenkins]
+    verifier:
+      inspec_tests:
+        - test/integration/jenkins
+    attributes:
