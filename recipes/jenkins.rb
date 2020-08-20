@@ -16,11 +16,12 @@ node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   end
 end
 
-directory '/var/lib/jenkins/casc_configs'
-template '/var/lib/jenkins/casc_configs/jenkins.yaml' do
+template '/var/lib/jenkins/jenkins.yaml' do
   group node['jenkins']['master']['group']
   source 'jenkins.yaml.erb'
+  notifies :restart, "service[jenkins]", :immediately
 end
+
 
 # Jenkins authentication.
 # This cookbook currently supports two modes of authentication:
