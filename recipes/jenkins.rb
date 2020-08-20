@@ -7,6 +7,13 @@ apt_update
 package 'openjdk-8-jdk-headless'
 include_recipe 'jenkins::master'
 
+# Set up authentication
+chef_user = search('ros_buildfarm_jenkins_users', 'chef_user:true').first
+node.run_state[:jenkins_username] = chef_user['username']
+node.run_state[:jenkins_password] = chef_user['password']
+node.default['jenkins']['executor']['protocol'] = 'http'
+
+
 # Install plugins required to run ros_buildfarm.
 node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   jenkins_plugin plugin do
@@ -60,11 +67,6 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   permissions = []
   data_bag('ros_buildfarm_jenkins_users').each do |id|
     user = data_bag_item('ros_buildfarm_jenkins_users', id)
-    # Generate randomized password for chef jenkins user
-    # which should only use ssh authentication.
-    #if user['chef_user']
-      #user['password'] = SecureRandom.uuid
-    #entchend
 
     if user['permissions']
       user['permissions'].each do |perm|
