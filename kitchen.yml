@@ -4,6 +4,9 @@ driver:
 
 provisioner:
   name: chef_solo
+  product: chef
+  product_version: 15
+  require_chef_omnibus: 15
 
 platforms:
   - name: ubuntu-20.04
