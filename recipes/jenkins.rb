@@ -7,6 +7,7 @@ apt_update
 package 'openjdk-8-jdk-headless'
 include_recipe 'jenkins::master'
 
+# Install plugins required to run ros_buildfarm.
 node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   jenkins_plugin plugin do
     version ver
@@ -14,12 +15,6 @@ node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
     notifies :restart, 'service[jenkins]', :delayed
   end
 end
-
-node.default['ros_buildfarm']['agent']['nodename'] = "agent_on_master"
-node.default['ros_buildfarm']['agent']['executors'] = 1
-node.default['ros_buildfarm']['agent']['labels'] = ["agent_on_master"]
-
-include_recipe '::agent' 
 
 directory '/var/lib/jenkins/casc_configs'
 template '/var/lib/jenkins/casc_configs/jenkins.yaml' do
@@ -122,3 +117,10 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
     password password_credential['password']
   end
 end
+
+# Configure agent on jenkins
+node.default['ros_buildfarm']['agent']['nodename'] = "agent_on_jenkins"
+node.default['ros_buildfarm']['agent']['executors'] = 1
+node.default['ros_buildfarm']['agent']['labels'] = ["agent_on_master", "agent_on_jenkins"]
+
+include_recipe '::agent'
