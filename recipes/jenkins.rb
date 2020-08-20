@@ -39,6 +39,23 @@ if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
     command auth_strategy_script['command']
   end
 elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
+  jenkins_script 'establish security realm' do
+    script = <<-GROOVY.gsub %r(^ {6}), ''
+      import hudson.model.*
+      import jenkins.model.*
+      import hudson.security.HudsonPrivateSecurityRealm
+      import hudson.security.SecurityRealm
+
+      def jenkins = Jenkins.getInstance()
+      if (! jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) {
+        jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false))
+        jenkins.save()
+      }
+    GROOVY
+    Chef::Log.info("Running groovy script:\n#{script}")
+    command script
+  end
+
   # Aggregate permissions to assign to each user with a groovy script.
   permissions = []
   data_bag('ros_buildfarm_jenkins_users').each do |id|
@@ -49,7 +66,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       #user['password'] = SecureRandom.uuid
     #entchend
 
-    if user['permissions'].nil?
+    if user['permissions']
       user['permissions'].each do |perm|
         permissions << [perm, user['username']]
       end
@@ -71,7 +88,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       def jenkins = Jenkins.getInstance()
       matrix_auth = new ProjectMatrixAuthorizationStrategy()
 
-      #{permissions.map{|u,p| "matrix_auth.add(#{p}, \"#{u}\")"}.join "\n"}
+      #{permissions.map{|p, u| "matrix_auth.add(#{p}, \"#{u}\")"}.join "\n"}
       matrix_auth.add(Jenkins.READ, "anonymous")
       matrix_auth.add(Job.DISCOVER, "anonymous")
       matrix_auth.add(Job.READ, "anonymous")
