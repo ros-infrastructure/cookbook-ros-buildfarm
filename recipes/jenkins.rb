@@ -29,7 +29,6 @@ template '/var/lib/jenkins/jenkins.yaml' do
   notifies :restart, "service[jenkins]", :immediately
 end
 
-
 # Jenkins authentication.
 # This cookbook currently supports two modes of authentication:
 # * Jenkins default:
@@ -106,10 +105,11 @@ else
   Chef::Log.warn("Jenkins auth_strategy attribute `#{node['ros_buildfarm']['jenkins']['auth_strategy']}` is unknown. No authentication will be configured.")
 end
 
+
 timezone node['ros_buildfarm']['jenkins']['timezone']
 
 package 'nginx'
-#Steven TODO 
+#Steven TODO
 #template '/etc/nginx/sites-enabled/jenkins.conf' do
 #end
 #service 'nginx' do
