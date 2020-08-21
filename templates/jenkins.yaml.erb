@@ -17,7 +17,9 @@ jenkins:
   - name: "building_repository-c455766a"
   - name: "master"
   - name: "swarm"
-  markupFormatter: "plainText"
+  markupFormatter:
+    rawHtml:
+      disableSyntaxHighlighting: false
   mode: NORMAL
   myViewsTabBar: "standard"
   numExecutors: 1
