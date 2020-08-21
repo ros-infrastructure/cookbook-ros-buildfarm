@@ -1,0 +1,9 @@
+{
+  "id": "admin",
+  "username": "admin",
+  "password": "changeme",
+  "public_keys": [],
+  "permissions": [
+    "Jenkins.ADMINISTER"
+  ]
+}

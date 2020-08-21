@@ -1,0 +1,12 @@
+{
+  "id": "anonymous",
+  "username": "anonymous",
+  "password": null,
+  "public_keys": [],
+  "permissions": [
+    "Jenkins.READ",
+    "Job.DISCOVER",
+    "Job.READ",
+    "View.READ"
+  ]
+}
