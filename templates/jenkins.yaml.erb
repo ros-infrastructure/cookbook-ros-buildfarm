@@ -241,50 +241,50 @@ unclassified:
     systemTimeFormat: "'<b>'HH:mm:ss'</b> '"
   upstream:
     globalUpstreamFilterStrategy: UseOldest
-  warnings:
-    parsers:
-    - linkName: "CMake"
-      name: "CMake"
-      regexp: "^CMake (Deprecation Warning|Warning|Warning \\(dev\\)|Error)( at (.+):(\\\
-        d+)( \\((.+)\\))?)?:\\n(?!  Manually-specified variables were not used by\
-        \ the project:)(  .+\\n)?(.+\\n(  .+\\n)*)?"
-      script: |-
-        import hudson.plugins.analysis.util.model.Priority
-        import hudson.plugins.warnings.parser.Warning
+  #warnings:
+  #  parsers:
+  #  - linkName: "CMake"
+  #    name: "CMake"
+  #    regexp: "^CMake (Deprecation Warning|Warning|Warning \\(dev\\)|Error)( at (.+):(\\\
+  #      d+)( \\((.+)\\))?)?:\\n(?!  Manually-specified variables were not used by\
+  #      \ the project:)(  .+\\n)?(.+\\n(  .+\\n)*)?"
+  #    script: |-
+  #      import hudson.plugins.analysis.util.model.Priority
+  #      import hudson.plugins.warnings.parser.Warning
 
-        String messageType = matcher.group(1)
-        String fileName = matcher.group(3)
-        String lineNumber = matcher.group(4)
-        String scope = matcher.group(6)
-        String cmakeMessage = matcher.group(7)
-        String callStack = matcher.group(8)
+  #      String messageType = matcher.group(1)
+  #      String fileName = matcher.group(3)
+  #      String lineNumber = matcher.group(4)
+  #      String scope = matcher.group(6)
+  #      String cmakeMessage = matcher.group(7)
+  #      String callStack = matcher.group(8)
 
-        if (!fileName) {
-            fileName = "no filename"
-        }
-        if (!lineNumber) {
-            lineNumber = "0";
-        }
-        if (!scope) {
-            scope = "global"
-        }
+  #      if (!fileName) {
+  #          fileName = "no filename"
+  #      }
+  #      if (!lineNumber) {
+  #          lineNumber = "0";
+  #      }
+  #      if (!scope) {
+  #          scope = "global"
+  #      }
 
-        String message = ""
-        if (cmakeMessage) {
-            message += cmakeMessage + "<br />"
-        }
-        if (callStack) {
-            message += "<pre>" + callStack + "</pre>"
-        }
+  #      String message = ""
+  #      if (cmakeMessage) {
+  #          message += cmakeMessage + "<br />"
+  #      }
+  #      if (callStack) {
+  #          message += "<pre>" + callStack + "</pre>"
+  #      }
 
-        Priority priority = Priority.NORMAL
-        if (messageType == "Deprecation Warning") {
-            priority = Priority.LOW
-        } else if (messageType == "Error") {
-            priority = Priority.HIGH
-        }
-        return new Warning(fileName, Integer.parseInt(lineNumber), "CMake", scope, message, priority);
-      trendName: "CMake"
+  #      Priority priority = Priority.NORMAL
+  #      if (messageType == "Deprecation Warning") {
+  #          priority = Priority.LOW
+  #      } else if (messageType == "Error") {
+  #          priority = Priority.HIGH
+  #      }
+  #      return new Warning(fileName, Integer.parseInt(lineNumber), "CMake", scope, message, priority);
+  #    trendName: "CMake"
 tool:
   git:
     installations:
