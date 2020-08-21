@@ -73,10 +73,16 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       end
     end
 
-    jenkins_user user['username'] do
-      password user['password']
-      public_keys user['public_keys']
-      email user['email'] if user['email']
+    # Create users unless the username is anonymous.
+    # An anonymous user is used to set permissions for anonymous users but I do
+    # not know what would happen if we tried to create a concrete user with the
+    # username anonymous so let's just don't.
+    unless user['username'] == 'anonymous'
+      jenkins_user user['username'] do
+        password user['password']
+        public_keys user['public_keys']
+        email user['email'] if user['email']
+      end
     end
 
   end
@@ -90,10 +96,6 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       matrix_auth = new ProjectMatrixAuthorizationStrategy()
 
       #{permissions.map{|p, u| "matrix_auth.add(#{p}, \"#{u}\")"}.join "\n"}
-      matrix_auth.add(Jenkins.READ, "anonymous")
-      matrix_auth.add(Job.DISCOVER, "anonymous")
-      matrix_auth.add(Job.READ, "anonymous")
-      matrix_auth.add(View.READ, "anonymous")
 
       if (!matrix_auth.equals(jenkins.getAuthorizationStrategy())) {
         jenkins.setAuthorizationStrategy(matrix_auth)
