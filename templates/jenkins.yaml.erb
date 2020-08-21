@@ -2,9 +2,6 @@ jenkins:
   agentProtocols:
   - "JNLP4-connect"
   - "Ping"
-  authorizationStrategy:
-    loggedInUsersCanDoAnything:
-      allowAnonymousRead: false
   crumbIssuer:
     standard:
       excludeClientIPFromCrumb: false
@@ -42,20 +39,6 @@ jenkins:
   remotingSecurity:
     enabled: true
   scmCheckoutRetryCount: 0
-  securityRealm:
-    local:
-      allowsSignup: false
-      enableCaptcha: false
-      users:
-      - id: "admin"
-        name: "admin"
-        properties:
-        - "apiToken"
-        - colorBlindProperty:
-            enabledColorBlindSupport: false
-        - "mailer"
-        - preferredProvider:
-            providerId: "default"
   slaveAgentPort: 0
   updateCenter:
     sites:
