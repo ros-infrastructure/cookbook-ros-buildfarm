@@ -53,7 +53,8 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       import hudson.security.SecurityRealm
 
       def jenkins = Jenkins.getInstance()
-      if (! jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) {
+      // Boolean `!` binds closer than instanceof so parenthesize the instanceof operation
+      if (!(jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm)) {
         jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false))
         jenkins.save()
       }
