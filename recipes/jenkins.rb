@@ -46,7 +46,7 @@ if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
   end
 elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   jenkins_script 'establish security realm' do
-    script = <<-GROOVY.gsub %r(^ {6}), ''
+    command <<~GROOVY
       import hudson.model.*
       import jenkins.model.*
       import hudson.security.HudsonPrivateSecurityRealm
@@ -59,8 +59,6 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
         jenkins.save()
       }
     GROOVY
-    Chef::Log.info("Running groovy script:\n#{script}")
-    command script
   end
 
   # Aggregate permissions to assign to each user with a groovy script.
@@ -88,7 +86,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
 
   end
   jenkins_script 'matrix_authentication_permissions' do
-    command <<-GROOVY.gsub %r(^ {6}), ''
+    command <<~GROOVY
       import hudson.model.*
       import jenkins.model.*
       import hudson.security.ProjectMatrixAuthorizationStrategy
