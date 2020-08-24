@@ -61,6 +61,12 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     GROOVY
   end
 
+  # Restart jenkins after updating the security realm otherwise running without
+  # authentication yields 403 errors when configuring.
+  service "jenkins" do
+    action :restart
+  end
+
   # Aggregate permissions to assign to each user with a groovy script.
   permissions = []
   data_bag('ros_buildfarm_jenkins_users').each do |id|
