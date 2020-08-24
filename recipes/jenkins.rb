@@ -115,28 +115,70 @@ end
 
 timezone node['ros_buildfarm']['jenkins']['timezone']
 
-# Install acme.sh for certificate signing and renewal.
-# git is required for acme.sh's setup
-package "git"
-execute "git clone https://github.com/acmesh-official/acme.sh" do
-  cwd "/root"
-  not_if "test -d /root/acme.sh"
-end
-execute "acmesh-install" do
-  cwd "/root/acme.sh"
-  cmd = "./acme.sh --install --home /root/.acme.sh"
-  cmd << " --accountemail #{node['ros_buildfarm']['letsencrypt_email']}" if node['ros_buildfarm']['letsencrypt_email']
-  command cmd
-  not_if "test -x /root/.acme.sh/acme.sh"
+## Configure web proxy ##
+package 'nginx'
+service 'nginx' do
+  action [ :enable, :start]
 end
 
-package 'nginx'
-#Steven TODO
-#template '/etc/nginx/sites-enabled/jenkins.conf' do
-#end
-#service 'nginx' do
-#  action [ :enable, :start]
-#end
+if node['ros_buildfarm']['letsencrypt_enabled']
+  server_name = node['ros_buildfarm']['server_name']
+  cert_path = "/etc/ssl/certs/#{server_name}/fullchain.pem"
+  key_path = "/etc/ssl/private/#{server_name}.key"
+
+  # Bootstrap https with self-signed certificates
+  package 'ssl-cert'
+  directory "/etc/ssl/certs/#{server_name}"
+
+  execute "cp /etc/ssl/certs/ssl-cert-snakeoil.pem #{cert_path}" do
+    not_if "test -r #{cert_path}"
+  end
+  execute "cp /etc/ssl/private/ssl-cert-snakeoil.key #{key_path}" do
+    not_if "test -r #{key_path}"
+  end
+
+  template '/etc/nginx/sites-enabled/jenkins.conf' do
+    source "nginx/jenkins-webproxy.ssl.conf.erb"
+    variables Hash[
+      server_name: node['ros_buildfarm']['server_name'],
+      cert_path: cert_path,
+      key_path: key_path,
+    ]
+    notifies :restart, 'service[nginx]', :immediately
+  end
+
+  # Install acme.sh for certificate signing and renewal.  git is required for acme.sh's setup
+  package "git"
+  execute "git clone https://github.com/acmesh-official/acme.sh" do
+    cwd "/root"
+    not_if "test -d /root/acme.sh"
+  end
+  execute "acmesh-install" do
+    cwd "/root/acme.sh"
+    cmd = "./acme.sh --install --home /root/.acme.sh"
+    cmd << " --accountemail #{node['ros_buildfarm']['letsencrypt_email']}" if node['ros_buildfarm']['letsencrypt_email']
+    command cmd
+    not_if "test -x /root/.acme.sh/acme.sh"
+  end
+
+  # Create Let's Encrypt signed cert if it has not already been done.
+  execute 'acme-issue-cert' do
+    command %W(
+      /root/.acme.sh/acme.sh --issue
+      --domain #{server_name}
+      --fullchain-file #{cert_path}
+      --key-file #{key_path}
+    )
+  end
+else
+  template '/etc/nginx/sites-enabled/jenkins.conf' do
+    source 'nginx/jenkins-webproxy.http.conf.erb'
+    variables Hash[
+      server_name: node['ros_buildfarm']['server_name']
+    ]
+    notifies :restart, 'service[nginx]'
+  end
+end
 
 package 'python3-yaml'
 
