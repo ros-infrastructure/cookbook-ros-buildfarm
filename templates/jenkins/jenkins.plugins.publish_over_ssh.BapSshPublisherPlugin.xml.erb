@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin_-Descriptor plugin="publish-over-ssh@<%= @plugin_version %>">
+  <hostConfigurations>
+  <% @host_configurations.each do |config| -%>
+    <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+    <name><%= config['name'] %></name>
+      <hostname><%= config['hostname'] %></hostname>
+      <username><%= config['username'] %></username>
+      <secretPassword></secretPassword>
+      <remoteRootDir><%= config['remote_root_dir'] %></remoteRootDir>
+      <port><%= config['port'] or 22 %></port>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <timeout><%= config['timeout'] or 300000 %></timeout>
+      <overrideKey>false</overrideKey>
+      <disableExec>false</disableExec>
+      <keyInfo>
+        <secretPassphrase></secretPassphrase>
+        <key></key>
+        <keyPath></keyPath>
+      </keyInfo>
+    </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+  <% end -%>
+    <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+      <name>repo</name>
+      <hostname>repo</hostname>
+      <username>jenkins-agent</username>
+      <secretPassword></secretPassword>
+      <remoteRootDir>/var/repos/ubuntu/building/queue</remoteRootDir>
+      <port>22</port>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration">
+        <secretPassphrase></secretPassphrase>
+        <key><%= @key_text %></key>
+        <keyPath></keyPath>
+        <disableAllExec>true</disableAllExec>
+      </commonConfig>
+      <timeout>300000</timeout>
+      <overrideKey>false</overrideKey>
+      <disableExec>false</disableExec>
+      <keyInfo>
+        <secretPassphrase></secretPassphrase>
+        <key></key>
+        <keyPath></keyPath>
+      </keyInfo>
+    </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+    <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+      <name>rosdistro_cache</name>
+      <hostname>repo</hostname>
+      <username>jenkins-agent</username>
+      <secretPassword></secretPassword>
+      <remoteRootDir>/var/repos/rosdistro_cache</remoteRootDir>
+      <port>22</port>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <timeout>300000</timeout>
+      <overrideKey>false</overrideKey>
+      <disableExec>false</disableExec>
+      <keyInfo>
+        <secretPassphrase></secretPassphrase>
+        <key></key>
+        <keyPath></keyPath>
+      </keyInfo>
+    </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+    <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+      <name>status_page</name>
+      <hostname>repo</hostname>
+      <username>jenkins-agent</username>
+      <secretPassword></secretPassword>
+      <remoteRootDir>/var/repos/status_page</remoteRootDir>
+      <port>22</port>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <timeout>300000</timeout>
+      <overrideKey>false</overrideKey>
+      <disableExec>false</disableExec>
+      <keyInfo>
+        <secretPassphrase></secretPassphrase>
+        <key></key>
+        <keyPath></keyPath>
+      </keyInfo>
+    </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
+  </hostConfigurations>
+  <commonConfig reference="../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+  <defaults class="jenkins.plugins.publish_over_ssh.options.SshPluginDefaults"/>
+</jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin_-Descriptor>

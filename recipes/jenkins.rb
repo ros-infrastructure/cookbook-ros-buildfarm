@@ -22,9 +22,31 @@ node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   end
 end
 
+# Jenkins configuration
+# Most of our Jenkins configuration has been consolidated into this one yaml
+# file thanks to the Jenkins configuration-as-code plugin which provides a
+# stable interface to Jenkins' internal describable and data binding APIs.
+# This decreases the configuration file drift based on plugin version artifacts
+# and consolidates everything in to the single file.
 template '/var/lib/jenkins/jenkins.yaml' do
+  source 'jenkins/jenkins.yaml.erb'
+  owner node['jenkins']['master']['user']
   group node['jenkins']['master']['group']
-  source 'jenkins.yaml.erb'
+  notifies :restart, 'service[jenkins]', :immediately
+end
+
+# Sadly the publish-over-ssh plugin does not completely implement the necessary
+# APIs so we have to fall back to the XML configuration file.
+template '/var/lib/jenkins/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml' do
+  source 'jenkins/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml.erb'
+  owner node['jenkins']['master']['user']
+  group node['jenkins']['master']['group']
+  variables Hash[
+    plugin_version: node['ros_buildfarm']['jenkins']['publish-over-ssh'],
+    host_configurations: data_bag('ros_buildfarm_publish_over_ssh_host_configurations').map do |id|
+      data_bag_item('ros_buildfarm_publish_over_ssh_host_configurations', id)[node.chef_environment]
+    end,
+  ]
   notifies :restart, 'service[jenkins]', :immediately
 end
 

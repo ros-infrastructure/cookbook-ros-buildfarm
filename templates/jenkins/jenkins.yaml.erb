@@ -6,17 +6,6 @@ jenkins:
     standard:
       excludeClientIPFromCrumb: false
   disableRememberMe: false
-  labelAtoms:
-  - name: "agent-0c31c055"
-  - name: "agent-67d0f82b"
-  - name: "agent-d3439d0a"
-  - name: "agent_on_master"
-  - name: "agent_on_master-174bf0ae"
-  - name: "buildagent"
-  - name: "building_repository"
-  - name: "building_repository-c455766a"
-  - name: "master"
-  - name: "swarm"
   markupFormatter:
     rawHtml:
       disableSyntaxHighlighting: false
@@ -179,7 +168,7 @@ unclassified:
   gitHubPluginConfig:
     configs:
     - credentialsId: "TODO credential"
-    hookUrl: "http://52.38.190.253/github-webhook/"
+    hookUrl: "http://<%= @server_name %>/github-webhook/"
   gitSCM:
     createAccountBasedOnEmail: false
     globalConfigEmail: "jenkins@build.ros.org"

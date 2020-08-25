@@ -1,0 +1,15 @@
+{
+  "id": "repo",
+  "_default": {
+    "name": "repo",
+    "hostname": "repo",
+    "username": "jenkins-agent",
+    "remote_root_dir": "/var/repos/ubuntu/building/queue"
+  },
+  "test": {
+    "name": "repo",
+    "hostname": "repo",
+    "username": "jenkins-agent",
+    "remote_root_dir": "/var/repos/ubuntu/building/queue"
+  }
+}
