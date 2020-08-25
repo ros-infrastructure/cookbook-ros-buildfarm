@@ -1,4 +1,4 @@
-##JENKINS SERVER##
+## Jenkins Server ##
 
 # Run an apt update if one hasn't been run in 24 hours (the default frequency).
 # Without this the recipe fails on AWS instances with empty apt caches.
@@ -13,7 +13,6 @@ node.run_state[:jenkins_username] = chef_user['username']
 node.run_state[:jenkins_password] = chef_user['password']
 node.default['jenkins']['executor']['protocol'] = 'http'
 
-
 # Install plugins required to run ros_buildfarm.
 node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   jenkins_plugin plugin do
@@ -26,7 +25,7 @@ end
 template '/var/lib/jenkins/jenkins.yaml' do
   group node['jenkins']['master']['group']
   source 'jenkins.yaml.erb'
-  notifies :restart, "service[jenkins]", :immediately
+  notifies :restart, 'service[jenkins]', :immediately
 end
 
 # Jenkins authentication.
@@ -36,9 +35,9 @@ end
 # * Groovy scripted:
 #   This method can be used to enable more complex authentication / authorization strategies and security realms.
 if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
-  auth_strategy_script = data_bag_item("ros_buildfarm_jenkins_scripts", "auth_strategy")
+  auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')
   if auth_strategy_script.nil?
-    Chef::Log.fatal("No auth strategy script in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
+    Chef::Log.fatal('No auth strategy script in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.')
     raise
   end
   jenkins_script 'auth_strategy' do
@@ -63,7 +62,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
 
   # Restart jenkins after updating the security realm otherwise running without
   # authentication yields 403 errors when configuring.
-  service "jenkins" do
+  service 'jenkins' do
     action :restart
   end
 
@@ -82,14 +81,12 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     # An anonymous user is used to set permissions for anonymous users but I do
     # not know what would happen if we tried to create a concrete user with the
     # username anonymous so let's just don't.
-    unless user['username'] == 'anonymous'
-      jenkins_user user['username'] do
-        password user['password']
-        public_keys user['public_keys']
-        email user['email'] if user['email']
-      end
+    next if user['username'] == 'anonymous'
+    jenkins_user user['username'] do
+      password user['password']
+      public_keys user['public_keys']
+      email user['email'] if user['email']
     end
-
   end
   jenkins_script 'matrix_authentication_permissions' do
     command <<~GROOVY
@@ -100,7 +97,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       def jenkins = Jenkins.getInstance()
       matrix_auth = new ProjectMatrixAuthorizationStrategy()
 
-      #{permissions.map{|p, u| "matrix_auth.add(#{p}, \"#{u}\")"}.join "\n"}
+      #{permissions.map { |p, u| "matrix_auth.add(#{p}, \"#{u}\")" }.join "\n"}
 
       if (!matrix_auth.equals(jenkins.getAuthorizationStrategy())) {
         jenkins.setAuthorizationStrategy(matrix_auth)
@@ -111,7 +108,6 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
 else
   Chef::Log.warn("Jenkins auth_strategy attribute `#{node['ros_buildfarm']['jenkins']['auth_strategy']}` is unknown. No authentication will be configured.")
 end
-
 
 timezone node['ros_buildfarm']['jenkins']['timezone']
 
@@ -138,7 +134,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
   end
 
   template '/etc/nginx/sites-enabled/jenkins.conf' do
-    source "nginx/jenkins-webproxy.ssl.conf.erb"
+    source 'nginx/jenkins-webproxy.ssl.conf.erb'
     variables Hash[
       server_name: node['ros_buildfarm']['server_name'],
       cert_path: cert_path,
@@ -148,17 +144,17 @@ if node['ros_buildfarm']['letsencrypt_enabled']
   end
 
   # Install acme.sh for certificate signing and renewal.  git is required for acme.sh's setup
-  package "git"
-  execute "git clone https://github.com/acmesh-official/acme.sh" do
-    cwd "/root"
-    not_if "test -d /root/acme.sh"
+  package 'git'
+  execute 'git clone https://github.com/acmesh-official/acme.sh' do
+    cwd '/root'
+    not_if 'test -d /root/acme.sh'
   end
-  execute "acmesh-install" do
-    cwd "/root/acme.sh"
-    cmd = "./acme.sh --install --home /root/.acme.sh"
+  execute 'acmesh-install' do
+    cwd '/root/acme.sh'
+    cmd = './acme.sh --install --home /root/.acme.sh'
     cmd << " --accountemail #{node['ros_buildfarm']['letsencrypt_email']}" if node['ros_buildfarm']['letsencrypt_email']
     command cmd
-    not_if "test -x /root/.acme.sh/acme.sh"
+    not_if 'test -x /root/.acme.sh/acme.sh'
   end
 
   # Create Let's Encrypt signed cert if it has not already been done.
@@ -203,8 +199,8 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
 end
 
 # Configure agent on jenkins
-node.default['ros_buildfarm']['agent']['nodename'] = "agent_on_jenkins"
+node.default['ros_buildfarm']['agent']['nodename'] = 'agent_on_jenkins'
 node.default['ros_buildfarm']['agent']['executors'] = 1
-node.default['ros_buildfarm']['agent']['labels'] = ["agent_on_master", "agent_on_jenkins"]
+node.default['ros_buildfarm']['agent']['labels'] = %w(agent_on_master agent_on_jenkins)
 
 include_recipe '::agent'
