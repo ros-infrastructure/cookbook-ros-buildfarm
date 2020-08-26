@@ -22,7 +22,7 @@ node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   end
 end
 
-# Jenkins configuration
+## Jenkins configuration
 # Most of our Jenkins configuration has been consolidated into this one yaml
 # file thanks to the Jenkins configuration-as-code plugin which provides a
 # stable interface to Jenkins' internal describable and data binding APIs.
@@ -35,6 +35,25 @@ template '/var/lib/jenkins/jenkins.yaml' do
   notifies :restart, 'service[jenkins]', :immediately
 end
 
+## Configuration for the publish-over-ssh plugin.
+# TODO: (nuclearsandwich) This is going to require re-organization to suite an all-in-one setup as
+# the agent username attribute for the repo host specifically will change.
+node.default['ros_buildfarm']['ssh_publisher']['repo_username'] = node['ros_buildfarm']['agent']['agent_username']
+# By default we rely expect the repo host to be used for each of the other duties with different remote root directories.
+# This bit of Ruby metaprogramming here makes me nervous in a chef recipe.
+# I am doing it anyway because I can't bring myself to copy the logic.
+# In the long term I expect that this entire configuration may need to be re-thought but for now we're porting it more or less directly from the existing buildfarm_deployment.
+%w(hostname username port timeout).each do |attr|
+  unless node['ros_buildfarm']['ssh_publisher']["docs_#{attr}"]
+    node.default['ros_buildfarm']['ssh_publisher']["docs_#{attr}"] = node['ros_buildfarm']['ssh_publisher']["repo_#{attr}"]
+  end
+  unless node['ros_buildfarm']['ssh_publisher']["rosdistro_cache_#{attr}"]
+    node.default['ros_buildfarm']['ssh_publisher']["rosdistro_cache_#{attr}"] = node['ros_buildfarm']['ssh_publisher']["repo_#{attr}"]
+  end
+  unless node['ros_buildfarm']['ssh_publisher']["status_page_#{attr}"]
+    node.default['ros_buildfarm']['ssh_publisher']["status_page_#{attr}"] = node['ros_buildfarm']['ssh_publisher']["repo_#{attr}"]
+  end
+end
 # Sadly the publish-over-ssh plugin does not completely implement the necessary
 # APIs so we have to fall back to the XML configuration file.
 template '/var/lib/jenkins/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml' do
@@ -43,9 +62,7 @@ template '/var/lib/jenkins/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugi
   group node['jenkins']['master']['group']
   variables Hash[
     plugin_version: node['ros_buildfarm']['jenkins']['publish-over-ssh'],
-    host_configurations: data_bag('ros_buildfarm_publish_over_ssh_host_configurations').map do |id|
-      data_bag_item('ros_buildfarm_publish_over_ssh_host_configurations', id)[node.chef_environment]
-    end,
+    ssh_key: data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)['ssh_key']
   ]
   notifies :restart, 'service[jenkins]', :immediately
 end
@@ -221,6 +238,7 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
 end
 
 # Configure agent on jenkins
+# TODO: (nuclearsandwich) This is going to require re-organization to suite an all-in-one setup.
 node.default['ros_buildfarm']['agent']['nodename'] = 'agent_on_jenkins'
 node.default['ros_buildfarm']['agent']['executors'] = 1
 node.default['ros_buildfarm']['agent']['labels'] = %w(agent_on_master agent_on_jenkins)
