@@ -6,9 +6,7 @@ upstream jenkins {
 	server 127.0.0.1:8080 fail_timeout=0;
 }
 
-# HTTP server is used just for ACME challenge and allowing build status icon
-# links that are already in the wild to be accepted. Otherwise redirect to
-# HTTPS
+# HTTP reverse proxy for Jenkins.
 server {
 	listen 80 default_server;
 	server_name <%= @server_name %>;
