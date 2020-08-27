@@ -155,6 +155,11 @@ package 'nginx'
 service 'nginx' do
   action [ :enable, :start]
 end
+# Disable the default debian server.
+file '/etc/nginx/sites-enabled/default' do
+  action :delete
+  manage_symlink_source false
+end
 
 if node['ros_buildfarm']['letsencrypt_enabled']
   server_name = node['ros_buildfarm']['server_name']
@@ -172,7 +177,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     not_if "test -r #{key_path}"
   end
 
-  template '/etc/nginx/sites-enabled/jenkins.conf' do
+  template '/etc/nginx/sites-enabled/jenkins' do
     source 'nginx/jenkins-webproxy.ssl.conf.erb'
     variables Hash[
       server_name: node['ros_buildfarm']['server_name'],
@@ -206,7 +211,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     )
   end
 else
-  template '/etc/nginx/sites-enabled/jenkins.conf' do
+  template '/etc/nginx/sites-enabled/jenkins' do
     source 'nginx/jenkins-webproxy.http.conf.erb'
     variables Hash[
       server_name: node['ros_buildfarm']['server_name']

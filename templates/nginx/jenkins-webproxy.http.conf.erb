@@ -10,8 +10,8 @@ upstream jenkins {
 # links that are already in the wild to be accepted. Otherwise redirect to
 # HTTPS
 server {
-	listen 80;
-	server_name <%= @server_name %> default_server;
+	listen 80 default_server;
+	server_name <%= @server_name %>;
 
 	location / {
 		proxy_set_header Host $host:$server_port;
