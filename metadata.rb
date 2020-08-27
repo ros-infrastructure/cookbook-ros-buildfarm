@@ -9,3 +9,5 @@ chef_version '>= 15.0'
 
 issues_url 'https://github.com/nuclearsandwich/cookbook-ros-buildfarm/issues'
 source_url 'https://github.com/nuclearsandwich/cookbook-ros-buildfarm/'
+
+depends 'jenkins'

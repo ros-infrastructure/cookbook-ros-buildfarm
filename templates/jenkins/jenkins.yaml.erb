@@ -1,0 +1,257 @@
+jenkins:
+  agentProtocols:
+  - "JNLP4-connect"
+  - "Ping"
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
+  disableRememberMe: false
+  markupFormatter:
+    rawHtml:
+      disableSyntaxHighlighting: false
+  mode: NORMAL
+  myViewsTabBar: "standard"
+  numExecutors: 1
+  projectNamingStrategy: "standard"
+  quietPeriod: 5
+  remotingSecurity:
+    enabled: true
+  scmCheckoutRetryCount: 0
+  slaveAgentPort: 0
+  updateCenter:
+    sites:
+    - id: "default"
+      url: "https://updates.jenkins.io/update-center.json"
+  viewsTabBar: "standard"
+security:
+  apiToken:
+    creationOfLegacyTokenEnabled: false
+    tokenGenerationOnCreationEnabled: false
+    usageStatisticsEnabled: true
+  sSHD:
+    port: -1
+  scriptApproval:
+    approvedSignatures:
+    - "field hudson.model.View name"
+    - "field java.util.ArrayList size"
+    - "method groovy.lang.Binding getVariables"
+    - "method groovy.lang.Script println java.lang.Object"
+    - "method hudson.XmlFile getFile"
+    - "method hudson.model.AbstractBuild getWorkspace"
+    - "method hudson.model.AbstractItem getConfigFile"
+    - "method hudson.model.AbstractItem updateByXml javax.xml.transform.stream.StreamSource"
+    - "method hudson.model.AbstractProject getUpstreamProjects"
+    - "method hudson.model.AbstractProject isDisabled"
+    - "method hudson.model.BuildableItem scheduleBuild hudson.model.Cause"
+    - "method hudson.model.Item delete"
+    - "method hudson.model.Item getName"
+    - "method hudson.model.ItemGroup getAllItems"
+    - "method hudson.model.Job getLastBuild"
+    - "method hudson.model.Job getNextBuildNumber"
+    - "method hudson.model.Job isBuilding"
+    - "method hudson.model.Job isInQueue"
+    - "method hudson.model.ModifiableViewGroup addView hudson.model.View"
+    - "method hudson.model.Result isWorseOrEqualTo hudson.model.Result"
+    - "method hudson.model.Run getNumber"
+    - "method hudson.model.Run getResult"
+    - "method hudson.model.View updateByXml javax.xml.transform.Source"
+    - "method hudson.model.View writeXml java.io.OutputStream"
+    - "method hudson.model.ViewGroup getViews"
+    - "method java.io.File getName"
+    - "method java.io.File getPath"
+    - "method java.io.File listFiles"
+    - "method java.lang.Thread isInterrupted"
+    - "method javax.xml.parsers.DocumentBuilder parse java.io.File"
+    - "method javax.xml.parsers.DocumentBuilder parse java.io.InputStream"
+    - "method javax.xml.parsers.DocumentBuilder parse org.xml.sax.InputSource"
+    - "method javax.xml.parsers.DocumentBuilderFactory newDocumentBuilder"
+    - "method jenkins.model.Jenkins getAllItems"
+    - "method jenkins.model.Jenkins getItemByFullName java.lang.String"
+    - "method jenkins.model.Jenkins rebuildDependencyGraph"
+    - "method jenkins.model.ModifiableTopLevelItemGroup createProjectFromXML java.lang.String\
+      \ java.io.InputStream"
+    - "method jenkins.model.ParameterizedJobMixIn$ParameterizedJob isDisabled"
+    - "method org.apache.xml.serialize.DOMSerializer serialize org.w3c.dom.Document"
+    - "method org.apache.xml.serialize.OutputFormat setIndent int"
+    - "method org.apache.xml.serialize.OutputFormat setIndenting boolean"
+    - "method org.w3c.dom.Document getElementsByTagName java.lang.String"
+    - "method org.w3c.dom.Document importNode org.w3c.dom.Node boolean"
+    - "method org.w3c.dom.Element getElementsByTagName java.lang.String"
+    - "method org.w3c.dom.Node appendChild org.w3c.dom.Node"
+    - "method org.w3c.dom.Node setTextContent java.lang.String"
+    - "method org.w3c.dom.NodeList getLength"
+    - "method org.w3c.dom.NodeList item int"
+    - "new hudson.model.Cause$UpstreamCause hudson.model.AbstractBuild"
+    - "new java.io.ByteArrayOutputStream"
+    - "new java.io.File java.lang.String"
+    - "new java.io.StringBufferInputStream java.lang.String"
+    - "new java.lang.InterruptedException java.lang.String"
+    - "new javax.xml.transform.stream.StreamSource java.io.Reader"
+    - "new org.apache.xml.serialize.OutputFormat org.w3c.dom.Document"
+    - "new org.apache.xml.serialize.XMLSerializer java.io.Writer org.apache.xml.serialize.OutputFormat"
+    - "new org.xml.sax.InputSource java.io.Reader"
+    - "staticMethod difflib.DiffUtils diff java.util.List java.util.List"
+    - "staticMethod difflib.DiffUtils generateUnifiedDiff java.lang.String java.lang.String\
+      \ java.util.List difflib.Patch int"
+    - "staticMethod hudson.model.View createViewFromXML java.lang.String java.io.InputStream"
+    - "staticMethod java.lang.Thread currentThread"
+    - "staticMethod javax.xml.parsers.DocumentBuilderFactory newInstance"
+    - "staticMethod jenkins.model.Jenkins getInstance"
+    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getText java.io.File\
+      \ java.lang.String"
+    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods multiply java.lang.String\
+      \ java.lang.Number"
+    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods println groovy.lang.Closure\
+      \ java.lang.Object"
+    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods sort java.lang.Object[]"
+unclassified:
+  audit-trail:
+    logBuildCause: true
+    loggers:
+    - logFile:
+        count: 10
+        limit: 50
+        log: "/var/log/jenkins/audit-%g.log"
+        logSeparator: " "
+    pattern: ".*/(?:configSubmit|doDelete|postBuildResult|enable|disable|cancelQueue|stop|toggleLogKeep|doWipeOutWorkspace|createItem|createView|toggleOffline|cancelQuietDown|quietDown|restart|exit|safeExit)"
+  buildDiscarders:
+    configuredBuildDiscarders:
+    - "jobBuildDiscarder"
+  buildStepOperation:
+    enabled: false
+  collapsingSectionNote:
+    sections:
+    - collapseOnlyOneLevel: false
+      collapseSection: false
+      sectionDisplayName: "{1}"
+      sectionEndPattern: "^\\# END SECTION$"
+      sectionStartPattern: "^\\# BEGIN SECTION: (.+)$"
+    - collapseOnlyOneLevel: false
+      collapseSection: false
+      sectionDisplayName: "{1}"
+      sectionEndPattern: "^\\# END SUBSECTION$"
+      sectionStartPattern: "^\\# BEGIN SUBSECTION: (.+)$"
+    - collapseOnlyOneLevel: false
+      collapseSection: false
+      sectionDisplayName: "{1}"
+      sectionEndPattern: ".*"
+      sectionStartPattern: "^Starting >>> (.+)$"
+    - collapseOnlyOneLevel: false
+      collapseSection: false
+      sectionDisplayName: "{1} (output)"
+      sectionEndPattern: "^---$"
+      sectionStartPattern: "^--- output: (.+)$"
+    - collapseOnlyOneLevel: false
+      collapseSection: false
+      sectionDisplayName: "{1} (stderr)"
+      sectionEndPattern: "^---$"
+      sectionStartPattern: "^--- stderr: (.+)$"
+  extendedEmailPublisher:
+    adminRequiredForTemplateTesting: false
+    allowUnregisteredEnabled: false
+    charset: "UTF-8"
+    debugMode: false
+    defaultBody: "$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:\r\n\r\nCheck\
+      \ console output at $BUILD_URL to view the results."
+    defaultContentType: "text/plain"
+    defaultSubject: "$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!"
+    maxAttachmentSize: -1
+    maxAttachmentSizeMb: 0
+    precedenceBulk: false
+    useSsl: false
+    watchingEnabled: false
+  ghprbTrigger:
+    extensions:
+    - ghprbSimpleStatus:
+        addTestResults: false
+        showMatrixStatus: false
+  gitHubPluginConfig:
+    configs:
+    - credentialsId: "TODO credential"
+    hookUrl: "http://<%= @server_name %>/github-webhook/"
+  gitSCM:
+    createAccountBasedOnEmail: false
+    globalConfigEmail: "jenkins@build.ros.org"
+    globalConfigName: "jenkins"
+    showEntireCommitSummaryInChanges: false
+    useExistingAccountWithSameEmail: false
+  globalSettings:
+    failOnCorrupt: false
+    noAuthors: false
+    quietMode: false
+  location:
+    adminAddress: "address not configured yet <nobody@nowhere>"
+    url: "http://52.38.190.253/"
+  logParser:
+    legacyFormatting: false
+  mailer:
+    charset: "UTF-8"
+    useSsl: false
+    useTls: false
+  mavenModuleSet:
+    localRepository: "default"
+  pollSCM:
+    pollingThreadCount: 10
+  timestamperConfig:
+    allPipelines: false
+    elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
+    systemTimeFormat: "'<b>'HH:mm:ss'</b> '"
+  upstream:
+    globalUpstreamFilterStrategy: UseOldest
+  #warnings:
+  #  parsers:
+  #  - linkName: "CMake"
+  #    name: "CMake"
+  #    regexp: "^CMake (Deprecation Warning|Warning|Warning \\(dev\\)|Error)( at (.+):(\\\
+  #      d+)( \\((.+)\\))?)?:\\n(?!  Manually-specified variables were not used by\
+  #      \ the project:)(  .+\\n)?(.+\\n(  .+\\n)*)?"
+  #    script: |-
+  #      import hudson.plugins.analysis.util.model.Priority
+  #      import hudson.plugins.warnings.parser.Warning
+
+  #      String messageType = matcher.group(1)
+  #      String fileName = matcher.group(3)
+  #      String lineNumber = matcher.group(4)
+  #      String scope = matcher.group(6)
+  #      String cmakeMessage = matcher.group(7)
+  #      String callStack = matcher.group(8)
+
+  #      if (!fileName) {
+  #          fileName = "no filename"
+  #      }
+  #      if (!lineNumber) {
+  #          lineNumber = "0";
+  #      }
+  #      if (!scope) {
+  #          scope = "global"
+  #      }
+
+  #      String message = ""
+  #      if (cmakeMessage) {
+  #          message += cmakeMessage + "<br />"
+  #      }
+  #      if (callStack) {
+  #          message += "<pre>" + callStack + "</pre>"
+  #      }
+
+  #      Priority priority = Priority.NORMAL
+  #      if (messageType == "Deprecation Warning") {
+  #          priority = Priority.LOW
+  #      } else if (messageType == "Error") {
+  #          priority = Priority.HIGH
+  #      }
+  #      return new Warning(fileName, Integer.parseInt(lineNumber), "CMake", scope, message, priority);
+  #    trendName: "CMake"
+tool:
+  git:
+    installations:
+    - home: "git"
+      name: "Default"
+  mercurialInstallation:
+    installations:
+    - debug: false
+      executable: "INSTALLATION/bin/hg"
+      home: "/usr"
+      name: "Default"
+      useCaches: true
+      useSharing: true

@@ -1,0 +1,11 @@
+{
+  "id": "chef",
+  "username": "chef",
+  "chef_user": true,
+  "password": "foobar123",
+  "public_keys": [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN4OX3lNn6AA2LFQlctEPg7yodu1kL4D/LEAM2z+mOyz chefuser"
+  ],
+  "permissions": [ "Jenkins.ADMINISTER" ],
+  "chef_private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACDeDl95TZ+gANixUJXLRD4O8qHbtZC+A/yxADNs/pjsswAAAJjve4+J73uP\niQAAAAtzc2gtZWQyNTUxOQAAACDeDl95TZ+gANixUJXLRD4O8qHbtZC+A/yxADNs/pjssw\nAAAECVOR9wGdkqdE88w1bDtF0VKwGlX3YkUlX/IWi0l/ThbN4OX3lNn6AA2LFQlctEPg7y\nodu1kL4D/LEAM2z+mOyzAAAADnN0ZXZlbkBibHVlYm94AQIDBAUGBw==\n-----END OPENSSH PRIVATE KEY-----\n"
+}
