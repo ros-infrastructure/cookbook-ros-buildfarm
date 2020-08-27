@@ -1,8 +1,8 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.1' encoding='UTF-8'?>
 <jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin_-Descriptor plugin="publish-over-ssh@<%= @plugin_version %>">
   <hostConfigurations>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
-    <name>repo</name>
+      <name>repo</name>
       <hostname><%= node['ros_buildfarm']['ssh_publisher']['repo_hostname'] %></hostname>
       <username><%= node['ros_buildfarm']['ssh_publisher']['repo_username'] %></username>
       <secretPassword></secretPassword>
@@ -22,9 +22,10 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <proxyPort>0</proxyPort>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
-    <name>docs</name>
+      <name>docs</name>
       <hostname><%= node['ros_buildfarm']['ssh_publisher']['docs_hostname'] %></hostname>
       <username><%= node['ros_buildfarm']['ssh_publisher']['docs_username'] %></username>
       <secretPassword></secretPassword>
@@ -39,9 +40,10 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <proxyPort>0</proxyPort>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
-    <name>rosdistro_cache</name>
+      <name>rosdistro_cache</name>
       <hostname><%= node['ros_buildfarm']['ssh_publisher']['rosdistro_cache_hostname'] %></hostname>
       <username><%= node['ros_buildfarm']['ssh_publisher']['rosdistro_cache_username'] %></username>
       <secretPassword></secretPassword>
@@ -56,9 +58,10 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <proxyPort>0</proxyPort>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
-    <name>status_page</name>
+      <name>status_page</name>
       <hostname><%= node['ros_buildfarm']['ssh_publisher']['status_page_hostname'] %></hostname>
       <username><%= node['ros_buildfarm']['ssh_publisher']['status_page_username'] %></username>
       <secretPassword></secretPassword>
@@ -73,6 +76,7 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <proxyPort>0</proxyPort>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
   </hostConfigurations>
   <commonConfig reference="../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
