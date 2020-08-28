@@ -66,7 +66,7 @@ template '/etc/default/jenkins-agent' do
     user_home: agent_homedir,
     labels: node['ros_buildfarm']['agent']['labels'],
   ]
-
+  notifies :restart, 'service[jenkins-agent]'
 end
 
 template '/etc/systemd/system/jenkins-agent.service' do
@@ -76,6 +76,7 @@ template '/etc/systemd/system/jenkins-agent.service' do
     username: agent_username,
   ]
   notifies :run, 'execute[systemctl-daemon-reload]', :immediately
+  notifies :restart, 'service[jenkins-agent]'
 end
 
 execute 'systemctl-daemon-reload' do
