@@ -1,3 +1,6 @@
+# Update packages before starting cookbook run.
+apt_update
+
 package "reprepro"
 
 package "openssh-server"
