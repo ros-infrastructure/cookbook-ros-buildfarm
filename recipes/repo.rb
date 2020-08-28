@@ -26,7 +26,7 @@ agent_username = node["ros_buildfarm"]["agent"]["agent_username"]
 # Create web root and web directories
 # TODO: why are these two 644 and the next two 755?
 # For now culting it from the puppet config.
-%w(/var/repos /var/repos/ubuntu) do |dir|
+%w(/var/repos /var/repos/ubuntu).each do |dir|
   directory dir do
     owner agent_username
     group agent_username
