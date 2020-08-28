@@ -247,5 +247,6 @@ end
 node.default['ros_buildfarm']['agent']['nodename'] = 'agent_on_jenkins'
 node.default['ros_buildfarm']['agent']['executors'] = 1
 node.default['ros_buildfarm']['agent']['labels'] = %w(agent_on_master agent_on_jenkins)
+node.default['ros_buildfarm']['jenkins_url'] = 'http://localhost:8080/'
 
 include_recipe '::agent'
