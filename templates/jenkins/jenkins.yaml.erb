@@ -200,8 +200,8 @@ unclassified:
     globalUpstreamFilterStrategy: UseOldest
   warningsParsers:
     parsers:
-    - linkName: "CMake"
-      name: "CMake"
+    - name: "CMake"
+      id: CMake
       regexp: "^CMake (Deprecation Warning|Warning|Warning \\(dev\\)|Error)( at (.+):(\\\
         d+)( \\((.+)\\))?)?:\\n(?!  Manually-specified variables were not used by\
         \ the project:)(  .+\\n)?(.+\\n(  .+\\n)*)?"
@@ -241,7 +241,7 @@ unclassified:
             priority = Priority.HIGH
         }
         return new Warning(fileName, Integer.parseInt(lineNumber), "CMake", scope, message, priority);
-      trendName: "CMake"
+      example: ""
 tool:
   git:
     installations:
