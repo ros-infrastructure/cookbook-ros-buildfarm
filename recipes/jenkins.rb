@@ -62,7 +62,7 @@ template '/var/lib/jenkins/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugi
   group node['jenkins']['master']['group']
   variables Hash[
     plugin_version: node['ros_buildfarm']['jenkins']['plugins']['publish-over-ssh'],
-    ssh_key: data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)['ssh_key']
+    ssh_key: data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)['private_key']
   ]
   notifies :restart, 'service[jenkins]', :immediately
 end

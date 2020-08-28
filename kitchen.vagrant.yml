@@ -4,9 +4,11 @@ driver:
 
 provisioner:
   name: chef_solo
-  product: chef
+  product_name: chef
   product_version: 15
   require_chef_omnibus: 15
+  solo_rb:
+    environment: test
 
 platforms:
   - name: ubuntu-20.04
@@ -30,4 +32,11 @@ suites:
     verifier:
       inspec_tests:
         - test/integration/jenkins
+  - name: repo
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[ros_buildfarm::repo]
+    verifier:
+      inspec_tests:
+        - test/integration/repo
     attributes:
