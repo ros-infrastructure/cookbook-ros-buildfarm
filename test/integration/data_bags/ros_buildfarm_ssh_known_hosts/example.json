@@ -1,6 +1,8 @@
 {
-	"id": "example",
-	"host": "10.9.8.1",
-	"key": "AAAAC3NzaC1lZDI1NTE5AAAAIPhHlbvNE5Ik5rPaTE5jCd78QfTIX+Gf5IeHaGLYadKE",
-	"key_type": "ed25519"
+  "id": "example",
+  "test": {
+    "host": "10.9.8.1",
+    "key": "AAAAC3NzaC1lZDI1NTE5AAAAIPhHlbvNE5Ik5rPaTE5jCd78QfTIX+Gf5IeHaGLYadKE",
+    "key_type": "ed25519"
+  }
 }
