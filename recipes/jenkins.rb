@@ -32,6 +32,10 @@ template '/var/lib/jenkins/jenkins.yaml' do
   source 'jenkins/jenkins.yaml.erb'
   owner node['jenkins']['master']['user']
   group node['jenkins']['master']['group']
+  variables Hash[
+    server_name: node['jenkins']['server_name'],
+    admin_email: node['jenkins']['admin_email'],
+  ]
   notifies :restart, 'service[jenkins]', :immediately
 end
 
