@@ -53,14 +53,16 @@ end
 
 # TODO install this only on amd64?
 package 'qemu-user-static'
+jenkins_username = node['ros_buildfarm']['agent']['username']
+agent_jenkins_user = search('ros_buildfarm_jenkins_users', "username:#{jenkins_username}").first
 template '/etc/default/jenkins-agent' do
   source 'jenkins-agent.env.erb'
   variables Hash[
     java_args: node['ros_buildfarm']['agent']['java_args'],
     jarfile: swarm_client_jarfile_path,
     jenkins_url: node['ros_buildfarm']['jenkins_url'],
-    username: node['ros_buildfarm']['agent']['username'],
-    password: node['ros_buildfarm']['agent']['password'],
+    username: jenkins_username,
+    password: agent_jenkins_user['password'],
     name: node['ros_buildfarm']['agent']['nodename'],
     description: node['ros_buildfarm']['agent']['description'],
     executors: node['ros_buildfarm']['agent']['executors'],
