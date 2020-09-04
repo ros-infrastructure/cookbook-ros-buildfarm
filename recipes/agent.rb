@@ -1,3 +1,4 @@
+apt_update
 package 'docker.io'
 
 agent_username = node['ros_buildfarm']['agent']['agent_username']
