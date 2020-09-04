@@ -7,3 +7,7 @@ This file is used to list changes made in each version of the ros_buildfarm cook
 Initial release.
 - Add recipe for linux agents.
 
+# 0.2.0
+
+First release with three recipes for the three different machine types.
+
