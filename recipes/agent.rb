@@ -17,11 +17,11 @@ group 'docker' do
   action :manage # Group should be created by docker package.
 end
 
-data_bag('ros_buildfarm_ssh_known_hosts').each do |host|
-  hostkey_info = data_bag_item('ros_buildfarm_ssh_known_hosts', host)[node.chef_environment]
-  ssh_known_hosts_entry host['host'] do
-    key host['key']
-    key_type host['key_type']
+data_bag('ros_buildfarm_ssh_known_hosts').each do |id|
+  hostkey_info = data_bag_item('ros_buildfarm_ssh_known_hosts', id)[node.chef_environment]
+  ssh_known_hosts_entry hostkey_info['host'] do
+    key hostkey_info['key']
+    key_type hostkey_info['key_type']
   end
 end
 
