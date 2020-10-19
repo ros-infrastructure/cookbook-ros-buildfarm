@@ -31,7 +31,7 @@ agent_username = node['ros_buildfarm']['agent']['agent_username']
   directory dir do
     owner agent_username
     group agent_username
-    mode '0644'
+    mode '0755'
   end
 end
 
