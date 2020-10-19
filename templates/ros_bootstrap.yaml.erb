@@ -1,0 +1,6 @@
+name: ros_bootstrap
+method: <%= @repository_url %>
+suites: [<%= @suites.join ', ' %>]
+component: <%= @component %>
+architectures: [<%= @architectures.join ', ' %>]
+verify_release: blindtrust
