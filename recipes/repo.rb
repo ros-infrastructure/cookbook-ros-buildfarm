@@ -167,3 +167,20 @@ end
     not_if "/usr/bin/python3 /home/#{agent_username}/reprepro-updater/scripts/setup_repo.py ubunut_#{repo} -q"
   end
 end
+
+package 'nginx'
+cookbook_file '/etc/nginx/sites-available/repo' do
+  source 'nginx/repo.conf'
+  notifies :restart, 'service[nginx]'
+end
+link '/etc/nginx/sites-enabled/default' do
+  action :delete
+  notifies :restart, 'service[nginx]'
+end
+link '/etc/nginx/sites-enabled/repo' do
+  to '/etc/nginx/sites-available/repo'
+  notifies :restart, 'service[nginx]'
+end
+service 'nginx' do
+  action [:start, :enable]
+end
