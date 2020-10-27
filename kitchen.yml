@@ -24,6 +24,10 @@ suites:
     attributes:
   - name: jenkins
     data_bags_path: "test/integration/data_bags"
+    attributes:
+      ros_buildfarm:
+        smtp: true
+
     run_list:
       - recipe[ros_buildfarm::jenkins]
     verifier:
