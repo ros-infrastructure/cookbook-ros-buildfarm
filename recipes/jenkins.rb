@@ -253,4 +253,9 @@ node.default['ros_buildfarm']['agent']['executors'] = 1
 node.default['ros_buildfarm']['agent']['labels'] = %w(agent_on_master agent_on_jenkins)
 node.default['ros_buildfarm']['jenkins_url'] = 'http://localhost:8080/'
 
+## Postfix and OpenDKIM for SMTP
+if node['ros_buildfarm']['smtp']
+  include_recipe '::_jenkins_smtp'
+end
+
 include_recipe '::agent'

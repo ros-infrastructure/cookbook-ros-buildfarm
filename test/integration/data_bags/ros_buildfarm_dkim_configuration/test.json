@@ -1,0 +1,19 @@
+{
+	"id": "test",
+	"keys": {
+		"mail": {
+			"private": "dkim private key",
+			"txt": "dkim txt file"
+		}
+	},
+	"signing_entries": {
+		"*@build.ros2.org": "mail._domainkey.build.ros2.org"
+
+	},
+	"trusted_hosts": [
+		"127.0.0.1",
+		"localhost"
+	]
+}
+
+
