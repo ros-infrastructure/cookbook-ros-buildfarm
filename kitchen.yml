@@ -3,7 +3,6 @@ provisioner:
   name: chef_solo
   product_name: chef
   product_version: 15
-  require_chef_omnibus: 15
   solo_rb:
     environment: test
 
