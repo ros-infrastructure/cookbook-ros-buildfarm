@@ -119,22 +119,6 @@ execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
 end
 
 # Set up reprepro and reprepro config for deb repositories
-directory "/home/#{agent_username}/.buildfarm" do
-  owner agent_username
-  group agent_username
-end
-template "/home/#{agent_username}/.buildfarm/reprepro-updater.ini" do
-  source 'reprepro-updater.ini.erb'
-  owner agent_username
-  group agent_username
-  mode '0600'
-  variables Hash[
-    architectures: node['ros_buildfarm']['apt_repos']['architectures'],
-    signing_key: gpg_key['fingerprint'],
-    suites: node['ros_buildfarm']['apt_repos']['suites'],
-  ]
-end
-
 git "/home/#{agent_username}/reprepro-updater" do
   repository 'https://github.com/ros-infrastructure/reprepro-updater'
   revision 'refactor'
@@ -155,6 +139,22 @@ template "/home/#{agent_username}/reprepro_config/ros_bootstrap.yaml" do
     component: node['ros_buildfarm']['apt_repos']['component'],
     repository_url: node['ros_buildfarm']['apt_repos']['bootstrap_url'],
     suites: node['ros_buildfarm']['apt_repos']['suites'],
+  ]
+end
+directory "/home/#{agent_username}/.buildfarm" do
+  owner agent_username
+  group agent_username
+end
+template "/home/#{agent_username}/.buildfarm/reprepro-updater.ini" do
+  source 'reprepro-updater.ini.erb'
+  owner agent_username
+  group agent_username
+  mode '0600'
+  variables Hash[
+    architectures: node['ros_buildfarm']['apt_repos']['architectures'],
+    signing_key: gpg_key['fingerprint'],
+    suites: node['ros_buildfarm']['apt_repos']['suites'],
+    upstream_config: "/home/#{agent_username}/reprepro_config"
   ]
 end
 
