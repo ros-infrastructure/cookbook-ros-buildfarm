@@ -261,3 +261,9 @@ if node['ros_buildfarm']['smtp']
 end
 
 include_recipe '::agent'
+
+group 'docker' do
+  members ['jenkins']
+  append true
+  action :manage
+end
