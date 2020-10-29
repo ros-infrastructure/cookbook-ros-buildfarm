@@ -265,6 +265,60 @@ end
   end
 end
 
+# Pulp setup
+pulp_data_directory = '/var/repos/.pulp'
+user 'pulp' do
+  manage_home true
+  comment 'Pulp content manager'
+  uid '1200'
+end
+directory pulp_data_directory do
+  owner 'pulp'
+  mode '0700'
+end
+directory "#{pulp_data_directory}/media" do
+  owner 'pulp'
+end
+
+cookbook_file "#{pulp_data_directory}/initialize.py" do
+  owner 'pulp'
+  source 'rpm_repo_init.py'
+  mode '0600'
+end
+
+package 'redis'
+service 'redis' do
+  action [:start, :enable]
+end
+cookbook_file '/etc/redis/redis.conf' do
+  source "redis.conf"
+  notifies :restart, 'service[redis]', :immediately
+end
+
+package 'postgresql'
+service 'postgresql' do
+  action [:start, :enable]
+end
+execute "Create pulp postgres user" do
+  command %(/usr/bin/psql -c "CREATE USER pulp WITH SUPERUSER LOGIN")
+  not_if %(/usr/bin/psql -tc "SELECT 1 from pg_user WHERE usename = 'pulp'" | grep -q 1)
+  user 'postgres'
+end
+execute "Create pulp postgres database" do
+  command %(/usr/bin/psql -c "CREATE DATABASE pulp OWNER pulp")
+  not_if %(/usr/bin/psql -tc "SELECT 1 FROM pg_database WHERE datname = 'pulp'" | grep -q 1)
+  user 'postgres'
+end
+
+# * Add pulp dockerfile
+# * Build pulp dockerfile
+# * Run pulp django migration
+# * Run pulp static collector
+# * Set pulp admin password
+# * Create gnupg directory for pulp
+# * Create pulp workers
+# * Create rpm repos
+
 package 'nginx'
 cookbook_file '/etc/nginx/sites-available/repo' do
   source 'nginx/repo.conf'
