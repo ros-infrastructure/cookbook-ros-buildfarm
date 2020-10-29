@@ -8,7 +8,12 @@
       <secretPassword></secretPassword>
       <remoteRootDir><%= node['ros_buildfarm']['ssh_publisher']['repo_root_dir'] %></remoteRootDir>
       <port><%= node['ros_buildfarm']['ssh_publisher']['repo_port'] %></port>
-      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration">
+        <secretPassword></secretPassword>
+        <key><%= @ssh_key %></key>
+        <keyPath></keyPath>
+        <disableAllExec>true</disableAllExec>
+      </commonConfig>
       <timeout><%= node['ros_buildfarm']['ssh_publisher']['repo_timeout'] %></timeout>
       <overrideKey>false</overrideKey>
       <disableExec>false</disableExec>
@@ -17,7 +22,11 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <jumpHost></jumpHost>
+      <proxyHost></proxyHost>
       <proxyPort>0</proxyPort>
+      <proxyUser></proxyUser>
+      <proxyPassword></proxyPassword>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
       <name>docs</name>
@@ -26,7 +35,7 @@
       <secretPassword></secretPassword>
       <remoteRootDir><%= node['ros_buildfarm']['ssh_publisher']['docs_root_dir'] %></remoteRootDir>
       <port><%= node['ros_buildfarm']['ssh_publisher']['docs_port'] %></port>
-      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <commonConfig reference="../../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
       <timeout><%= node['ros_buildfarm']['ssh_publisher']['docs_timeout'] %></timeout>
       <overrideKey>false</overrideKey>
       <disableExec>false</disableExec>
@@ -35,7 +44,11 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <jumpHost></jumpHost>
+      <proxyHost></proxyHost>
       <proxyPort>0</proxyPort>
+      <proxyUser></proxyUser>
+      <proxyPassword></proxyPassword>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
       <name>rosdistro_cache</name>
@@ -44,7 +57,7 @@
       <secretPassword></secretPassword>
       <remoteRootDir><%= node['ros_buildfarm']['ssh_publisher']['rosdistro_cache_root_dir'] %></remoteRootDir>
       <port><%= node['ros_buildfarm']['ssh_publisher']['rosdistro_cache_port'] %></port>
-      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <commonConfig reference="../../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
       <timeout><%= node['ros_buildfarm']['ssh_publisher']['rosdistro_cache_timeout'] %></timeout>
       <overrideKey>false</overrideKey>
       <disableExec>false</disableExec>
@@ -53,7 +66,11 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <jumpHost></jumpHost>
+      <proxyHost></proxyHost>
       <proxyPort>0</proxyPort>
+      <proxyUser></proxyUser>
+      <proxyPassword></proxyPassword>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
     <jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
       <name>status_page</name>
@@ -62,7 +79,7 @@
       <secretPassword></secretPassword>
       <remoteRootDir><%= node['ros_buildfarm']['ssh_publisher']['status_page_root_dir'] %></remoteRootDir>
       <port><%= node['ros_buildfarm']['ssh_publisher']['status_page_port'] %></port>
-      <commonConfig class="jenkins.plugins.publish_over_ssh.BapSshCommonConfiguration" reference="../../jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
+      <commonConfig reference="../../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
       <timeout><%= node['ros_buildfarm']['ssh_publisher']['status_page_timeout'] %></timeout>
       <overrideKey>false</overrideKey>
       <disableExec>false</disableExec>
@@ -71,14 +88,13 @@
         <key></key>
         <keyPath></keyPath>
       </keyInfo>
+      <jumpHost></jumpHost>
+      <proxyHost></proxyHost>
       <proxyPort>0</proxyPort>
+      <proxyUser></proxyUser>
+      <proxyPassword></proxyPassword>
     </jenkins.plugins.publish__over__ssh.BapSshHostConfiguration>
   </hostConfigurations>
-  <commonConfig>
-    <secretPassphrase></secretPassphrase>
-    <key><%= @ssh_key %></key>
-    <keyPath></keyPath>
-    <disableAllExec>true</disableAllExec>
-  </commonConfig>
+  <commonConfig reference="../hostConfigurations/jenkins.plugins.publish__over__ssh.BapSshHostConfiguration/commonConfig"/>
   <defaults class="jenkins.plugins.publish_over_ssh.options.SshPluginDefaults"/>
 </jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin_-Descriptor>
