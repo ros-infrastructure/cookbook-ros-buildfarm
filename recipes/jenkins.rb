@@ -214,7 +214,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
       --fullchain-file #{cert_path}
       --key-file #{key_path}
     )
-    not_if "test -d /root/acme.sh/#{server_name}"
+    not_if "test -d /root/.acme.sh/#{server_name}"
   end
 else
   template '/etc/nginx/sites-enabled/jenkins' do
