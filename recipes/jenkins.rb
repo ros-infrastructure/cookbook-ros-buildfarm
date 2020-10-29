@@ -33,6 +33,7 @@ template '/var/lib/jenkins/jenkins.yaml' do
   owner node['jenkins']['master']['user']
   group node['jenkins']['master']['group']
   variables Hash[
+    scheme: if node['ros_buildfarm']['letsencrypt_enabled'] then 'https' else 'http' end,
     server_name: node['jenkins']['server_name'],
     admin_email: node['jenkins']['admin_email'],
   ]
