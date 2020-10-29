@@ -80,11 +80,20 @@ cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   group agent_username
 end
 
-gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
+# Set up ssh authorized keys for publish over ssh.
 directory "/home/#{agent_username}/.ssh" do
   owner agent_username
   group agent_username
 end
+ssh_key = data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)
+file "/home/#{agent_username}/.ssh/authorized_keys" do
+  content ssh_key['public_key']
+  owner agent_username
+  group agent_username
+  mode '0600'
+end
+
+gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
 file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
   owner agent_username
   group agent_username
