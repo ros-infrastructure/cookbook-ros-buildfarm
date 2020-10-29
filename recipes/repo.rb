@@ -44,7 +44,9 @@ end
 end
 
 package 'python3-yaml'
+package 'python-yaml'
 package 'python3-debian'
+package 'python-debian'
 
 # upload scripts and keys
 directory "/home/#{agent_username}/upload_triggers" do
