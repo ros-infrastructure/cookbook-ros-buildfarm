@@ -8,13 +8,13 @@ upstream_config: <%= @upstream_config %>
 [ubuntu_testing]
 architectures: <%= @architectures.join ' ' %>
 distros: <%= @suites.join ' ' %>
-repository_path: /var/repos/ubuntu/building
+repository_path: /var/repos/ubuntu/testing
 signing_key: <%= @signing_key %>
 upstream_config: <%= @upstream_config %>
 
 [ubuntu_main]
 architectures: <%= @architectures.join ' ' %>
 distros: <%= @suites.join ' ' %>
-repository_path: /var/repos/ubuntu/building
+repository_path: /var/repos/ubuntu/main
 signing_key: <%= @signing_key %>
 upstream_config: <%= @upstream_config %>
