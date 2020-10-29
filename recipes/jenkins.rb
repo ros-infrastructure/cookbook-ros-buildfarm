@@ -209,10 +209,12 @@ if node['ros_buildfarm']['letsencrypt_enabled']
   execute 'acme-issue-cert' do
     command %W(
       /root/.acme.sh/acme.sh --issue
+      --webroot
       --domain #{server_name}
       --fullchain-file #{cert_path}
       --key-file #{key_path}
     )
+    not_if "test -d /root/acme.sh/#{server_name}"
   end
 else
   template '/etc/nginx/sites-enabled/jenkins' do
