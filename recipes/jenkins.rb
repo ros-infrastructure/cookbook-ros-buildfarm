@@ -209,7 +209,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
   execute 'acme-issue-cert' do
     command %W(
       /root/.acme.sh/acme.sh --issue
-      --webroot
+      --webroot /var/www/html
       --domain #{server_name}
       --fullchain-file #{cert_path}
       --key-file #{key_path}
