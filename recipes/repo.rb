@@ -73,6 +73,7 @@ end
 directory "/home/#{agent_username}/.gnupg" do
   owner agent_username
   group agent_username
+  mode '0700'
 end
 cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   source 'gpg.conf'
@@ -85,6 +86,7 @@ end
 directory "/home/#{agent_username}/.ssh" do
   owner agent_username
   group agent_username
+  mode '0700'
 end
 ssh_key = data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)
 file "/home/#{agent_username}/.ssh/authorized_keys" do
