@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o errexit
+
 case "$1" in
 	main)
 		repo=main
