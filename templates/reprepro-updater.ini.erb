@@ -1,0 +1,20 @@
+[ubuntu_building]
+architectures: <%= @architectures.join ' ' %>
+distros: <%= @suites.join ' ' %>
+repository_path: /var/repos/ubuntu/building
+signing_key: <%= @signing_key %>
+upstream_config: <%= @upstream_config %>
+
+[ubuntu_testing]
+architectures: <%= @architectures.join ' ' %>
+distros: <%= @suites.join ' ' %>
+repository_path: /var/repos/ubuntu/building
+signing_key: <%= @signing_key %>
+upstream_config: <%= @upstream_config %>
+
+[ubuntu_main]
+architectures: <%= @architectures.join ' ' %>
+distros: <%= @suites.join ' ' %>
+repository_path: /var/repos/ubuntu/building
+signing_key: <%= @signing_key %>
+upstream_config: <%= @upstream_config %>
