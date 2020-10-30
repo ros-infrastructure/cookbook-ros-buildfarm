@@ -33,8 +33,9 @@ template '/var/lib/jenkins/jenkins.yaml' do
   owner node['jenkins']['master']['user']
   group node['jenkins']['master']['group']
   variables Hash[
-    server_name: node['jenkins']['server_name'],
-    admin_email: node['jenkins']['admin_email'],
+    scheme: if node['ros_buildfarm']['letsencrypt_enabled'] then 'https' else 'http' end,
+    server_name: node['ros_buildfarm']['jenkins']['server_name'],
+    admin_email: node['ros_buildfarm']['jenkins']['admin_email'],
   ]
   notifies :restart, 'service[jenkins]', :immediately
 end
