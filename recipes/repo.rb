@@ -78,6 +78,7 @@ cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   source 'gpg.conf'
   owner agent_username
   group agent_username
+  mode '0600'
 end
 
 # Set up ssh authorized keys for publish over ssh.
