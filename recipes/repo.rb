@@ -134,6 +134,7 @@ end
 git "/home/#{agent_username}/reprepro-updater" do
   repository 'https://github.com/ros-infrastructure/reprepro-updater'
   revision 'refactor'
+  action :sync # always pull the latest revision.
   user agent_username
   group agent_username
 end
