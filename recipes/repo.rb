@@ -310,11 +310,36 @@ execute "Create pulp postgres database" do
   user 'postgres'
 end
 
-# * Add pulp dockerfile
-# * Build pulp dockerfile
-# * Run pulp django migration
-# * Run pulp static collector
-# * Set pulp admin password
+# Set up podman repository from the Kubic project on Open Build Service
+apt_repository 'kubic-podman' do
+  cache_rebuild true
+  # OBS encodes the distribution in the uri
+  distribution '/'
+  key 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_20.04/Release.key'
+  uri 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_20.04/'
+end
+package 'podman'
+
+cookbook_file "#{pulp_data_directory}/Dockerfile" do
+  source 'pulp/Dockerfile'
+end
+execute "podman build . -t pulp_image" do
+  cwd pulp_data_directory
+end
+
+execute 'pulp_django_migration' do
+  command 'podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
+end
+
+execute 'pulp_collect_static' do
+  command "podman run --user 1200:1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
+end
+
+pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.chef_environment)['password']
+execute 'set_pulp_admin_password' do
+  command "podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
+end
+
 # * Create gnupg directory for pulp
 # * Create pulp workers
 # * Create rpm repos
