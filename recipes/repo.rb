@@ -319,28 +319,180 @@ apt_repository 'kubic-podman' do
   uri 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_20.04/'
 end
 package 'podman'
+package 'buildah'
 
+directory "/usr/local/bin"
+remote_file "/usr/local/bin/systemd-docker" do
+  source 'https://github.com/ibuildthecloud/systemd-docker/releases/download/v0.2.1/systemd-docker'
+  mode '0755'
+end
 cookbook_file "#{pulp_data_directory}/Dockerfile" do
   source 'pulp/Dockerfile'
 end
-execute "podman build . -t pulp_image" do
+execute "buildah bud -t pulp_image ." do
   cwd pulp_data_directory
+  environment 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
+  user 'pulp'
+  group 'pulp'
 end
 
 execute 'pulp_django_migration' do
   command 'podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
+  environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
+  user 'pulp'
+  group 'pulp'
 end
 
 execute 'pulp_collect_static' do
   command "podman run --user 1200:1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
+  environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
+  user 'pulp'
+  group 'pulp'
 end
 
 pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.chef_environment)['password']
 execute 'set_pulp_admin_password' do
   command "podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
+  environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
+  user 'pulp'
+  user 'pulp'
+  group 'pulp'
 end
 
 # * Create gnupg directory for pulp
+
+execute 'systemctl daemon-reload' do
+  action :nothing
+end
+
+execute "Create pulp-api-endpoint container" do
+  command %W(podman create --replace
+    --name pulp-api-endpoint
+    -u 1200:1200
+    -v #{pulp_data_directory}:/var/repos/.pulp
+    -v /var/run/postgresql:/var/run/postgresql
+    -v /var/run/redis:/var/run/redis
+    -p 24817:24817
+    pulp_image
+    pulpcore-manager runserver 0.0.0.0:24817
+  )
+  environment 'UID' => '1200'
+  user 'pulp'
+  group 'pulp'
+  notifies :restart, 'service[pulp-api-endpoint]'
+end
+template "/etc/systemd/system/pulp-api-endpoint.service" do
+  source "pulp/pulp.service.erb"
+  variables Hash[
+    description: "Pulp API Endpoint",
+    after_units: %w(postgresql.service redis-server),
+    required_units: %w(postgresql.service redis-server),
+    container: 'pulp-api-endpoint',
+  ]
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
+  notifies :restart, 'service[pulp-api-endpoint]'
+end
+service 'pulp-api-endpoint' do
+  action [:start, :enable]
+end
+
+execute "Create pulp-content-endpoint container" do
+  command %W(podman create --replace
+    --name pulp-content-endpoint
+    -u 1200:1200
+    -v #{pulp_data_directory}:/var/repos/.pulp
+    -v /var/run/postgresql:/var/run/postgresql
+    -v /var/run/redis:/var/run/redis
+    -p 24816:24816
+    pulp_image
+    pulp-content
+  )
+  environment 'UID' => '1200'
+  user 'pulp'
+  group 'pulp'
+  notifies :restart, 'service[pulp-content-endpoint]'
+end
+template "/etc/systemd/system/pulp-content-endpoint.service" do
+  source "pulp/pulp.service.erb"
+  variables Hash[
+    description: "Pulp Content Endpoint",
+    after_units: %w(postgresql.service redis-server),
+    required_units: %w(postgresql.service redis-server),
+    container: 'pulp-content-endpoint',
+  ]
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
+  notifies :restart, 'service[pulp-content-endpoint]'
+end
+service 'pulp-content-endpoint' do
+  action [:start, :enable]
+end
+
+execute "Create pulp-resource-manager container" do
+  command %W(podman create --replace
+    --name pulp-resource-manager
+    -u 1200:1200
+    -v #{pulp_data_directory}:/var/repos/.pulp
+    -v /var/run/postgresql:/var/run/postgresql
+    -v /var/run/redis:/var/run/redis
+    pulp_image
+    rq-worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig
+  )
+  environment 'UID' => '1200'
+  user 'pulp'
+  group 'pulp'
+  notifies :restart, 'service[pulp-resource-manager]'
+end
+template "/etc/systemd/system/pulp-resource-manager.service" do
+  source "pulp/pulp.service.erb"
+  variables Hash[
+    description: "Pulp Resource Manager",
+    after_units: %w(postgresql.service redis-server),
+    required_units: %w(postgresql.service redis-server),
+    container: 'pulp-resource-manager',
+  ]
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
+  notifies :restart, 'service[pulp-resource-manager]'
+end
+service 'pulp-resource-manager' do
+  action [:start, :enable]
+end
+
+0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
+  execute "Create pulp-worker-#{i} container" do
+    command %W(podman create --replace
+      --name pulp-worker-#{i}
+      -u 1200:1200
+      -v #{pulp_data_directory}:/var/repos/.pulp
+      -v /var/run/postgresql:/var/run/postgresql
+      -v /var/run/redis:/var/run/redis
+      pulp_image
+      rq-worker -n pulp-worker-#{i} -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig
+    )
+    environment 'UID' => '1200'
+    user 'pulp'
+    group 'pulp'
+    notifies :restart, "service[pulp-worker@#{i}]"
+  end
+end
+template "/etc/systemd/system/pulp-worker@.service" do
+  source "pulp/pulp.service.erb"
+  variables Hash[
+    description: "Pulp Worker",
+    after_units: %w(postgresql.service redis-server),
+    required_units: %w(postgresql.service redis-server),
+    docker_args: "-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis",
+    image: 'pulp_image',
+    container: 'pulp-worker-%i',
+  ]
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
+end
+0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
+  service "pulp-worker@#{i}" do
+    action [:start, :enable]
+  end
+end
+
+
 # * Create pulp workers
 # * Create rpm repos
 
