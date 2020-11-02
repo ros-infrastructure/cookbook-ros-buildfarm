@@ -48,6 +48,7 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "greenballs" => "1.15",
   "groovy" => "2.2",
   "groovy-postbuild" => "2.4.3",
+  "heavy-job" => "1.1",
   "htmlpublisher" => "1.21",
   "icon-shim" => "2.0.3",
   #"image-gallery" => "1.5-SNAPSHOT (private-d17880bb-cottsay)",
