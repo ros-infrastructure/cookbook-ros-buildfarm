@@ -75,17 +75,20 @@ end
 directory "/home/#{agent_username}/.gnupg" do
   owner agent_username
   group agent_username
+  mode '0700'
 end
 cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   source 'gpg.conf'
   owner agent_username
   group agent_username
+  mode '0600'
 end
 
 # Set up ssh authorized keys for publish over ssh.
 directory "/home/#{agent_username}/.ssh" do
   owner agent_username
   group agent_username
+  mode '0700'
 end
 ssh_key = data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)
 file "/home/#{agent_username}/.ssh/authorized_keys" do
@@ -133,6 +136,7 @@ end
 git "/home/#{agent_username}/reprepro-updater" do
   repository 'https://github.com/ros-infrastructure/reprepro-updater'
   revision 'refactor'
+  action :sync # always pull the latest revision.
   user agent_username
   group agent_username
 end
