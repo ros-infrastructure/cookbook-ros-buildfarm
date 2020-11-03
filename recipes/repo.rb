@@ -68,6 +68,67 @@ data_bag('ros_buildfarm_upload_keys').each do |id|
   end
 end
 
+# Configure gpg-vault
+user 'gpg-vault' do
+  manage_home true
+  comment 'GPG vault user'
+end
+execute 'gpg-init' do
+  command 'gpg -K'
+  environment 'HOME' => '/home/gpg-vault'
+  not_if { File.directory? '/home/gpg-vault/.gnupg' }
+  user 'gpg-vault'
+  group 'gpg-vault'
+end
+cookbook_file '/home/gpg-vault/.gnupg/gpg-agent.conf' do
+  source 'repo/gpg-agent.conf'
+  owner 'gpg-vault'
+  group 'gpg-vault'
+  mode '0600'
+end
+directory '/var/run/gpg-vault' do
+  owner 'gpg-vault'
+  group 'gpg-vault'
+  mode '0750'
+end
+cookbook_file '/etc/systemd/system/gpg-vault-agent.service' do
+  source 'gpg-vault-agent.service'
+end
+systemd_unit 'gpg-vault-agent.service' do
+  triggers_reload true
+  action [:start, :enable]
+end
+gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
+file '/home/gpg-vault/.gnupg/gpg_public_key.pub' do
+  content gpg_key['public_key']
+  owner 'gpg-vault'
+  group 'gpg-vault'
+  mode '0644'
+end
+execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
+  environment 'HOME' => '/home/gpg-vault'
+  user 'gpg-vault'
+  group 'gpg-vault'
+  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+end
+file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
+  content gpg_key['private_key']
+  owner 'gpg-vault'
+  group 'gpg-vault'
+  mode '0600'
+end
+execute 'gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec' do
+  environment 'HOME' => '/home/gpg-vault'
+  user 'gpg-vault'
+  group 'gpg-vault'
+  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+end
+group 'gpg-vault' do
+  append true
+  members [agent_username]
+  action [:manage]
+end
+
 # Configure GPG for reprepro
 # .gnupg/gpg.conf
 directory "/home/#{agent_username}/.gnupg" do
@@ -96,7 +157,6 @@ file "/home/#{agent_username}/.ssh/authorized_keys" do
   mode '0600'
 end
 
-gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
 file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
   owner agent_username
   group agent_username
