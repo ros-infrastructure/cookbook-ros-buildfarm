@@ -1,0 +1,27 @@
+---
+name: kitchen test
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    name: Ubuntu 20.04
+    strategy:
+      matrix:
+        suite: ['agent', 'repo', 'jenkins']
+        chef_version: ['chef15', 'chef16']
+      fail-fast: false
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+    - name: Install Chef
+      uses: actionshub/chef-install@master
+    - name: Test-Kitchen
+      uses: actionshub/test-kitchen@master
+      with:
+        suite: ${{ matrix.suite }}
+        os: 'ubuntu-2004'
+      env:
+        CHEF_LICENSE: accept-no-persist
+        KITCHEN_LOCAL_YAML: kitchen.dokken.${{ matrix.chef_version }}.yml
