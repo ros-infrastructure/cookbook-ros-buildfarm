@@ -46,4 +46,5 @@ jobs:
         run: |
             set -x
             sudo journalctl -l --since today
-            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec ${{ matrix.suite }}-${{ matrix.chef_version }} -c "journalctl -l"
+            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
+                ${{ matrix.suite }}-${{ matrix.chef_version }} -c "journalctl -l"
