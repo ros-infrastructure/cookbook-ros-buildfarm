@@ -41,24 +41,11 @@ jobs:
           CHEF_LICENSE: accept-no-persist
           CHEF_VERSION: ${{ matrix.chef_version }}
           KITCHEN_LOCAL_YAML: kitchen.dokken.yml
-      - name: Print debug output (journalctl)
+      - name: Print debug output on failure
         if: failure()
         run: |
             set -x
+            sudo journalctl -l --since today
             KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
-                ${{ matrix.suite }}-${{ matrix.os }} \
+                ${{ matrix.suite }}-${{ matrix.chef_version }} \
                 -c "journalctl -l"
-      - name: Print debug output on failure (jenkins.log)
-        if: failure()
-        run: |
-            set -x
-            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
-                ${{ matrix.suite }}-${{ matrix.os }} \
-                -c "cat /var/log/jenkins/jenkins.log"
-      - name: Print debug output on failure (systemctl jenkins status)
-        if: failure()
-        run: |
-            set -x
-            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
-                ${{ matrix.suite }}-${{ matrix.os }} \
-                -c "systemctl status jenkins"
