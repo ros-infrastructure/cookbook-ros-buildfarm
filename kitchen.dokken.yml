@@ -1,7 +1,7 @@
 ---
 driver:
   name: dokken
-  chef_version: 16
+  chef_version: <%= ENV['CHEF_VERSION'] || 'current' %>
   use_sudo: false
   privileged: true
   env: [CHEF_LICENSE=accept]
@@ -21,6 +21,8 @@ platforms:
     driver:
       image: dokken/ubuntu-20.04
       pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update
 
 verifier:
   name: inspec
@@ -40,6 +42,7 @@ suites:
       ros_buildfarm:
         smtp: true
     run_list:
+      - recipe[ros_buildfarm::agent]
       - recipe[ros_buildfarm::jenkins]
     verifier:
       inspec_tests:
