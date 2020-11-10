@@ -41,3 +41,9 @@ jobs:
           CHEF_LICENSE: accept-no-persist
           CHEF_VERSION: ${{ matrix.chef_version }}
           KITCHEN_LOCAL_YAML: kitchen.dokken.yml
+      - name: Print debug output on failure
+        if: failure()
+        run: |
+            set -x
+            sudo journalctl -l --since today
+            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec ${{ matrix.suite }}-${{ matrix.chef_version }} -c "journalctl -l"
