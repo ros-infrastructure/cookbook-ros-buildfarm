@@ -1,0 +1,5 @@
+<% @rsyncd_endpoints.each do |name, data| -%>
+[<%= name %>]
+  comment = <%= data['comment'] %>
+  path = <%= data['path'] %>
+<% end -%>

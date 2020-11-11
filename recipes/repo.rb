@@ -197,3 +197,18 @@ end
 service 'nginx' do
   action [:start, :enable]
 end
+
+# Configure rsync endpoints for repositories
+if not node['ros_buildfarm']['repo']['rsyncd_endpoints'].empty?
+  package 'rsync'
+  template '/etc/rsyncd.conf' do
+    source 'rsyncd.conf.erb'
+    variables Hash[
+      rsyncd_endpoints: node['ros_buildfarm']['repo']['rsyncd_endpoints']
+    ]
+    notifies :restart, 'service[rsync]'
+  end
+  service 'rsync' do
+    action [:start, :enable]
+  end
+end
