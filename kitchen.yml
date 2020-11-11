@@ -33,10 +33,19 @@ suites:
       inspec_tests:
         - test/integration/jenkins
   - name: repo
+    attributes:
+      ros_buildfarm:
+        repo:
+          rsyncd_endpoints:
+            ros-main:
+              comment: ROS apt repository
+              path: /var/repos/ubuntu/main
+            ros-testing:
+              comment: ROS apt testing repository
+              path: /var/repos/ubuntu/testing
     data_bags_path: "test/integration/data_bags"
     run_list:
       - recipe[ros_buildfarm::repo]
     verifier:
       inspec_tests:
         - test/integration/repo
-    attributes:
