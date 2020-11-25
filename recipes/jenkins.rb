@@ -79,9 +79,9 @@ end
 # * Groovy scripted:
 #   This method can be used to enable more complex authentication / authorization strategies and security realms.
 if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
-  auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')
+  auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')[node.chef_environment]
   if auth_strategy_script.nil?
-    Chef::Log.fatal('No auth strategy script in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.')
+    Chef::Log.fatal("No auth strategy script for #{node.chef_environment} in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
     raise
   end
   jenkins_script 'auth_strategy' do
