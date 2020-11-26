@@ -1,5 +1,12 @@
 apt_update
 package 'docker.io'
+service 'docker' do
+  action [:start, :enable]
+end
+directory '/etc/containerd'
+file '/etc/containerd/config.toml' do
+  content 'disabled_plugins = ["cri"]'
+end
 
 agent_username = node['ros_buildfarm']['agent']['agent_username']
 agent_homedir = "/home/#{agent_username}"
