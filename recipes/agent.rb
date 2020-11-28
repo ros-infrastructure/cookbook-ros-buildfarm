@@ -11,6 +11,13 @@ file '/etc/containerd/config.toml' do
   content 'disabled_plugins = ["cri"]'
   notifies :restart, 'service[containerd]'
 end
+template '/etc/docker/daemon.json' do
+  source 'docker-daemon.json.erb'
+  variables Hash[
+    registry_mirrors: node['docker']['registry_mirrors']
+  ]
+  notifies :restart, 'service[docker]'
+end
 
 agent_username = node['ros_buildfarm']['agent']['agent_username']
 agent_homedir = "/home/#{agent_username}"
