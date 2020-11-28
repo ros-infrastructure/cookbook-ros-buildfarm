@@ -6,6 +6,19 @@ end
 directory '/etc/containerd'
 file '/etc/containerd/config.toml' do
   content 'disabled_plugins = ["cri"]'
+  notifies :restart, 'service[docker]'
+end
+directory '/etc/docker/seccomp'
+cookbook_file '/etc/docker/seccomp/default-with-personality.json' do
+  source 'docker-seccomp-default-with-personality.json'
+  notifies :restart, 'service[docker]'
+end
+template '/etc/docker/daemon.json' do
+  source 'docker-daemon.json.erb'
+  variables Hash[
+    registry_mirrors: node['docker']['registry_mirrors']
+  ]
+  notifies :restart, 'service[docker]'
 end
 
 agent_username = node['ros_buildfarm']['agent']['agent_username']
