@@ -52,7 +52,7 @@ directory "/home/#{agent_username}/upload_triggers" do
   group agent_username
 end
 # TODO: at some point this file will need to be templatized and only installed if needed.
-cookbook_file "/home/#{agent_username}/upload_repo.bash" do
+cookbook_file "/home/#{agent_username}/upload_triggers/upload_repo.bash" do
   source 'upload_repo.bash'
   owner agent_username
   group agent_username
