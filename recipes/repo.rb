@@ -66,6 +66,11 @@ data_bag('ros_buildfarm_upload_keys').each do |id|
     group agent_username
     mode '0600'
   end
+  if key['symlink']
+    link "/home/#{agent_username}/upload_triggers/#{key['symlink']}" do
+      to "/home/#{agent_username}/upload_triggers/#{key['name']}"
+    end
+  end
 end
 
 # Configure gpg-vault
