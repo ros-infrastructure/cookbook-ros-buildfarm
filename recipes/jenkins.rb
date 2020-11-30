@@ -251,10 +251,10 @@ end
 
 data_bag('ros_buildfarm_secret_text_credentials').each do |item|
   secret_text_credential = data_bag_item('ros_buildfarm_secret_text_credentials', item)
-  jenkins_secret_text_credential secret_text_credential['id'] do
+  jenkins_secret_text_credentials secret_text_credential['id'] do
     id secret_text_credential['id']
     description secret_text_credential['description']
-    secret_text secret_text_credential['secret_text']
+    secret secret_text_credential['secret_text']
   end
 end
 
