@@ -249,6 +249,15 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
   end
 end
 
+data_bag('ros_buildfarm_secret_text_credentials').each do |item|
+  secret_text_credential = data_bag_item('ros_buildfarm_secret_text_credentials', item)
+  jenkins_secret_text_credential secret_text_credential['id'] do
+    id secret_text_credential['id']
+    description secret_text_credential['description']
+    secret_text secret_text_credential['secret_text']
+  end
+end
+
 # Configure agent on jenkins
 # TODO: (nuclearsandwich) This is going to require re-organization to suite an all-in-one setup.
 node.default['ros_buildfarm']['agent']['nodename'] = 'agent_on_jenkins'
