@@ -257,6 +257,7 @@ package 'python3-yaml'
 
 package 'docker.io'
 
+
 data_bag('ros_buildfarm_private_key_credentials').each do |item|
   private_key_credential = data_bag_item('ros_buildfarm_private_key_credentials', item)
   jenkins_private_key_credentials private_key_credential['id'] do
@@ -282,6 +283,30 @@ data_bag('ros_buildfarm_secret_text_credentials').each do |item|
     description secret_text_credential['description']
     secret secret_text_credential['secret_text']
   end
+end
+# Remove Jenkins fingerprint files
+# Jenkins tracks the fingerprints of certain files so that different jobs may use different versions.
+# The chef credential resources do not seem idempotent in the face of existing credentials so when chef
+# is run and they are updated the fingerprint of the credential changes which causes an issue with jobs
+# using them.
+# I would like to find a more elegant solution, either of getting Jenkins to use the current version
+# if the fingerprinted file is missing or making the credential resources idemponent. I'm not sure
+# if that's possible however given that Jenkins will encrypt sensitive data with an instance-specific key.
+# For now we are clobbering the fingerprints directory and hoping we get away with it. Unfortunately
+# this requires yet another Jenkins restart
+service 'jenkins' do
+  action :stop
+end
+directory '/var/lib/jenkins/fingerprints' do
+  action :delete
+  recursive true
+end
+directory '/var/lib/jenkins/fingerprints' do
+  owner 'jenkins'
+  group 'jenkins'
+end
+service 'jenkins' do
+  action :start
 end
 
 # Configure agent on jenkins
