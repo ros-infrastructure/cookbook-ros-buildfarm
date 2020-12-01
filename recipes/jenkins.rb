@@ -167,7 +167,7 @@ file '/etc/nginx/sites-enabled/default' do
 end
 
 if node['ros_buildfarm']['letsencrypt_enabled']
-  server_name = node['ros_buildfarm']['server_name']
+  server_name = node['ros_buildfarm']['jenkins']['server_name']
   cert_path = "/etc/ssl/certs/#{server_name}/fullchain.pem"
   key_path = "/etc/ssl/private/#{server_name}.key"
 
@@ -185,7 +185,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
   template '/etc/nginx/sites-enabled/jenkins' do
     source 'nginx/jenkins-webproxy.ssl.conf.erb'
     variables Hash[
-      server_name: node['ros_buildfarm']['server_name'],
+      server_name: node['ros_buildfarm']['jenkins']['server_name'],
       cert_path: cert_path,
       key_path: key_path,
     ]
@@ -221,7 +221,7 @@ else
   template '/etc/nginx/sites-enabled/jenkins' do
     source 'nginx/jenkins-webproxy.http.conf.erb'
     variables Hash[
-      server_name: node['ros_buildfarm']['server_name']
+      server_name: node['ros_buildfarm']['jenkins']['server_name']
     ]
     notifies :restart, 'service[nginx]'
   end
