@@ -1,5 +1,31 @@
 ## Jenkins Server ##
 
+
+# Normalize attribute hierarchy
+# Some attributes were inconsistently nested in the ros_buildfarm cookbook.
+# The default and expected attributes have been changed but in order
+# to remain compatible with existing configurations a warning is being added
+# if the old attributes are set and differ from the new ones.
+%w(admin_email server_name).each do |attr|
+  if node['ros_buildfarm'][attr] # the old attribute is defined
+    if node['ros_buildfarm']['jenkins'][attr].nil?
+      Chef::Log.warn(
+        "The attribute `node['ros_buildfarm']['#{attr}']` is now `node['ros_buildfarm']['jenkins']['#{attr}']`. " +
+        "Support for the previous attribute may be removed in a future release of this cookbook. " +
+        "Replacing the `node['ros_buildfarm']['#{attr}']` attribute with `node['ros_buildfarm']['jenkins']['#{attr}']` is recommended."
+      )
+      node.default['ros_buildfarm']['jenkins'][attr] = node['ros_buildfarm'][attr]
+    elsif node['ros_buildfarm']['jenkins'][attr] != node['ros_buildfarm'][attr]
+      Chef::Log.warn(
+        "The attribute `node['ros_buildfarm']['#{attr}']` is now `node['ros_buildfarm']['jenkins']['#{attr}']`. " +
+        "Support for the previous attribute may be removed in a future release of this cookbook. " +
+        "Removing the `node['ros_buildfarm']['#{attr}']` attribute is recommended."
+      )
+      node.default['ros_buildfarm'][attr] = node['ros_buildfarm']['jenkins'][attr]
+    end
+  end
+end
+
 # Run an apt update if one hasn't been run in 24 hours (the default frequency).
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
