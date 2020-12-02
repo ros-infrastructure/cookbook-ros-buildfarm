@@ -1,5 +1,21 @@
 apt_update
 package 'docker.io'
+
+# Add a containerd service override to work around
+# https://bugs.launchpad.net/ubuntu/+source/unattended-upgrades/+bug/1870876?comments=all
+directory '/etc/systemd/system/containerd.service.d' do
+  mode "0755"
+end
+file '/etc/systemd/system/containerd.service.d/override.conf' do
+  content <<~EOF
+    [Unit]
+    Before=docker.service
+    Wants=docker.service
+  EOF
+  mode '0644'
+  notifies :run, 'execute[systemctl-daemon-reload]', :immediately
+  notifies :restart, 'service[containerd]'
+end
 directory '/etc/containerd'
 file '/etc/containerd/config.toml' do
   content 'disabled_plugins = ["cri"]'
