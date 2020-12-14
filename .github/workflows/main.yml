@@ -1,7 +1,11 @@
 ---
 name: ci
 
-on: push
+on:
+  push:
+    branches: [latest]
+  pull_request:
+    branches: ['*']
 
 jobs:
   yamllint:
