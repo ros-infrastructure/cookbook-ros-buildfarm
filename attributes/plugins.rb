@@ -1,7 +1,6 @@
 default['ros_buildfarm']['jenkins']['plugins'] = {
   "PrioritySorter" => "3.6.0",
   "ace-editor" => "1.1",
-  "analysis-core" => "1.96",
   "analysis-model-api" => "8.0.1",
   "ant" => "1.9",
   "antisamy-markup-formatter" => "1.5",
