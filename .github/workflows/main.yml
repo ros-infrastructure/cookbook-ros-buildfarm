@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@master
+        uses: actions/checkout@main
       - name: Run yaml Lint
         uses: actionshub/yamllint@master
   test:
@@ -26,9 +26,9 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out code
-        uses: actions/checkout@master
+        uses: actions/checkout@main
       - name: Install Chef
-        uses: actionshub/chef-install@master
+        uses: actionshub/chef-install@main
       - name: Test-Kitchen
         uses: actionshub/test-kitchen@master
         with:
