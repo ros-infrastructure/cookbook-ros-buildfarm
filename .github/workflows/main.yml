@@ -11,9 +11,9 @@ jobs:
         uses: actions/checkout@main
       - name: Run yaml Lint
         uses: actionshub/yamllint@master
-  test:
+  kitchen-ci:
     runs-on: ubuntu-20.04
-    name: Ubuntu 20.04
+    name: Kitchen CI
     strategy:
       matrix:
         suite:
