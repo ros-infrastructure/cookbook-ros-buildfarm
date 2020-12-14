@@ -30,7 +30,7 @@ jobs:
       - name: Install Chef
         uses: actionshub/chef-install@main
       - name: Test-Kitchen
-        uses: actionshub/test-kitchen@master
+        uses: actionshub/test-kitchen@main
         with:
           suite: ${{ matrix.suite }}
           os: 'ubuntu-2004'
