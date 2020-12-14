@@ -1,11 +1,10 @@
 ---
 name: ci
 
-
-"on":
+on:
   pull_request:
   push:
-    - 'latest'
+    - latest
 
 jobs:
   yamllint:
