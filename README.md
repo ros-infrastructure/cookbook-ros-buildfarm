@@ -22,3 +22,21 @@ This cookbook is currently organized with one recipe per machine role:
 * repo
 * agent
 
+## Developement
+
+### Debug CI locally
+
+To replicate the CI mechanism of testing, install the chef tools:
+
+```bash
+curl -L https://omnitruck.chef.io/install.sh -o chefDownload.sh
+chmod +x chefDownload.sh
+sudo ./chefDownload.sh -c stable -P chef-workstation
+```
+
+If there are failures in testing containers, they can be inspected using:
+
+```bash
+docker ps (look for the container id)
+docker exec -it <container-id> /bin/bash
+```
