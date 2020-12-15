@@ -1,5 +1,7 @@
 {
-	"id": "main",
-	"name": "main",
-	"content": "Example key contents"
+  "test": {
+    "id": "main",
+    "name": "main",
+    "content": "Example key contents"
+  }
 }

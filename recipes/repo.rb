@@ -59,7 +59,7 @@ cookbook_file "/home/#{agent_username}/upload_triggers/upload_repo.bash" do
   mode '0700'
 end
 data_bag('ros_buildfarm_upload_keys').each do |id|
-  key = data_bag_item('ros_buildfarm_upload_keys', id)
+  key = data_bag_item('ros_buildfarm_upload_keys', id)[node.chef_environment]
   file "/home/#{agent_username}/upload_triggers/#{key['name']}" do
     content key['content']
     owner agent_username

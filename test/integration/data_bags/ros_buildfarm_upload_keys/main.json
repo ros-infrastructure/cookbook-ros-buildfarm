@@ -1,6 +1,8 @@
 {
-	"id": "testing",
-	"name": "testing",
-	"content": "Example key contents",
-	"symlink": "ros-shadow-fixed-id"
+  "test": {
+    "id": "testing",
+    "name": "testing",
+    "content": "Example key contents",
+    "symlink": "ros-shadow-fixed-id"
+  }
 }
