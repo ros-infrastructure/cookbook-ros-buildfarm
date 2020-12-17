@@ -2,7 +2,7 @@
   "id": "chef",
   "username": "chef",
   "chef_user": true,
-  "password": "foobar123",
+  "password": "chef",
   "public_keys": [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN4OX3lNn6AA2LFQlctEPg7yodu1kL4D/LEAM2z+mOyz chefuser"
   ],
