@@ -166,8 +166,8 @@ unclassified:
         showMatrixStatus: false
   gitHubPluginConfig:
     configs:
-    - credentialsId: "TODO credential"
-    hookUrl: "http://<%= @server_name %>/github-webhook/"
+    - credentialsId: "github_pull_request_builder"
+    hookUrl: "<%= @scheme %>://<%= @server_name %>/github-webhook/"
   gitSCM:
     createAccountBasedOnEmail: false
     globalConfigEmail: "jenkins@build.ros.org"

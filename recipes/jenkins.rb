@@ -231,6 +231,15 @@ package 'python3-yaml'
 
 package 'docker.io'
 
+data_bag('ros_buildfarm_password_credentials').each do |item|
+  password_credential = data_bag_item('ros_buildfarm_password_credentials', item)
+  jenkins_password_credentials password_credential['id'] do
+    id password_credential['id']
+    description password_credential['description']
+    password password_credential['password']
+  end
+end
+
 data_bag('ros_buildfarm_private_key_credentials').each do |item|
   private_key_credential = data_bag_item('ros_buildfarm_private_key_credentials', item)
   jenkins_private_key_credentials private_key_credential['id'] do
@@ -240,12 +249,12 @@ data_bag('ros_buildfarm_private_key_credentials').each do |item|
   end
 end
 
-data_bag('ros_buildfarm_password_credentials').each do |item|
-  password_credential = data_bag_item('ros_buildfarm_password_credentials', item)
-  jenkins_password_credentials password_credential['id'] do
-    id password_credential['id']
-    description password_credential['description']
-    password password_credential['password']
+data_bag('ros_buildfarm_secret_text_credentials').each do |item|
+  secret_text_credential = data_bag_item('ros_buildfarm_secret_text_credentials', item)
+  jenkins_secret_text_credentials secret_text_credential['id'] do
+    id secret_text_credential['id']
+    description secret_text_credential['description']
+    secret secret_text_credential['secret_text']
   end
 end
 
