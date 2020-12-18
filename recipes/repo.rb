@@ -230,6 +230,7 @@ template "/home/#{agent_username}/reprepro_config/ros_bootstrap.yaml" do
     component: node['ros_buildfarm']['apt_repos']['component'],
     repository_url: node['ros_buildfarm']['apt_repos']['bootstrap_url'],
     suites: node['ros_buildfarm']['apt_repos']['suites'],
+    verify_release: node['ros_buildfarm']['apt_repos']['bootstrap_signing_key_id'],
   ]
 end
 directory "/home/#{agent_username}/.buildfarm" do
