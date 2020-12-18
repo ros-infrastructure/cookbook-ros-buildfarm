@@ -190,6 +190,24 @@ execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
   not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
 end
 
+# Import ROS bootstrap signing key for signature verification
+cookbook_file "/home/#{agent_username}/.ssh/ros_bootstrap.pub.asc" do
+  owner agent_username
+  group agent_username
+  mode '0644'
+end
+
+# Setting the id blindtrust will disable signature checking for the bootstrap repository.
+unless node['ros_buildfarm']['apt_repos']['bootstrap_signing_key_id'] == 'blindtrust'
+  execute "gpg --import /home/#{agent_username}/.ssh/ros_bootstrap.pub.asc" do
+    user agent_username
+    group agent_username
+    environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
+    not_if "gpg --list-keys #{node['ros_buildfarm']['apt_repos']['bootstrap_signing_key_id']}"
+  end
+end
+
+
 # Set up reprepro and reprepro config for deb repositories
 git "/home/#{agent_username}/reprepro-updater" do
   repository 'https://github.com/ros-infrastructure/reprepro-updater'
