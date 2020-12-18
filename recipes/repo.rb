@@ -181,13 +181,13 @@ execute "gpg --import /home/#{agent_username}/.ssh/gpg_public_key.pub" do
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-keys | grep #{gpg_key['fingerprint']}"
+  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
 end
 execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-secret-keys | grep #{gpg_key['fingerprint']}"
+  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
 end
 
 # Set up reprepro and reprepro config for deb repositories
