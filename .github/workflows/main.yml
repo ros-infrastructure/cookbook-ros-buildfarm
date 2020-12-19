@@ -1,0 +1,65 @@
+---
+name: ci
+
+on:
+  push:
+    branches: [latest]
+  pull_request:
+    branches: ['*']
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@main
+      - name: Run yaml Lint
+        uses: actionshub/yamllint@master
+  kitchen-ci:
+    runs-on: ubuntu-20.04
+    name: Kitchen CI
+    strategy:
+      matrix:
+        suite:
+          - 'agent'
+          - 'repo'
+          - 'jenkins'
+        chef_version:
+          - '15'
+          - '16'
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@main
+      - name: Install Chef
+        uses: actionshub/chef-install@main
+      - name: Test-Kitchen
+        uses: actionshub/test-kitchen@main
+        with:
+          suite: ${{ matrix.suite }}
+          os: 'ubuntu-2004'
+        env:
+          CHEF_LICENSE: accept-no-persist
+          CHEF_VERSION: ${{ matrix.chef_version }}
+          KITCHEN_LOCAL_YAML: kitchen.dokken.yml
+      - name: Print debug output (journalctl)
+        if: failure()
+        run: |
+            set -x
+            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
+                ${{ matrix.suite }}-${{ matrix.os }} \
+                -c "journalctl -l"
+      - name: Print debug output on failure (jenkins.log)
+        if: failure()
+        run: |
+            set -x
+            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
+                ${{ matrix.suite }}-${{ matrix.os }} \
+                -c "cat /var/log/jenkins/jenkins.log"
+      - name: Print debug output on failure (systemctl jenkins status)
+        if: failure()
+        run: |
+            set -x
+            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
+                ${{ matrix.suite }}-${{ matrix.os }} \
+                -c "systemctl status jenkins"

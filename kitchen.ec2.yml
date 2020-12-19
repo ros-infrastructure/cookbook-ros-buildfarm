@@ -9,4 +9,3 @@ driver:
   # * have a subnet matching the above filter
   # * specify a keypair name in the environment variable AWS_SSH_KEY_ID
   # * specify a region in the AWS_REGION environment variable
-
