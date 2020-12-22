@@ -36,6 +36,12 @@ Once development is complete it's a good idea to run a clean `kitchen test repo`
 You can also use the kitchen-dokken or kitchen-ec2 drivers by overriding the KITCHEN_LOCAL_YAML environment variable. For example:
 ```
 env KITCHEN_LOCAL_YAML=kitchen.dokken.yml kitchen converge repo
+
+```
+
+To get a shell on one of the test instances for investigating issues, use the `kitchen login`. For example
+```
+kitchen login jenkins
 ```
 
 ### Installing test kitchen with RubyGems
