@@ -38,3 +38,15 @@ You can also use the kitchen-dokken or kitchen-ec2 drivers by overriding the KIT
 env KITCHEN_LOCAL_YAML=kitchen.dokken.yml kitchen converge repo
 ```
 
+### Installing test kitchen with RubyGems
+
+If the chef workstation isn't available for your platform you can install test kitchen with RubyGems and Bundler.
+You'll need Ruby, ideally Ruby 2.7, RubyGems, and Bundler.
+
+Run `bundle install` to install the gems declared in `gems.rb`.
+In order to use test kitchen from bundler all kitchen commands must be prefixed with `bundle exec`. For example:
+```
+bundle exec kitchen test repo
+```
+
+
