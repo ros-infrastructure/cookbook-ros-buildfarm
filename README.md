@@ -14,7 +14,6 @@ Installs and configures ROS build farm machines.
 This cookbook is primarily tested using chef-solo / cinc-solo for deployment onto fresh Ubuntu 20.04 virtual machines.
 Use with chef server is not tested but should work.
 
-
 ## Recipes
 
 This cookbook is currently organized with one recipe per machine role:
@@ -24,19 +23,18 @@ This cookbook is currently organized with one recipe per machine role:
 
 ## Developement
 
-### Debug CI locally
+This cookbook uses [Test Kitchen](https://kitchen.ci) for development and testing.
+We recommend installing the [Cinc Workstation](https://cinc.sh/start/workstation/) from the [Cinc](https://cinc.sh) project, a community distribution of Chef software.
+To use the default Test Kitchen driver, you will also need [Vagrant](https://www.vagrantup.com) and [Virtualbox](https://www.virtualbox.org/) configured.
 
-To replicate the CI mechanism of testing, install the chef tools:
+`kitchen test` will set up, converge with chef, test, and then tear down instances for each recipe.
+When developing new changes, it is often quicker to run the converge step repeatedly for only the recipe you are developing.
+For example `kitchen converge repo` will run the repo recipe on an existing instance.
+This is helpful for faster iteration and since chef recipes should be idempotent the repeated run should not break anything.
+Once development is complete it's a good idea to run a clean `kitchen test repo` to verify that the recipe still converges in a single pass.
 
-```bash
-curl -L https://omnitruck.chef.io/install.sh -o chefDownload.sh
-chmod +x chefDownload.sh
-sudo ./chefDownload.sh -c stable -P chef-workstation
+You can also use the kitchen-dokken or kitchen-ec2 drivers by overriding the KITCHEN_LOCAL_YAML environment variable. For example:
+```
+env KITCHEN_LOCAL_YAML=kitchen.dokken.yml kitchen converge repo
 ```
 
-If there are failures in testing containers, they can be inspected using:
-
-```bash
-docker ps (look for the container id)
-docker exec -it <container-id> /bin/bash
-```
