@@ -1,6 +1,0 @@
----
-driver:
-  name: lxd
-
-transport:
-  name: lxd
