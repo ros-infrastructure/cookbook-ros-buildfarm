@@ -1,15 +1,22 @@
 apt_update
 package 'docker.io'
-service 'docker' do
-  action [:start, :enable]
-end
-service 'containerd' do
-  action :nothing
-end
 directory '/etc/containerd'
 file '/etc/containerd/config.toml' do
   content 'disabled_plugins = ["cri"]'
   notifies :restart, 'service[containerd]'
+end
+template '/etc/docker/daemon.json' do
+  source 'docker-daemon.json.erb'
+  variables Hash[
+    registry_mirrors: node['docker']['registry_mirrors']
+  ]
+  notifies :restart, 'service[docker]'
+end
+service 'containerd' do
+  action :nothing
+end
+service 'docker' do
+  action [:start, :enable]
 end
 
 agent_username = node['ros_buildfarm']['agent']['agent_username']

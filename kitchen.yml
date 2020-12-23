@@ -34,6 +34,8 @@ suites:
         - test/integration/jenkins
   - name: repo
     attributes:
+      docker:
+        registry_mirrors: ['http://localhost:5000']
       ros_buildfarm:
         repo:
           rsyncd_endpoints:

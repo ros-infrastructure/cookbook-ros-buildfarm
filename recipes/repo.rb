@@ -277,3 +277,15 @@ if not node['ros_buildfarm']['repo']['rsyncd_endpoints'].empty?
     action [:start, :enable]
   end
 end
+
+# Configure read-through container registry cache
+if node['ros_buildfarm']['repo']['container_registry_cache_enabled']
+  package 'docker-registry'
+  cookbook_file '/etc/docker/registry/config.yml' do
+    source 'docker-registry-config.yml'
+    notifies :restart, 'service[docker-registry]'
+  end
+  service 'docker-registry' do
+    action [:start, :enable]
+  end
+end

@@ -1,0 +1,3 @@
+{
+  <%= if not @registry_mirrors.empty? then %("registry-mirrors": [ ) + @registry_mirrors.map{|m| %("#{m}")}.join(", ") + " ]\n" end -%>
+}
