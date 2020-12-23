@@ -2,7 +2,7 @@ package 'postfix'
 package 'opendkim'
 package 'opendkim-tools'
 
-mail_name = node['ros_buildfarm']['server_name']
+mail_name = node['ros_buildfarm']['jenkins']['server_name']
 file '/etc/mailname' do
   content mail_name
 end
