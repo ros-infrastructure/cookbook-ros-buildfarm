@@ -52,19 +52,24 @@ directory "/home/#{agent_username}/upload_triggers" do
   group agent_username
 end
 # TODO: at some point this file will need to be templatized and only installed if needed.
-cookbook_file "/home/#{agent_username}/upload_repo.bash" do
+cookbook_file "/home/#{agent_username}/upload_triggers/upload_repo.bash" do
   source 'upload_repo.bash'
   owner agent_username
   group agent_username
   mode '0700'
 end
 data_bag('ros_buildfarm_upload_keys').each do |id|
-  key = data_bag_item('ros_buildfarm_upload_keys', id)
+  key = data_bag_item('ros_buildfarm_upload_keys', id)[node.chef_environment]
   file "/home/#{agent_username}/upload_triggers/#{key['name']}" do
     content key['content']
     owner agent_username
     group agent_username
     mode '0600'
+  end
+  if key['symlink']
+    link "/home/#{agent_username}/upload_triggers/#{key['symlink']}" do
+      to "/home/#{agent_username}/upload_triggers/#{key['name']}"
+    end
   end
 end
 
