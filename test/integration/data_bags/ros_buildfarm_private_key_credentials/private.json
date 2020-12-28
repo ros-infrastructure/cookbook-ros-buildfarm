@@ -1,6 +1,7 @@
 {
   "id": "private",
   "test": {
+    "name": "jenkins-agent",
     "description": "a private key",
     "private_key": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBAMQEEu72Tn1D8mZfUiGppAlZsmSabFaZmoNC+k9T4PaeVRrtKIM5ZPCr\nTYyzrNngIXfVodlOxoRrzCUlt7fhLRjB6p6DqlfXr74BdzMnnq+/5YTYDWDfWo3M\nCpMKFa1XIcjZ6x4uFx/CQhx/qOmvnibPlOOFa6MHRDh1hVFuXZ7BAgMBAAE=\n-----END RSA PUBLIC KEY-----\n"
   }
