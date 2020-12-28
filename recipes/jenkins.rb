@@ -269,9 +269,9 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
 end
 
 data_bag('ros_buildfarm_private_key_credentials').each do |item|
-  private_key_credential = data_bag_item('ros_buildfarm_private_key_credentials', item)
-  jenkins_private_key_credentials private_key_credential['id'] do
-    id private_key_credential['id']
+  private_key_credential = data_bag_item('ros_buildfarm_private_key_credentials', item)[node.chef_environment]
+  jenkins_private_key_credentials item do
+    id item
     description private_key_credential['description']
     private_key private_key_credential['private_key']
   end
