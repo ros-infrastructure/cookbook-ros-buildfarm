@@ -21,6 +21,10 @@ file '/etc/containerd/config.toml' do
   content 'disabled_plugins = ["cri"]'
   notifies :restart, 'service[containerd]'
 end
+directory '/etc/docker/seccomp'
+cookbook_file '/etc/docker/seccomp/default-with-personality.json' do
+  source 'docker-seccomp-default-with-personality.json'
+end
 template '/etc/docker/daemon.json' do
   source 'docker-daemon.json.erb'
   variables Hash[
