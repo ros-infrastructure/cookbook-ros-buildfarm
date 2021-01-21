@@ -85,6 +85,12 @@ end
   package vcspkg
 end
 
+# Client utilities for pulp content manager
+package "python3-pip"
+%w[pulp-rpm-client==3.8.0 pulpcore-client==3.8.1].each do |pulppkg|
+  execute "python3 -m pip install #{pulppkg}"
+end
+
 # TODO install this only on amd64?
 package 'qemu-user-static'
 jenkins_username = node['ros_buildfarm']['agent']['username']
