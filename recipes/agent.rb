@@ -39,6 +39,15 @@ service 'docker' do
   action [:start, :enable]
 end
 
+cookbook_file '/root/docker-disk-cleanup.sh' do
+  mode '0755'
+end
+
+cron 'docker_disk_cleanup' do
+  time :hourly
+  command "/root/docker-disk-cleanup.sh"
+end
+
 agent_username = node['ros_buildfarm']['agent']['agent_username']
 agent_homedir = "/home/#{agent_username}"
 
