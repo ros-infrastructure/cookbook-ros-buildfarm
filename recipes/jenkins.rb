@@ -225,6 +225,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     not_if 'test -d /root/acme.sh'
   end
   execute 'acmesh-install' do
+    environment 'HOME' => '/root'
     cwd '/root/acme.sh'
     cmd = './acme.sh --install --home /root/.acme.sh'
     cmd << " --accountemail #{node['ros_buildfarm']['letsencrypt_email']}" if node['ros_buildfarm']['letsencrypt_email']
@@ -234,6 +235,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
 
   # Create Let's Encrypt signed cert if it has not already been done.
   execute 'acme-issue-cert' do
+    environment 'HOME' => '/root'
     command %W(
       /root/.acme.sh/acme.sh --issue
       --webroot /var/www/html
