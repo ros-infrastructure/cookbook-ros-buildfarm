@@ -14,6 +14,10 @@ Installs and configures ROS build farm machines.
 This cookbook is primarily tested using chef-solo / cinc-solo for deployment onto fresh Ubuntu 20.04 virtual machines.
 Use with chef server is not tested but should work.
 
+To set up a ROS build farm cluster using this cookbook see the example chef configuration repository in [chef-ros-buildfarm].
+
+[chef-ros-buildfarm]: https://github.com/ros-infrastructure/chef-ros-buildfarm
+
 ## Recipes
 
 This cookbook is currently organized with one recipe per machine role:
