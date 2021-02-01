@@ -1,4 +1,6 @@
 ---
+driver:
+  vagrant
 provisioner:
   name: chef_solo
   product_name: chef
@@ -21,6 +23,8 @@ suites:
       inspec_tests:
         - test/integration/agent
     attributes:
+      ros_buildfarm:
+        jenkins_url: 'http://ros_buildfarm:8080'
   - name: jenkins
     data_bags_path: "test/integration/data_bags"
     attributes:

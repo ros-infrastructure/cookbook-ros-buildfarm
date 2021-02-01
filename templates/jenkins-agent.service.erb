@@ -6,7 +6,7 @@ After=network.target
 EnvironmentFile=/etc/default/<%= @service_name %>
 Type=simple
 ExecStart=/bin/sh -c "/usr/bin/java $JAVA_ARGS -jar $SWARM_CLIENT_JAR \
--master $JENKINS_URL -username $USERNAME -password \"$PASSWORD\" \
+-master $JENKINS_URL -username $USERNAME -passwordFile /etc/jenkins-agent/token \
 -name $NAME -description \"$DESCRIPTION\" -mode $MODE -executors $EXECUTORS \
 -fsroot $FSROOT -labels \"$LABELS\" $JENKINS_ARGS"
 
