@@ -129,7 +129,7 @@ file '/etc/jenkins-agent/token' do
   content agent_jenkins_user['password']
   mode '0640'
   owner 'root'
-  group 'jenkins-agent'
+  group agent_username
 end
 
 template '/etc/systemd/system/jenkins-agent.service' do
