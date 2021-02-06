@@ -324,59 +324,38 @@ end
 cookbook_file "#{pulp_data_directory}/Dockerfile" do
   source 'pulp/Dockerfile'
 end
-# podman requires some setup that relies on a login shell and I don't have a better way to get one in chef.
-execute "runuser -l pulp -c 'export PATH=$PATH:/usr/sbin; cd #{pulp_data_directory}; buildah bud -t pulp_image .'"
+
+execute 'docker build -t pulp_image .' do
+  cwd pulp_data_directory
+end
 
 execute 'pulp_django_migration' do
-  command 'podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
-  environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
-  user 'pulp'
-  group 'pulp'
+  command 'docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
 end
 
 execute 'pulp_collect_static' do
-  command "podman run --user 1200:1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
-  environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
-  user 'pulp'
-  group 'pulp'
+  command "docker run --user 1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
 end
 
 pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.chef_environment)['password']
 execute 'set_pulp_admin_password' do
-  command "podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
-  environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
-  user 'pulp'
-  group 'pulp'
+  command "docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
 end
 
-# * Create gnupg directory for pulp
+# TODO * Create gnupg directory for pulp
 
 execute 'systemctl daemon-reload' do
   action :nothing
 end
 
-execute "Create pulp-api-endpoint container" do
-  command %W(podman create --replace
-    --name pulp-api-endpoint
-    -u 1200:1200
-    -v #{pulp_data_directory}:/var/repos/.pulp
-    -v /var/run/postgresql:/var/run/postgresql
-    -v /var/run/redis:/var/run/redis
-    -p 24817:24817
-    pulp_image
-    pulpcore-manager runserver 0.0.0.0:24817
-  )
-  environment 'UID' => '1200'
-  user 'pulp'
-  group 'pulp'
-  notifies :restart, 'service[pulp-api-endpoint]'
-end
 template "/etc/systemd/system/pulp-api-endpoint.service" do
   source "pulp/pulp.service.erb"
   variables Hash[
     description: "Pulp API Endpoint",
     after_units: %w(postgresql.service redis-server),
     required_units: %w(postgresql.service redis-server),
+    docker_create_args: %(-u 1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24817:24817),
+    docker_cmd: %(pulpcore-manager runserver 0.0.0.0:24817),
     container: 'pulp-api-endpoint',
   ]
   notifies :run, 'execute[systemctl daemon-reload]', :immediately
