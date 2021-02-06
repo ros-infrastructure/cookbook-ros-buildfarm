@@ -5,6 +5,7 @@ driver:
   use_sudo: false
   privileged: true
   env: [CHEF_LICENSE=accept]
+  volumes: [ '/var/lib/docker', '/var/run/docker.sock' ]
 
 transport:
   name: dokken
