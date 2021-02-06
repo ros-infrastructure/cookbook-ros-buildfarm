@@ -272,6 +272,11 @@ user 'pulp' do
   comment 'Pulp content manager'
   uid '1200'
 end
+group 'docker' do
+  append true
+  members ['pulp']
+  action [:manage]
+end
 directory pulp_data_directory do
   owner 'pulp'
   mode '0700'
@@ -320,6 +325,10 @@ apt_repository 'kubic-podman' do
 end
 package 'podman'
 package 'buildah'
+package 'dbus-x11'
+cookbook_file '/etc/containers/policy.json' do
+  source 'podman/containers-policy.json'
+end
 
 directory "/usr/local/bin"
 remote_file "/usr/local/bin/systemd-docker" do
@@ -329,12 +338,8 @@ end
 cookbook_file "#{pulp_data_directory}/Dockerfile" do
   source 'pulp/Dockerfile'
 end
-execute "buildah bud -t pulp_image ." do
-  cwd pulp_data_directory
-  environment 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
-  user 'pulp'
-  group 'pulp'
-end
+# podman requires some setup that relies on a login shell and I don't have a better way to get one in chef.
+execute "runuser -l pulp -c 'export PATH=$PATH:/usr/sbin; cd #{pulp_data_directory}; buildah bud -t pulp_image .'"
 
 execute 'pulp_django_migration' do
   command 'podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
@@ -354,7 +359,6 @@ pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.ch
 execute 'set_pulp_admin_password' do
   command "podman run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
   environment 'UID' => '1200', 'XDG_RUNTIME_DIR' => '/run/user/1200', 'HOME' => '/home/pulp'
-  user 'pulp'
   user 'pulp'
   group 'pulp'
 end

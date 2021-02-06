@@ -5,7 +5,7 @@ RUN dnf install \
   dnf-plugins-core \
   -y
 
-RUN dnf config-manager --set-enabled PowerTools
+RUN dnf config-manager --set-enabled powertools
 
 RUN dnf update -y
 
