@@ -365,29 +365,14 @@ service 'pulp-api-endpoint' do
   action [:start, :enable]
 end
 
-execute "Create pulp-content-endpoint container" do
-  command %W(podman create --replace
-    --name pulp-content-endpoint
-    -u 1200:1200
-    -v #{pulp_data_directory}:/var/repos/.pulp
-    -v /var/run/postgresql:/var/run/postgresql
-    -v /var/run/redis:/var/run/redis
-    -p 24816:24816
-    pulp_image
-    pulp-content
-  )
-  environment 'UID' => '1200'
-  user 'pulp'
-  group 'pulp'
-  notifies :restart, 'service[pulp-content-endpoint]'
-end
 template "/etc/systemd/system/pulp-content-endpoint.service" do
   source "pulp/pulp.service.erb"
   variables Hash[
     description: "Pulp Content Endpoint",
     after_units: %w(postgresql.service redis-server),
     required_units: %w(postgresql.service redis-server),
-    container: 'pulp-content-endpoint',
+    docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24816:24816),
+    docker_cmd: 'pulp-content',
   ]
   notifies :run, 'execute[systemctl daemon-reload]', :immediately
   notifies :restart, 'service[pulp-content-endpoint]'
@@ -396,28 +381,14 @@ service 'pulp-content-endpoint' do
   action [:start, :enable]
 end
 
-execute "Create pulp-resource-manager container" do
-  command %W(podman create --replace
-    --name pulp-resource-manager
-    -u 1200:1200
-    -v #{pulp_data_directory}:/var/repos/.pulp
-    -v /var/run/postgresql:/var/run/postgresql
-    -v /var/run/redis:/var/run/redis
-    pulp_image
-    rq-worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig
-  )
-  environment 'UID' => '1200'
-  user 'pulp'
-  group 'pulp'
-  notifies :restart, 'service[pulp-resource-manager]'
-end
 template "/etc/systemd/system/pulp-resource-manager.service" do
   source "pulp/pulp.service.erb"
   variables Hash[
     description: "Pulp Resource Manager",
     after_units: %w(postgresql.service redis-server),
     required_units: %w(postgresql.service redis-server),
-    container: 'pulp-resource-manager',
+    docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
+    docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
   ]
   notifies :run, 'execute[systemctl daemon-reload]', :immediately
   notifies :restart, 'service[pulp-resource-manager]'
@@ -426,41 +397,26 @@ service 'pulp-resource-manager' do
   action [:start, :enable]
 end
 
-0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
-  execute "Create pulp-worker-#{i} container" do
-    command %W(podman create --replace
-      --name pulp-worker-#{i}
-      -u 1200:1200
-      -v #{pulp_data_directory}:/var/repos/.pulp
-      -v /var/run/postgresql:/var/run/postgresql
-      -v /var/run/redis:/var/run/redis
-      pulp_image
-      rq-worker -n pulp-worker-#{i} -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig
-    )
-    environment 'UID' => '1200'
-    user 'pulp'
-    group 'pulp'
-    notifies :restart, "service[pulp-worker@#{i}]"
-  end
-end
 template "/etc/systemd/system/pulp-worker@.service" do
   source "pulp/pulp.service.erb"
   variables Hash[
     description: "Pulp Worker",
     after_units: %w(postgresql.service redis-server),
     required_units: %w(postgresql.service redis-server),
-    docker_args: "-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis",
-    image: 'pulp_image',
-    container: 'pulp-worker-%i',
+    docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
+    docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
   ]
   notifies :run, 'execute[systemctl daemon-reload]', :immediately
+
+  0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
+    notifies :restart, "service[pulp-worker@#{i}]"
+  end
 end
 0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
   service "pulp-worker@#{i}" do
     action [:start, :enable]
   end
 end
-
 
 # * Create pulp workers
 # * Create rpm repos
