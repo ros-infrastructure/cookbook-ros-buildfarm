@@ -315,24 +315,10 @@ execute "Create pulp postgres database" do
   user 'postgres'
 end
 
-# Set up podman repository from the Kubic project on Open Build Service
-apt_repository 'kubic-podman' do
-  cache_rebuild true
-  # OBS encodes the distribution in the uri
-  distribution '/'
-  key 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_20.04/Release.key'
-  uri 'https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_20.04/'
-end
-package 'podman'
-package 'buildah'
-package 'dbus-x11'
-cookbook_file '/etc/containers/policy.json' do
-  source 'podman/containers-policy.json'
-end
 
 directory "/usr/local/bin"
 remote_file "/usr/local/bin/systemd-docker" do
-  source 'https://github.com/ibuildthecloud/systemd-docker/releases/download/v0.2.1/systemd-docker'
+  source 'https://github.com/subdavis/systemd-docker/releases/download/1.0.0/systemd-docker'
   mode '0755'
 end
 cookbook_file "#{pulp_data_directory}/Dockerfile" do

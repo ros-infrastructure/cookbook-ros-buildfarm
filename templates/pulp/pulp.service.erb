@@ -4,16 +4,14 @@ After=docker.service <%= @after_units.join(' ') %>
 Require=docker.service <%= @required_units.join(' ') %>
 
 [Service]
-ExecStart=/usr/bin/podman start --conmon-pidfile=%t/<%= @container %>.pid --cidfile=%t/<%= @container %>.ctr-id --cgroups=no-conmon <%= @container %>
-ExecStop=/usr/bin/podman stop -t 10 <%= @container %>
+ExecStart=/usr/local/bin/systemd-docker start --name %n --rm <%= @container %>
 Restart=always
 RestartSec=10s
-# Trust podman to stop the container
-KillMode=None
-Type=forking
+Type=notify
+NotifyAccess=All
 TimeoutStartSec=120
 TimeoutStopSec=15
-PIDFile=%t/<%= @container %>.pid
+
 
 [Install]
 WantedBy=multi-user.target
