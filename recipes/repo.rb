@@ -325,101 +325,102 @@ cookbook_file "#{pulp_data_directory}/Dockerfile" do
   source 'pulp/Dockerfile'
 end
 
-execute 'docker build -t pulp_image .' do
-  cwd pulp_data_directory
-end
-
-execute 'pulp_django_migration' do
-  command 'docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
-end
-
-execute 'pulp_collect_static' do
-  command "docker run --user 1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
-end
-
-pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.chef_environment)['password']
-execute 'set_pulp_admin_password' do
-  command "docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
-end
-
-# TODO * Create gnupg directory for pulp
-
-execute 'systemctl daemon-reload' do
-  action :nothing
-end
-
-template "/etc/systemd/system/pulp-api-endpoint.service" do
-  source "pulp/pulp.service.erb"
-  variables Hash[
-    description: "Pulp API Endpoint",
-    after_units: %w(postgresql.service redis-server),
-    required_units: %w(postgresql.service redis-server),
-    docker_create_args: %(-u 1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24817:24817),
-    docker_cmd: %(pulpcore-manager runserver 0.0.0.0:24817),
-    container: 'pulp-api-endpoint',
-  ]
-  notifies :run, 'execute[systemctl daemon-reload]', :immediately
-  notifies :restart, 'service[pulp-api-endpoint]'
-end
-service 'pulp-api-endpoint' do
-  action [:start, :enable]
-end
-
-template "/etc/systemd/system/pulp-content-endpoint.service" do
-  source "pulp/pulp.service.erb"
-  variables Hash[
-    description: "Pulp Content Endpoint",
-    after_units: %w(postgresql.service redis-server),
-    required_units: %w(postgresql.service redis-server),
-    docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24816:24816),
-    docker_cmd: 'pulp-content',
-  ]
-  notifies :run, 'execute[systemctl daemon-reload]', :immediately
-  notifies :restart, 'service[pulp-content-endpoint]'
-end
-service 'pulp-content-endpoint' do
-  action [:start, :enable]
-end
-
-template "/etc/systemd/system/pulp-resource-manager.service" do
-  source "pulp/pulp.service.erb"
-  variables Hash[
-    description: "Pulp Resource Manager",
-    after_units: %w(postgresql.service redis-server),
-    required_units: %w(postgresql.service redis-server),
-    docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
-    docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
-  ]
-  notifies :run, 'execute[systemctl daemon-reload]', :immediately
-  notifies :restart, 'service[pulp-resource-manager]'
-end
-service 'pulp-resource-manager' do
-  action [:start, :enable]
-end
-
-template "/etc/systemd/system/pulp-worker@.service" do
-  source "pulp/pulp.service.erb"
-  variables Hash[
-    description: "Pulp Worker",
-    after_units: %w(postgresql.service redis-server),
-    required_units: %w(postgresql.service redis-server),
-    docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
-    docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
-  ]
-  notifies :run, 'execute[systemctl daemon-reload]', :immediately
-
-  0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
-    notifies :restart, "service[pulp-worker@#{i}]"
+if node['ros_buildfarm']['repo']['enable_pulp_services']
+  execute 'docker build -t pulp_image .' do
+    cwd pulp_data_directory
   end
-end
-0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
-  service "pulp-worker@#{i}" do
+
+  execute 'pulp_django_migration' do
+    command 'docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
+  end
+
+  execute 'pulp_collect_static' do
+    command "docker run --user 1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
+  end
+
+  pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.chef_environment)['password']
+  execute 'set_pulp_admin_password' do
+    command "docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
+  end
+
+  # TODO * Create gnupg directory for pulp
+  execute 'systemctl daemon-reload' do
+    action :nothing
+  end
+
+  template "/etc/systemd/system/pulp-api-endpoint.service" do
+    source "pulp/pulp.service.erb"
+    variables Hash[
+      description: "Pulp API Endpoint",
+      after_units: %w(postgresql.service redis-server),
+      required_units: %w(postgresql.service redis-server),
+      docker_create_args: %(-u 1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24817:24817),
+      docker_cmd: %(pulpcore-manager runserver 0.0.0.0:24817),
+      container: 'pulp-api-endpoint',
+    ]
+    notifies :run, 'execute[systemctl daemon-reload]', :immediately
+    notifies :restart, 'service[pulp-api-endpoint]'
+  end
+  service 'pulp-api-endpoint' do
     action [:start, :enable]
   end
-end
 
-# * Create pulp workers
-# * Create rpm repos
+  template "/etc/systemd/system/pulp-content-endpoint.service" do
+    source "pulp/pulp.service.erb"
+    variables Hash[
+      description: "Pulp Content Endpoint",
+      after_units: %w(postgresql.service redis-server),
+      required_units: %w(postgresql.service redis-server),
+      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24816:24816),
+      docker_cmd: 'pulp-content',
+    ]
+    notifies :run, 'execute[systemctl daemon-reload]', :immediately
+    notifies :restart, 'service[pulp-content-endpoint]'
+  end
+  service 'pulp-content-endpoint' do
+    action [:start, :enable]
+  end
+
+  template "/etc/systemd/system/pulp-resource-manager.service" do
+    source "pulp/pulp.service.erb"
+    variables Hash[
+      description: "Pulp Resource Manager",
+      after_units: %w(postgresql.service redis-server),
+      required_units: %w(postgresql.service redis-server),
+      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
+      docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
+    ]
+    notifies :run, 'execute[systemctl daemon-reload]', :immediately
+    notifies :restart, 'service[pulp-resource-manager]'
+  end
+  service 'pulp-resource-manager' do
+    action [:start, :enable]
+  end
+
+  template "/etc/systemd/system/pulp-worker@.service" do
+    source "pulp/pulp.service.erb"
+    variables Hash[
+      description: "Pulp Worker",
+      after_units: %w(postgresql.service redis-server),
+      required_units: %w(postgresql.service redis-server),
+      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
+      docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
+    ]
+    notifies :run, 'execute[systemctl daemon-reload]', :immediately
+
+    0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
+      notifies :restart, "service[pulp-worker@#{i}]"
+    end
+  end
+  0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
+    service "pulp-worker@#{i}" do
+      action [:start, :enable]
+    end
+  end
+
+  # * Create pulp workers
+  # * Create rpm repos
+end
 
 package 'nginx'
 cookbook_file '/etc/nginx/sites-available/repo' do

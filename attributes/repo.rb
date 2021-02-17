@@ -6,3 +6,4 @@ default['ros_buildfarm']['apt_repos']['suites'] = %w[xenial bionic focal stretch
 default['ros_buildfarm']['repo']['rsyncd_endpoints'] = Hash[]
 default['ros_buildfarm']['repo']['container_registry_cache_enabled'] = true
 default['ros_buildfarm']['repo']['pulp_worker_count'] = 2
+default['ros_buildfarm']['repo']['enable_pulp_services'] = true
