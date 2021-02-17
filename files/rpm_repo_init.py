@@ -23,22 +23,6 @@ from pulpcore.client import pulp_rpm, pulpcore
 from urllib3.exceptions import MaxRetryError
 
 
-def _get_recursive_dependencies(packages, target_names):
-    to_remove = dict()
-    new_names = set(target_names)
-
-    while new_names:
-        target_names = new_names
-        new_names = set()
-
-        for pkg in packages:
-            if [r for r in pkg.requires if r[0] in target_names]:
-                to_remove[pkg.pulp_href] = pkg
-                new_names.add(pkg.name)
-
-    return to_remove
-
-
 class PulpTaskPoller:
 
     def __init__(self, pulp_configuration, timeout):
