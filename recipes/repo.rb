@@ -354,7 +354,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       description: "Pulp API Endpoint",
       after_units: %w(postgresql.service redis-server),
       required_units: %w(postgresql.service redis-server),
-      docker_create_args: %(-u 1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24817:24817),
+      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24817:24817),
       docker_cmd: %(pulpcore-manager runserver 0.0.0.0:24817),
       container: 'pulp-api-endpoint',
     ]
