@@ -418,8 +418,60 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     end
   end
 
-  # * Create pulp workers
   # * Create rpm repos
+  node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
+    versions.each do |version, architectures|
+      repo_name = "#{dist}-#{version}"
+      execute "Create #{repo_name}-SRPMS" do
+        command %W[
+          python3
+          #{pulp_data_directory}/initialize.py
+          #{repo_name}-SRPMS
+          ros-building-#{repo_name}-SRPMS
+          ros-testing-#{repo_name}-SRPMS
+          ros-main-#{repo_name}-SRPMS
+        ]
+        environment Hash[
+          "PULP_BASE_URL" => "http://127.0.0.1:24817",
+          "PULP_USERNAME" => "admin",
+          "PULP_PASSWORD" => pulp_admin_password,
+        ]
+      end
+
+      architectures.each do |arch|
+        execute "Create #{repo_name}-#{arch}" do
+          command %W[
+            python3
+            #{pulp_data_directory}/initialize.py
+            #{repo_name}-#{arch}
+            ros-building-#{repo_name}-#{arch}
+            ros-testing-#{repo_name}-#{arch}
+            ros-main-#{repo_name}-#{arch}
+          ]
+          environment Hash[
+            "PULP_BASE_URL" => "http://127.0.0.1:24817",
+            "PULP_USERNAME" => "admin",
+            "PULP_PASSWORD" => pulp_admin_password,
+          ]
+        end
+        execute "Create #{repo_name}-#{arch}-debug" do
+          command %W[
+            python3
+            #{pulp_data_directory}/initialize.py
+            #{repo_name}-#{arch}
+            ros-building-#{repo_name}-#{arch}-debug
+            ros-testing-#{repo_name}-#{arch}-debug
+            ros-main-#{repo_name}-#{arch}-debug
+          ]
+          environment Hash[
+            "PULP_BASE_URL" => "http://127.0.0.1:24817",
+            "PULP_USERNAME" => "admin",
+            "PULP_PASSWORD" => pulp_admin_password,
+          ]
+        end
+      end
+    end
+  end
 end
 
 package 'nginx'
