@@ -388,7 +388,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       after_units: %w(postgresql.service redis-server.service),
       required_units: %w(postgresql.service redis-server.service),
       docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
-      docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
+      docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker -c pulpcore.rqconfig),
     ]
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
     notifies :restart, 'service[pulp-resource-manager]'
@@ -404,7 +404,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       after_units: %w(postgresql.service redis-server.service),
       required_units: %w(postgresql.service redis-server.service),
       docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
-      docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
+      docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker -c pulpcore.rqconfig),
     ]
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
 
