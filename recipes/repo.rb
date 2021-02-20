@@ -352,8 +352,8 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     source "pulp/pulp.service.erb"
     variables Hash[
       description: "Pulp API Endpoint",
-      after_units: %w(postgresql.service redis-server),
-      required_units: %w(postgresql.service redis-server),
+      after_units: %w(postgresql.service redis-server.service),
+      required_units: %w(postgresql.service redis-server.service),
       docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24817:24817),
       docker_cmd: %(pulpcore-manager runserver 0.0.0.0:24817),
       container: 'pulp-api-endpoint',
@@ -369,8 +369,8 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     source "pulp/pulp.service.erb"
     variables Hash[
       description: "Pulp Content Endpoint",
-      after_units: %w(postgresql.service redis-server),
-      required_units: %w(postgresql.service redis-server),
+      after_units: %w(postgresql.service redis-server.service),
+      required_units: %w(postgresql.service redis-server.service),
       docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 24816:24816),
       docker_cmd: 'pulp-content',
     ]
@@ -385,8 +385,8 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     source "pulp/pulp.service.erb"
     variables Hash[
       description: "Pulp Resource Manager",
-      after_units: %w(postgresql.service redis-server),
-      required_units: %w(postgresql.service redis-server),
+      after_units: %w(postgresql.service redis-server.service),
+      required_units: %w(postgresql.service redis-server.service),
       docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
       docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
     ]
@@ -401,8 +401,8 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     source "pulp/pulp.service.erb"
     variables Hash[
       description: "Pulp Worker",
-      after_units: %w(postgresql.service redis-server),
-      required_units: %w(postgresql.service redis-server),
+      after_units: %w(postgresql.service redis-server.service),
+      required_units: %w(postgresql.service redis-server.service),
       docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
       docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker c pulpcore.rqconfig),
     ]
