@@ -331,16 +331,16 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
   end
 
   execute 'pulp_django_migration' do
-    command 'docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
+    command 'docker run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager migrate --noinput'
   end
 
   execute 'pulp_collect_static' do
-    command "docker run --user 1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
+    command "docker run --user 1200:1200 --rm -v #{pulp_data_directory}:/var/repos/.pulp pulp_image pulpcore-manager collectstatic --noinput"
   end
 
   pulp_admin_password = data_bag_item('ros_buildfarm_pulp_admin_password', node.chef_environment)['password']
   execute 'set_pulp_admin_password' do
-    command "docker run --user 1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
+    command "docker run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
   end
 
   # TODO * Create gnupg directory for pulp
