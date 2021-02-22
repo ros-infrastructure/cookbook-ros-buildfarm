@@ -1,0 +1,5 @@
+{
+  "id": "pulp_admin",
+  "description": "password for pulp repository",
+  "password": "look ma no hands"
+}
