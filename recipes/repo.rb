@@ -475,8 +475,8 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
 end
 
 package 'nginx'
-cookbook_file '/etc/nginx/sites-available/repo' do
-  source 'nginx/repo.conf'
+template '/etc/nginx/sites-available/repo' do
+  source 'nginx/repo.conf.erb'
   notifies :restart, 'service[nginx]'
 end
 link '/etc/nginx/sites-enabled/default' do
