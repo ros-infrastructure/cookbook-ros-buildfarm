@@ -1,0 +1,45 @@
+server {
+	listen 80 default_server;
+	server_name repo;
+	root /var/repos;
+
+	location / {
+		autoindex on;
+		index index.html;
+	}
+
+	<%- @rpm_repos.each do |dist, versions| -%>
+		<%- versions.each do |version, architectures| -%>
+	location /<%= dist %>/<%= version %>/SRPMS/ {
+		# TODO more proxy_pass args
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-SRPMS/;
+	}
+			<%- architectures.each do |arch| -%>
+	location /<%= dist %>/<%= version %>/<%= arch %>/ {
+		# TODO more proxy_pass args
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>/;
+	}
+
+	location /<%= dist %>/<%= version %>/<%= arch %>-debug/ {
+		# TODO more proxy_pass args
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>-debug/;
+	}
+
+			<%- end -%>
+		<%- end -%>
+	<%- end -%>
+	location ^~ \.(dsc|deb|tar\.gz)$ {
+		# Use sendfile to send debs directly via kernel syscalls,
+		# avoiding copying data from kernel to userspace and back.
+		sendfile on;
+
+		# These options complement sendfile in interesting ways:
+		# tcp_nopush: Wait until packets are full before sending
+		# tcp_nodelay: Don't wait to send if there is data ready
+		# tcp_nopush takes prioirity unless the packet contains a FIN
+		# at which point the tcp_nodelay option causes the last packet
+		# to be sent at once.
+		tcp_nopush on;
+		tcp_nodelay on;
+	}
+}
