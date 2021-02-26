@@ -4,7 +4,7 @@ maintainer_email 'steven@openrobotics.org'
 license 'Apache-2.0'
 description 'Installs/Configures ros_buildfarm'
 long_description 'Installs/Configures ros_buildfarm'
-version '0.2.0'
+version '0.3.0'
 chef_version '>= 15.0'
 
 issues_url 'https://github.com/nuclearsandwich/cookbook-ros-buildfarm/issues'
