@@ -100,7 +100,7 @@ end
 
 # Client utilities for pulp content manager
 package "python3-pip"
-%w[pulp-rpm-client==3.8.0 pulpcore-client==3.8.1].each do |pulppkg|
+%w[pulp-rpm-client==3.9.0 pulpcore-client==3.9.1].each do |pulppkg|
   execute "python3 -m pip install #{pulppkg}"
 end
 

@@ -1,0 +1,17 @@
+[Unit]
+Description=<%= @description %>
+After=docker.service <%= @after_units.join(' ') %>
+Requires=docker.service <%= @required_units.join(' ') %>
+
+[Service]
+ExecStart=/usr/local/bin/systemd-docker --cgroups name=systemd run --rm <%= @docker_create_args %> --name %p%i pulp_image <%= @docker_cmd %>
+Restart=always
+RestartSec=10s
+Type=notify
+NotifyAccess=all
+TimeoutStartSec=120
+TimeoutStopSec=15
+
+
+[Install]
+WantedBy=multi-user.target
