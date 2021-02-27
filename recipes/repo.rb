@@ -85,6 +85,12 @@ execute 'gpg-init' do
   user 'gpg-vault'
   group 'gpg-vault'
 end
+cookbook_file '/home/gpg-vault/.gnupg/gpg.conf' do
+  source 'gpg.conf'
+  owner 'gpg-vault'
+  group 'gpg-vault'
+  mode '0600'
+end
 cookbook_file '/home/gpg-vault/.gnupg/gpg-agent.conf' do
   source 'repo/gpg-agent.conf'
   owner 'gpg-vault'
