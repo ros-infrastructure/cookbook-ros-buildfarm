@@ -287,7 +287,7 @@ end
 
 cookbook_file "#{pulp_data_directory}/initialize.py" do
   owner 'pulp'
-  source 'rpm_repo_init.py'
+  source 'pulp/rpm_repo_init.py'
   mode '0600'
 end
 
