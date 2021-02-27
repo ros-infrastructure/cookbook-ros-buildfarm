@@ -384,7 +384,20 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     command "docker run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p #{Shellwords.shellescape(pulp_admin_password)}"
   end
 
-  # TODO * Create gnupg directory for pulp
+  template "/home/pulp/.gnupg/pulp_sign_#{gpg_key['fingerprint']}.sh" do
+    source 'pulp/pulp_sign.sh.erb'
+    owner 'pulp'
+    group 'pulp'
+    mode '0750'
+    variables Hash[
+      gpg_key_id: gpg_key['fingerprint'],
+    ]
+  end
+  signing_service_create_cmd = "from pulpcore.app.models.content import AsciiArmoredDetachedSigningService; AsciiArmoredDetachedSigningService.objects.get_or_create(name='#{gpg_key['fingerprint']}', script='/home/pulp/.gnupg/pulp_sign_#{gpg_key['fingerprint']}.sh')"
+  execute 'pulp_create_signing_service' do
+    command "docker run --user 1200:1200 --rm -e HOME=/home/pulp -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /home/pulp/.gnupg:/home/pulp/.gnupg -v /var/run/gpg-vault/S.gpg-agent:/home/pulp/.gnupg/S.gpg-agent pulp_image pulpcore-manager shell --command=#{Shellwords.shellescape(signing_service_create_cmd)}"
+  end
+
   execute 'systemctl daemon-reload' do
     action :nothing
   end
@@ -442,9 +455,9 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     source "pulp/pulp.service.erb"
     variables Hash[
       description: "Pulp Worker",
-      after_units: %w(postgresql.service redis-server.service),
-      required_units: %w(postgresql.service redis-server.service),
-      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis),
+      after_units: %w(gpg-vault-agent.service postgresql.service redis-server.service),
+      required_units: %w(gpg-vault-agent.service postgresql.service redis-server.service),
+      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -v /home/pulp/.gnupg:/home/pulp/.gnupg -v /var/run/gpg-vault/S.gpg-agent:/home/pulp/.gnupg/S.gpg-agent),
       docker_cmd: %(rq worker -n pulp-worker-%i -w pulpcore.tasking.worker.PulpWorker -c pulpcore.rqconfig),
     ]
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
@@ -471,6 +484,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
           ros-building-#{repo_name}-SRPMS
           ros-testing-#{repo_name}-SRPMS
           ros-main-#{repo_name}-SRPMS
+          --signing-service-name=#{gpg_key['fingerprint']}
         ]
         environment Hash[
           "PULP_BASE_URL" => "http://127.0.0.1:24817",
@@ -488,6 +502,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
             ros-building-#{repo_name}-#{arch}
             ros-testing-#{repo_name}-#{arch}
             ros-main-#{repo_name}-#{arch}
+            --signing-service-name=#{gpg_key['fingerprint']}
           ]
           environment Hash[
             "PULP_BASE_URL" => "http://127.0.0.1:24817",
@@ -503,6 +518,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
             ros-building-#{repo_name}-#{arch}-debug
             ros-testing-#{repo_name}-#{arch}-debug
             ros-main-#{repo_name}-#{arch}-debug
+            --signing-service-name=#{gpg_key['fingerprint']}
           ]
           environment Hash[
             "PULP_BASE_URL" => "http://127.0.0.1:24817",
