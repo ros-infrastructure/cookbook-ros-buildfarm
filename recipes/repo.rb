@@ -271,6 +271,8 @@ end
 pulp_data_directory = '/var/repos/.pulp'
 user 'pulp' do
   manage_home true
+  system true
+  shell '/usr/sbin/nologin'
   comment 'Pulp content manager'
   uid '1200'
 end
