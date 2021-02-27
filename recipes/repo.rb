@@ -76,6 +76,8 @@ end
 # Configure gpg-vault
 user 'gpg-vault' do
   manage_home true
+  system true
+  shell '/usr/sbin/nologin'
   comment 'GPG vault user'
 end
 execute 'gpg-init' do
