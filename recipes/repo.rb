@@ -277,6 +277,39 @@ group 'docker' do
   members ['pulp']
   action [:manage]
 end
+group 'gpg-vault' do
+  append true
+  members ['pulp']
+  action [:manage]
+end
+
+execute 'gpg-init' do
+  command 'gpg -K'
+  env 'HOME' => '/home/pulp'
+  user 'pulp'
+  group 'pulp'
+  creates '/home/pulp/.gnupg'
+end
+cookbook_file '/home/pulp/.gnupg/gpg.conf' do
+  source 'gpg.conf'
+  owner 'pulp'
+  group 'pulp'
+  mode '0600'
+end
+execute "gpg --import /var/repos/repos.key" do
+  user 'pulp'
+  group 'pulp'
+  environment 'HOME' => '/home/pulp'
+  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+end
+execute 'trust_public_key' do
+  command "(echo 5; echo y; echo save) | gpg --command-fd 0 --no-tty --no-greeting -q --edit-key #{gpg_key['fingerprint']} trust"
+  user 'pulp'
+  group 'pulp'
+  environment 'HOME' => '/home/pulp'
+  not_if "gpg --list-keys #{gpg_key['fingerprint']} | grep -q '\\[ultimate\\]'"
+end
+
 directory pulp_data_directory do
   owner 'pulp'
   mode '0700'
