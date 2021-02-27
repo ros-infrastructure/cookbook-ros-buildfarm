@@ -140,12 +140,14 @@ def main(argv=sys.argv[1:]):
 
     # Check if the repository exists. If not, create it.
     repositories = pulp_repos_api.list(name=args.repository_name)
+    republish = False
     if repositories.results:
         repository = repositories.results[0]
 
-        if metadata_signing_service and not (repository.metadata_signing_service or '').endswith(metadata_signing_service):
-            repository.metadata_signing_service = metadata_signing_service
+        if (metadata_signing_service or '') != (repository.metadata_signing_service or ''):
+            repository.metadata_signing_service = metadata_signing_service or ''
             pulp_repos_api.partial_update(repository.pulp_href, repository)
+            republish = True
     else:
         new_repository = pulp_rpm.RpmRpmRepository(
             name=args.repository_name, metadata_signing_service=metadata_signing_service)
@@ -176,9 +178,8 @@ def main(argv=sys.argv[1:]):
         print("Using distribution at '%s' (%s)" % (distribution.base_path, distribution.pulp_href))
 
         # Check if a publication backs the distribution. If not, set one.
-        if distribution.publication:
-            default_publication = distribution.publication
-        else:
+        redistribute = False
+        if not distribution.publication:
             # If we don't have a default publication, create one.
             if not default_publication:
                 new_publication = pulp_rpm.RpmRpmPublication(
@@ -190,6 +191,22 @@ def main(argv=sys.argv[1:]):
                 default_publication = publication_task.created_resources[0]
 
             distribution.publication = default_publication
+            redistribute = True
+        elif republish:
+            publication = pulp_publications_api.read(distribution.publication)
+
+            new_publication = pulp_rpm.RpmRpmPublication(
+                repository_version=publication.repository_version)
+
+            print("Creating publication for repository '%s'" % repository.name)
+            publication_task_href = pulp_publications_api.create(new_publication).task
+            publication_task = pulp_task_poller.wait_for_task(publication_task_href)
+            default_publication = publication_task.created_resources[0]
+
+            distribution.publication = default_publication
+            redistribute = True
+
+        if redistribute:
             print("Updating distribution at '%s' to use '%s'" % (
                 distribution.base_path, distribution.publication))
 
