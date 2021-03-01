@@ -340,7 +340,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
 
   pulp_admin_password = data_bag_item('ros_buildfarm_password_credentials', 'pulp_admin')['password']
   execute 'set_pulp_admin_password' do
-    command "docker run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p '#{pulp_admin_password}'"
+    command "docker run --user 1200:1200 --rm -v /var/run/postgresql:/var/run/postgresql pulp_image pulpcore-manager reset-admin-password -p #{Shellwords.shellescape(pulp_admin_password)}"
   end
 
   # TODO * Create gnupg directory for pulp
