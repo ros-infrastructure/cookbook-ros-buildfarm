@@ -81,9 +81,9 @@ end
 execute 'gpg-init' do
   command 'gpg -K'
   environment 'HOME' => '/home/gpg-vault'
-  not_if { File.directory? '/home/gpg-vault/.gnupg' }
   user 'gpg-vault'
   group 'gpg-vault'
+  creates '/home/gpg-vault/.gnupg'
 end
 cookbook_file '/home/gpg-vault/.gnupg/gpg-agent.conf' do
   source 'repo/gpg-agent.conf'
@@ -136,10 +136,12 @@ end
 
 # Configure GPG for reprepro
 # .gnupg/gpg.conf
-directory "/home/#{agent_username}/.gnupg" do
-  owner agent_username
+execute 'gpg-init' do
+  command 'gpg -K'
+  environment 'HOME' => "/home/#{agent_username}"
+  user agent_username
   group agent_username
-  mode '0700'
+  creates "/home/#{agent_username}/.gnupg"
 end
 cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   source 'gpg.conf'
