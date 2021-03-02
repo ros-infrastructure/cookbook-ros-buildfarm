@@ -201,9 +201,8 @@ def main(argv=sys.argv[1:]):
             print("Creating publication for repository '%s'" % repository.name)
             publication_task_href = pulp_publications_api.create(new_publication).task
             publication_task = pulp_task_poller.wait_for_task(publication_task_href)
-            default_publication = publication_task.created_resources[0]
 
-            distribution.publication = default_publication
+            distribution.publication = publication_task.created_resources[0]
             redistribute = True
 
         if redistribute:
