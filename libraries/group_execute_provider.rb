@@ -14,7 +14,7 @@ class Chef
           groups = new_resource.secondary_groups
           if group
             # Always do the 'primary' group last in the call chain
-            groups = groups + [group]
+            groups << group
           end
           groups.reverse.each do |secondary_group|
             command = "sg #{secondary_group} #{Shellwords.shellescape(command)}"
