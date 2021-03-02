@@ -285,9 +285,9 @@ end
 
 execute 'gpg-init' do
   command 'gpg -K'
-  env 'HOME' => '/home/pulp'
   user 'pulp'
   group 'pulp'
+  environment 'HOME' => '/home/pulp'
   creates '/home/pulp/.gnupg'
 end
 cookbook_file '/home/pulp/.gnupg/gpg.conf' do
