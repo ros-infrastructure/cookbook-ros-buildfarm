@@ -466,7 +466,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
           command %W[
             python3
             #{pulp_data_directory}/initialize.py
-            #{repo_name}-#{arch}
+            #{repo_name}-#{arch}-debug
             ros-building-#{repo_name}-#{arch}-debug
             ros-testing-#{repo_name}-#{arch}-debug
             ros-main-#{repo_name}-#{arch}-debug
