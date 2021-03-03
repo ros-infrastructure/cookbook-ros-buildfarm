@@ -157,6 +157,11 @@ cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   group agent_username
   mode '0600'
 end
+link "/home/#{agent_username}/.gnupg/S.gpg-agent" do
+  to '/var/run/gpg-vault/S.gpg-agent'
+  owner agent_username
+  group agent_username
+end
 
 # Set up ssh authorized keys for publish over ssh.
 directory "/home/#{agent_username}/.ssh" do
@@ -172,18 +177,6 @@ file "/home/#{agent_username}/.ssh/authorized_keys" do
   mode '0600'
 end
 
-file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
-  owner agent_username
-  group agent_username
-  mode '0600'
-  content gpg_key['private_key']
-end
-file "/home/#{agent_username}/.ssh/gpg_public_key.pub" do
-  owner agent_username
-  group agent_username
-  mode '0644'
-  content gpg_key['public_key']
-end
 file '/var/repos/repos.key' do
   owner agent_username
   group agent_username
@@ -191,18 +184,12 @@ file '/var/repos/repos.key' do
   content gpg_key['public_key']
 end
 
-# Import public and private keys.
-execute "gpg --import /home/#{agent_username}/.ssh/gpg_public_key.pub" do
+# Import public key.
+execute "gpg --import /var/repos/repos.key" do
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
   not_if "gpg --list-keys #{gpg_key['fingerprint']}"
-end
-execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
-  user agent_username
-  group agent_username
-  environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
 end
 
 # Import ROS bootstrap signing key for signature verification
@@ -267,10 +254,11 @@ end
 
 # Initialise repositories with reprepro
 %w(building testing main).each do |repo|
-  execute "/usr/bin/python3 /home/#{agent_username}/reprepro-updater/scripts/setup_repo.py ubuntu_#{repo} -c" do
+  group_execute "/usr/bin/python3 /home/#{agent_username}/reprepro-updater/scripts/setup_repo.py ubuntu_#{repo} -c" do
     environment 'PATH' => '/bin:/usr/bin', 'PYTHONPATH' => "/home/#{agent_username}/reprepro-updater/src", 'HOME' => "/home/#{agent_username}"
     user agent_username
     group agent_username
+    secondary_groups ['gpg-vault']
     not_if "/usr/bin/python3 /home/#{agent_username}/reprepro-updater/scripts/setup_repo.py ubuntu_#{repo} -q"
   end
 end
