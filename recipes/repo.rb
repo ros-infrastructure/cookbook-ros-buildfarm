@@ -142,6 +142,34 @@ group 'gpg-vault' do
   action [:manage]
 end
 
+# Remove previous GPG deployment
+execute "gpg-agent --daemon" do
+  user agent_username
+  group agent_username
+  environment 'HOME' => "/home/#{agent_username}"
+  only_if { ::File.exist?("/home/#{agent_username}/.ssh/gpg_private_key.sec") }
+  not_if "gpg-agent"
+end
+execute "(echo y) | gpg --command-fd 0 --no-tty --yes --delete-secret-keys #{gpg_key['fingerprint']}" do
+  user agent_username
+  group agent_username
+  environment 'HOME' => "/home/#{agent_username}"
+  only_if { ::File.exist?("/home/#{agent_username}/.ssh/gpg_private_key.sec") }
+  only_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+end
+execute "gpgconf --kill gpg-agent" do
+  user agent_username
+  group agent_username
+  environment 'HOME' => "/home/#{agent_username}"
+  only_if "gpg-agent"
+end
+file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
+  action :delete
+end
+file "/home/#{agent_username}/.ssh/gpg_public_key.pub" do
+  action :delete
+end
+
 # Configure GPG for reprepro
 # .gnupg/gpg.conf
 execute 'gpg-init' do
