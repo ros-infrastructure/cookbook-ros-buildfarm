@@ -155,7 +155,7 @@ execute "(echo y) | gpg --command-fd 0 --no-tty --yes --delete-secret-keys #{gpg
   group agent_username
   environment 'HOME' => "/home/#{agent_username}"
   only_if { ::File.exist?("/home/#{agent_username}/.ssh/gpg_private_key.sec") }
-  only_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+  only_if "test -f /home/#{agent_username}/.ssh/gpg_private_key.sec && gpg --list-secret-keys #{gpg_key['fingerprint']}"
 end
 execute "gpgconf --kill gpg-agent" do
   user agent_username
