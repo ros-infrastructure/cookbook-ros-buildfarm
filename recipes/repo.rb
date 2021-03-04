@@ -433,7 +433,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       container: 'pulp-api-endpoint',
     ]
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
-    notifies :restart, 'service[pulp-api-endpoint]'
+    notifies :restart, 'service[pulp-api-endpoint]', :immediately
   end
   service 'pulp-api-endpoint' do
     action [:start, :enable]
@@ -449,7 +449,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       docker_cmd: 'pulp-content',
     ]
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
-    notifies :restart, 'service[pulp-content-endpoint]'
+    notifies :restart, 'service[pulp-content-endpoint]', :immediately
   end
   service 'pulp-content-endpoint' do
     action [:start, :enable]
@@ -465,7 +465,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       docker_cmd: %(rq worker -n resource-manager -w pulpcore.tasking.worker.PulpWorker -c pulpcore.rqconfig),
     ]
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
-    notifies :restart, 'service[pulp-resource-manager]'
+    notifies :restart, 'service[pulp-resource-manager]', :immediately
   end
   service 'pulp-resource-manager' do
     action [:start, :enable]
@@ -483,7 +483,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     notifies :run, 'execute[systemctl daemon-reload]', :immediately
 
     0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
-      notifies :restart, "service[pulp-worker@#{i}]"
+      notifies :restart, "service[pulp-worker@#{i}]", :immediately
     end
   end
   0.upto(node['ros_buildfarm']['repo']['pulp_worker_count'] - 1) do |i|
