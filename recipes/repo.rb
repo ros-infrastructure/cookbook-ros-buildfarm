@@ -386,7 +386,7 @@ cookbook_file "#{pulp_data_directory}/Dockerfile" do
   source 'pulp/Dockerfile'
 end
 
-if node['ros_buildfarm']['rpm_repos']
+if node['ros_buildfarm']['rpm_repos'] and not node['ros_buildfarm']['rpm_repos'].empty?
   execute 'docker build -t pulp_image .' do
     cwd pulp_data_directory
   end
@@ -555,7 +555,7 @@ package 'nginx'
 template '/etc/nginx/sites-available/repo' do
   source 'nginx/repo.conf.erb'
   variables Hash[
-    rpm_repos: node['ros_buildfarm']['rpm_repos']
+    rpm_repos: node['ros_buildfarm'] && node['ros_buildfarm']['rpm_repos'] || Hash[]
   ]
   notifies :restart, 'service[nginx]'
 end
