@@ -548,76 +548,74 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
         end
       end
     end
-  end
-end
 
-node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
-  dist_dir = "/var/repos/#{dist}"
-  directory dist_dir do
-    owner agent_username
-    group agent_username
-    mode '0755'
-  end
-
-  %w(building testing main).each do |repo|
-    repo_dir = "#{dist_dir}/#{repo}"
-    directory repo_dir do
+    dist_dir = "/var/repos/#{dist}"
+    directory dist_dir do
       owner agent_username
       group agent_username
       mode '0755'
     end
-    file "#{repo_dir}/RPM-GPG-KEY-ros-#{repo}" do
-      content gpg_key['public_key']
-      owner agent_username
-      group agent_username
-      mode '0644'
-    end
 
-    versions.each do |version, architectures|
-      version_dir = "#{repo_dir}/#{version}"
-      directory version_dir do
+    %w(building testing main).each do |repo|
+      repo_dir = "#{dist_dir}/#{repo}"
+      directory repo_dir do
         owner agent_username
         group agent_username
         mode '0755'
       end
-      directory "#{version_dir}/SRPMS" do
+      file "#{repo_dir}/RPM-GPG-KEY-ros-#{repo}" do
+        content gpg_key['public_key']
         owner agent_username
         group agent_username
-        mode '0755'
-      end
-      remote_directory "#{version_dir}/SRPMS/repodata" do
-        source 'empty_rpm_repo'
-        owner agent_username
-        group agent_username
-        mode '0755'
-        not_if { ::File.exist?("#{version_dir}/SRPMS/repodata/repomd.xml") }
+        mode '0644'
       end
 
-      architectures.each do |arch|
-        arch_dir = "#{version_dir}/#{arch}"
-        directory arch_dir do
+      versions.each do |version, architectures|
+        version_dir = "#{repo_dir}/#{version}"
+        directory version_dir do
           owner agent_username
           group agent_username
           mode '0755'
         end
-        remote_directory "#{arch_dir}/repodata" do
+        directory "#{version_dir}/SRPMS" do
+          owner agent_username
+          group agent_username
+          mode '0755'
+        end
+        remote_directory "#{version_dir}/SRPMS/repodata" do
           source 'empty_rpm_repo'
           owner agent_username
           group agent_username
           mode '0755'
-          not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml") }
+          not_if { ::File.exist?("#{version_dir}/SRPMS/repodata/repomd.xml") }
         end
-        directory "#{arch_dir}/debug" do
-          owner agent_username
-          group agent_username
-          mode '0755'
-        end
-        remote_directory "#{arch_dir}/debug/repodata" do
-          source 'empty_rpm_repo'
-          owner agent_username
-          group agent_username
-          mode '0755'
-          not_if { ::File.exist?("#{arch_dir}/debug/repodata/repomd.xml") }
+
+        architectures.each do |arch|
+          arch_dir = "#{version_dir}/#{arch}"
+          directory arch_dir do
+            owner agent_username
+            group agent_username
+            mode '0755'
+          end
+          remote_directory "#{arch_dir}/repodata" do
+            source 'empty_rpm_repo'
+            owner agent_username
+            group agent_username
+            mode '0755'
+            not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml") }
+          end
+          directory "#{arch_dir}/debug" do
+            owner agent_username
+            group agent_username
+            mode '0755'
+          end
+          remote_directory "#{arch_dir}/debug/repodata" do
+            source 'empty_rpm_repo'
+            owner agent_username
+            group agent_username
+            mode '0755'
+            not_if { ::File.exist?("#{arch_dir}/debug/repodata/repomd.xml") }
+          end
         end
       end
     end
