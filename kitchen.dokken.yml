@@ -57,4 +57,4 @@ suites:
     attributes:
       ros_buildfarm:
         # pulp services cannot run due to docker-in-docker issues
-        rpm_repos: null
+        rpm_repos: {}
