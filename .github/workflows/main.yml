@@ -51,16 +51,23 @@ jobs:
                 ${{ matrix.suite }}-${{ matrix.os }} \
                 -c "journalctl -l"
       - name: Print debug output on failure (jenkins.log)
-        if: failure()
+        if: failure() && matrix.suite == 'jenkins'
         run: |
             set -x
             KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
                 ${{ matrix.suite }}-${{ matrix.os }} \
                 -c "cat /var/log/jenkins/jenkins.log"
       - name: Print debug output on failure (systemctl jenkins status)
-        if: failure()
+        if: failure() && matrix.suite == 'jenkins'
         run: |
             set -x
             KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
                 ${{ matrix.suite }}-${{ matrix.os }} \
                 -c "systemctl status jenkins"
+      - name: Print debug output (jenkins-agent)
+        if: failure()
+        run: |
+            set -x
+            KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
+                ${{ matrix.suite }}-${{ matrix.os }} \
+                -c "systemctl status jenkins-agent"
