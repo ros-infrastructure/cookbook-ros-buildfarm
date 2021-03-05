@@ -5,8 +5,6 @@ server {
 
 	location / {
 		autoindex on;
-		autoindex_format xml;
-		xslt_stylesheet /etc/nginx/autoindex.xsl title='Index%20of%20$uri';
 		index index.html;
 	}
 
