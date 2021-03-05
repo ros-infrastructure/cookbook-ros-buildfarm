@@ -139,7 +139,7 @@ template '/etc/systemd/system/jenkins-agent.service' do
     username: agent_username,
   ]
   notifies :run, 'execute[systemctl-daemon-reload]', :immediately
-  notifies :restart, 'service[jenkins-agent]'
+  notifies :restart, 'service[jenkins-agent]', :immediately
 end
 
 execute 'systemctl-daemon-reload' do
