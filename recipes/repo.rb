@@ -386,7 +386,7 @@ cookbook_file "#{pulp_data_directory}/Dockerfile" do
   source 'pulp/Dockerfile'
 end
 
-if node['ros_buildfarm']['repo']['enable_pulp_services']
+if node['ros_buildfarm']['rpm_repos']
   execute 'docker build -t pulp_image .' do
     cwd pulp_data_directory
   end
