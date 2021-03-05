@@ -17,14 +17,14 @@ server {
 		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-SRPMS/;
 	}
 			<%- architectures.each do |arch| -%>
+	location /<%= dist %>/<%= version %>/<%= arch %>/debug/ {
+		# TODO more proxy_pass args
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>-debug/;
+	}
+
 	location /<%= dist %>/<%= version %>/<%= arch %>/ {
 		# TODO more proxy_pass args
 		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>/;
-	}
-
-	location /<%= dist %>/<%= version %>/<%= arch %>-debug/ {
-		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>-debug/;
 	}
 
 			<%- end -%>
