@@ -21,6 +21,7 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "configuration-as-code" => "1.43",
   "copyartifact" => "1.45.2",
   "credentials" => "2.3.11",
+  "credentials-binding" => "1.24",
   "cvs" => "2.16",
   "dashboard-view" => "2.12",
   "data-tables-api" => "1.10.20-14",
