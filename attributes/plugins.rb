@@ -76,7 +76,7 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "pam-auth" => "1.5.1",
   "parameterized-trigger" => "2.35.2",
   "pipeline-utility-steps" => "2.5.0",
-  "plain-credentials" => "1.4",
+  "plain-credentials" => "1.7",
   "plot" => "2.1.6",
   "plugin-util-api" => "1.2.2",
   "pollscm" => "1.3.1",
@@ -108,7 +108,7 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "workflow-job" => "2.40",
   "workflow-multibranch" => "2.20",
   "workflow-scm-step" => "2.11",
-  "workflow-step-api" => "2.22",
+  "workflow-step-api" => "2.23",
   "workflow-support" => "3.5",
   "xunit" => "2.3.9",
 }
