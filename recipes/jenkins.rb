@@ -264,6 +264,7 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
   jenkins_password_credentials password_credential['id'] do
     id password_credential['id']
     description password_credential['description']
+    username password_credential['username'] if password_credential['username']
     password password_credential['password']
   end
 end
