@@ -1,5 +1,8 @@
 {
   "id": "pulp_base_url",
-  "description": "URL used to access the API endpoint of Pulp",
-  "secret_text": "http://repo.ros2.org:24817"
+  "test": {
+    "name": "pulp_base_url",
+    "description": "URL used to access the API endpoint of Pulp",
+    "secret_text": "http://repo.ros2.org:24817"
+  }
 }
