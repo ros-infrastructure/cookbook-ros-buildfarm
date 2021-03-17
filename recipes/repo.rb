@@ -379,7 +379,7 @@ end
 
 directory "/usr/local/bin"
 remote_file "/usr/local/bin/systemd-docker" do
-  source 'https://github.com/subdavis/systemd-docker/releases/download/1.0.0/systemd-docker'
+  source 'https://github.com/nuclearsandwich/systemd-docker/releases/download/subdavis-1.0.0/systemd-docker-linux-amd64'
   mode '0755'
 end
 cookbook_file "#{pulp_data_directory}/Dockerfile" do
