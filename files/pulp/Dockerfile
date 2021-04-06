@@ -15,6 +15,7 @@ RUN dnf install \
   expat-devel \
   file-devel \
   gcc \
+  git \
   glib2-devel \
   libcurl-devel \
   libmodulemd-devel \
@@ -79,7 +80,7 @@ ENV PATH="/usr/local/lib/pulp/bin:${PATH}"
 ENV PYTHONPATH="/usr/local/lib/pulp/lib/python3.6/site-packages"
 
 RUN pip3 install scikit-build
-RUN pip3 install pulpcore==3.9.1 pulp-rpm==3.9.0
+RUN pip3 install pulpcore==3.9.1 pulp-rpm==3.9.0 git+https://github.com/cottsay/pulp_rsync.git@0.0.1
 RUN pip3 install --upgrade jsonschema
 
 ENV DJANGO_SETTINGS_MODULE="pulpcore.app.settings"

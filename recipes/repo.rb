@@ -471,6 +471,22 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     action [:start, :enable]
   end
 
+  template "/etc/systemd/system/pulp-rsync-endpoint.service" do
+    source "pulp/pulp.service.erb"
+    variables Hash[
+      description: "Pulp Rsync Endpoint",
+      after_units: %w(postgresql.service redis-server.service),
+      required_units: %w(postgresql.service redis-server.service),
+      docker_create_args: %(-u 1200:1200 -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /var/run/redis:/var/run/redis -p 1234:1234),
+      docker_cmd: 'pulp-rsync',
+    ]
+    notifies :run, 'execute[systemctl daemon-reload]', :immediately
+    notifies :restart, 'service[pulp-rsync-endpoint]', :immediately
+  end
+  service 'pulp-rsync-endpoint' do
+    action [:start, :enable]
+  end
+
   template "/etc/systemd/system/pulp-worker@.service" do
     source "pulp/pulp.service.erb"
     variables Hash[
