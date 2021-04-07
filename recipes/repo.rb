@@ -485,6 +485,70 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
     end
   end
 
+  # * Create upstream remotes
+  node['ros_buildfarm']['rpm_upstream_repos'].each do |upstream_name, dists|
+    raise "Upstream repo '#{upstream_name}' contains unsupported character '-'" if upstream_name.include? '-'
+
+    dists.each do |dist, versions|
+      versions.each do |version, bootstrap_args|
+        repo_name = "ros-upstream-#{upstream_name}-#{dist}-#{version}"
+
+        source_url = bootstrap_args['source']
+        execute "Create #{repo_name}-SRPMS" do
+          command %W[
+            python3
+            #{pulp_data_directory}/initialize.py
+            #{repo_name}-SRPMS
+            #{repo_name}-SRPMS
+            --upstream-repository=#{source_url}
+            --signing-service-name=#{gpg_key['fingerprint']}
+          ]
+          environment Hash[
+            "PULP_BASE_URL" => "http://127.0.0.1:24817",
+            "PULP_USERNAME" => "admin",
+            "PULP_PASSWORD" => pulp_admin_password,
+          ]
+        end
+
+        bootstrap_args['architectures'].each do |arch|
+          binary_url = bootstrap_args['binary'].gsub('$basearch', arch)
+          execute "Create #{repo_name}-#{arch}" do
+            command %W[
+              python3
+              #{pulp_data_directory}/initialize.py
+              #{repo_name}-#{arch}
+              #{repo_name}-#{arch}
+              --upstream-repository=#{binary_url}
+              --signing-service-name=#{gpg_key['fingerprint']}
+            ]
+            environment Hash[
+              "PULP_BASE_URL" => "http://127.0.0.1:24817",
+              "PULP_USERNAME" => "admin",
+              "PULP_PASSWORD" => pulp_admin_password,
+            ]
+          end
+
+          debug_url = bootstrap_args['debug'].gsub('$basearch', arch)
+          execute "Create #{repo_name}-#{arch}-debug" do
+            command %W[
+              python3
+              #{pulp_data_directory}/initialize.py
+              #{repo_name}-#{arch}-debug
+              #{repo_name}-#{arch}-debug
+              --upstream-repository=#{debug_url}
+              --signing-service-name=#{gpg_key['fingerprint']}
+            ]
+            environment Hash[
+              "PULP_BASE_URL" => "http://127.0.0.1:24817",
+              "PULP_USERNAME" => "admin",
+              "PULP_PASSWORD" => pulp_admin_password,
+            ]
+          end
+        end
+      end
+    end
+  end
+
   # * Create rpm repos
   node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
     versions.each do |version, architectures|
