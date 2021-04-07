@@ -699,7 +699,7 @@ package 'nginx'
 template '/etc/nginx/sites-available/repo' do
   source 'nginx/repo.conf.erb'
   variables Hash[
-    rpm_repos: node['ros_buildfarm']['rpm_repos']
+    rpm_repos: (node['ros_buildfarm']['repo']['enable_pulp_services'] ? node['ros_buildfarm']['rpm_repos'] : [])
   ]
   notifies :restart, 'service[nginx]'
 end
