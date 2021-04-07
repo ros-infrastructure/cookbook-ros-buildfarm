@@ -637,10 +637,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
         mode '0755'
       end
       file "#{repo_dir}/RPM-GPG-KEY-ros-#{repo}" do
-        content gpg_key['public_key']
-        owner agent_username
-        group agent_username
-        mode '0644'
+        action :delete
       end
 
       versions.each do |version, architectures|
