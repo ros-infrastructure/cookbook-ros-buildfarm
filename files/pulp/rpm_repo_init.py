@@ -77,6 +77,10 @@ def main(argv=sys.argv[1:]):
         '--signing-service-name',
         help='Name of the pulp signing service to use with the repository')
     parser.add_argument(
+        '--upstream-repository',
+        help='URL of an upstream repository - a pulp remote will be created with the same name '
+             'as this repository and associate it with this repository')
+    parser.add_argument(
         'repository_name',
         help='Name of the repository to be created')
     parser.add_argument(
@@ -138,19 +142,45 @@ def main(argv=sys.argv[1:]):
         metadata_signing_service = signing_services.results[0].pulp_href
         print("Using signing service '%s' (%s)" % (signing_services.results[0].name, metadata_signing_service))
 
+    remote_href = None
+    if args.upstream_repository:
+        pulp_remotes_api = pulp_rpm.RemotesRpmApi(pulp_rpm_client)
+        remotes = pulp_remotes_api.list(name=args.repository_name)
+        if remotes.results:
+            remote = remotes.results[0]
+            if remote.url != args.upstream_repository:
+                remote.url = args.upstream_repository
+                pulp_remotes_api.partial_update(remote.pulp_href, remote)
+        else:
+            new_remote = pulp_rpm.RpmRpmRemote(
+                name=args.repository_name, url=args.upstream_repository)
+            print("Creating remote '%s'" % new_remote.name)
+            remote = pulp_remotes_api.create(new_remote)
+        print("Using remote '%s' (%s)" % (remote.name, remote.pulp_href))
+        remote_href = remote.pulp_href
+
     # Check if the repository exists. If not, create it.
     repositories = pulp_repos_api.list(name=args.repository_name)
     republish = False
     if repositories.results:
         repository = repositories.results[0]
+        repo_update = False
 
         if (metadata_signing_service or '') != (repository.metadata_signing_service or ''):
             repository.metadata_signing_service = metadata_signing_service or ''
-            pulp_repos_api.partial_update(repository.pulp_href, repository)
+            repo_update = True
             republish = True
+
+        if (remote_href or '') != (repository.remote or ''):
+            repository.remote = remote_href or ''
+            repo_update = True
+
+        if repo_update:
+            pulp_repos_api.partial_update(repository.pulp_href, repository)
     else:
         new_repository = pulp_rpm.RpmRpmRepository(
-            name=args.repository_name, metadata_signing_service=metadata_signing_service)
+            name=args.repository_name, metadata_signing_service=metadata_signing_service,
+            remote=remote_href)
 
         print("Creating repository '%s'" % new_repository.name)
         repository = pulp_repos_api.create(new_repository)
