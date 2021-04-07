@@ -88,7 +88,7 @@ execute 'gpg-init' do
   creates '/home/gpg-vault/.gnupg'
 end
 cookbook_file '/home/gpg-vault/.gnupg/gpg.conf' do
-  source 'gpg.conf'
+  source 'gpg-vault.conf'
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0600'
@@ -143,28 +143,11 @@ group 'gpg-vault' do
 end
 
 # Remove previous GPG deployment
-execute "gpg-agent --daemon" do
-  user agent_username
-  group agent_username
-  environment 'HOME' => "/home/#{agent_username}"
-  only_if { ::File.exist?("/home/#{agent_username}/.ssh/gpg_private_key.sec") }
-  not_if "gpg-agent"
-end
-execute "(echo y) | gpg --command-fd 0 --no-tty --yes --delete-secret-keys #{gpg_key['fingerprint']}" do
-  user agent_username
-  group agent_username
-  environment 'HOME' => "/home/#{agent_username}"
-  only_if { ::File.exist?("/home/#{agent_username}/.ssh/gpg_private_key.sec") }
-  only_if "test -f /home/#{agent_username}/.ssh/gpg_private_key.sec && gpg --list-secret-keys #{gpg_key['fingerprint']}"
-end
 execute "gpgconf --kill gpg-agent" do
   user agent_username
   group agent_username
   environment 'HOME' => "/home/#{agent_username}"
   only_if "gpg-agent"
-end
-file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
-  action :delete
 end
 file "/home/#{agent_username}/.ssh/gpg_public_key.pub" do
   action :delete
@@ -186,9 +169,7 @@ cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
   mode '0600'
 end
 link "/home/#{agent_username}/.gnupg/S.gpg-agent" do
-  to '/var/run/gpg-vault/S.gpg-agent'
-  owner agent_username
-  group agent_username
+  action :delete
 end
 
 # Set up ssh authorized keys for publish over ssh.
@@ -205,6 +186,12 @@ file "/home/#{agent_username}/.ssh/authorized_keys" do
   mode '0600'
 end
 
+file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
+  owner agent_username
+  group agent_username
+  mode '0600'
+  content gpg_key['private_key']
+end
 file '/var/repos/repos.key' do
   owner agent_username
   group agent_username
@@ -212,12 +199,18 @@ file '/var/repos/repos.key' do
   content gpg_key['public_key']
 end
 
-# Import public key.
+# Import public and private keys.
 execute "gpg --import /var/repos/repos.key" do
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
   not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+end
+execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
+  user agent_username
+  group agent_username
+  environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
+  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
 end
 
 # Import ROS bootstrap signing key for signature verification
@@ -319,7 +312,7 @@ execute 'gpg-init' do
   creates '/home/pulp/.gnupg'
 end
 cookbook_file '/home/pulp/.gnupg/gpg.conf' do
-  source 'gpg.conf'
+  source 'gpg-vault.conf'
   owner 'pulp'
   group 'pulp'
   mode '0600'
