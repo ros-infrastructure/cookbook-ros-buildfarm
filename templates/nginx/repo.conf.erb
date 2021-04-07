@@ -10,22 +10,20 @@ server {
 
 	<%- @rpm_repos.each do |dist, versions| -%>
 		<%- versions.each do |version, architectures| -%>
-			<%- %w(building testing main).each do |repo| -%>
-	location /<%= dist %>/<%= repo %>/<%= version %>/SRPMS/ {
+	location /<%= dist %>/building/<%= version %>/SRPMS/ {
 		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-<%= repo %>-<%= dist %>-<%= version %>-SRPMS/;
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-SRPMS/;
 	}
 			<%- architectures.each do |arch| -%>
-	location /<%= dist %>/<%= repo %>/<%= version %>/<%= arch %>/debug/ {
+	location /<%= dist %>/building/<%= version %>/<%= arch %>/debug/ {
 		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-<%= repo %>-<%= dist %>-<%= version %>-<%= arch %>-debug/;
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>-debug/;
 	}
-	location /<%= dist %>/<%= repo %>/<%= version %>/<%= arch %>/ {
+	location /<%= dist %>/building/<%= version %>/<%= arch %>/ {
 		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-<%= repo %>-<%= dist %>-<%= version %>-<%= arch %>/;
+		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>/;
 	}
 
-				<%- end -%>
 			<%- end -%>
 		<%- end -%>
 	<%- end -%>
