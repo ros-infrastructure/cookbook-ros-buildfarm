@@ -23,7 +23,6 @@ server {
 		proxy_cache_valid	200	1d;
 		proxy_no_cache		$no_cache;
 		proxy_cache_bypass	$no_cache;
-
 	}
 			<%- architectures.each do |arch| -%>
 	location /<%= dist %>/building/<%= version %>/<%= arch %>/debug/ {
