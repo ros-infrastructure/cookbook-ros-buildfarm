@@ -7,7 +7,7 @@ long_description 'Installs/Configures ros_buildfarm'
 version '0.3.0'
 chef_version '>= 15.0'
 
-issues_url 'https://github.com/nuclearsandwich/cookbook-ros-buildfarm/issues'
-source_url 'https://github.com/nuclearsandwich/cookbook-ros-buildfarm/'
+issues_url 'https://github.com/ros-infrastructure/cookbook-ros-buildfarm/issues'
+source_url 'https://github.com/ros-infrastructure/cookbook-ros-buildfarm/'
 
 depends 'jenkins'
