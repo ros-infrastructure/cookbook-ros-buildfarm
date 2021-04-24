@@ -39,6 +39,13 @@ node.run_state[:jenkins_username] = chef_user['username']
 node.run_state[:jenkins_password] = chef_user['password']
 node.default['jenkins']['executor']['protocol'] = 'http'
 
+# Remove plugins that were required previously but are not now.
+node['ros_buildfarm']['jenkins']['remove_plugins'].each do |plugin|
+  jenkins_plugin plugin do
+    action :uninstall
+    notifies :restart, 'service[jenkins]', :delayed
+  end
+end
 # Install plugins required to run ros_buildfarm.
 node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   jenkins_plugin plugin do
