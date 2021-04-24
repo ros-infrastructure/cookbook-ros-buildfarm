@@ -73,6 +73,10 @@ data_bag('ros_buildfarm_upload_keys').each do |id|
   end
 end
 
+execute 'systemctl daemon-reload' do
+  action :nothing
+end
+
 # Configure gpg-vault
 user 'gpg-vault' do
   manage_home true
@@ -99,13 +103,9 @@ cookbook_file '/home/gpg-vault/.gnupg/gpg-agent.conf' do
   group 'gpg-vault'
   mode '0600'
 end
-directory '/var/run/gpg-vault' do
-  owner 'gpg-vault'
-  group 'gpg-vault'
-  mode '0750'
-end
 cookbook_file '/etc/systemd/system/gpg-vault-agent.service' do
   source 'gpg-vault-agent.service'
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
 end
 systemd_unit 'gpg-vault-agent.service' do
   triggers_reload true
@@ -409,10 +409,6 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
   signing_service_create_cmd = "from pulpcore.app.models.content import AsciiArmoredDetachedSigningService; AsciiArmoredDetachedSigningService.objects.get_or_create(name='#{gpg_key['fingerprint']}', script='/home/pulp/.gnupg/pulp_sign_#{gpg_key['fingerprint']}.sh')"
   execute 'pulp_create_signing_service' do
     command "docker run --user 1200:1200 --rm -e HOME=/home/pulp -v #{pulp_data_directory}:/var/repos/.pulp -v /var/run/postgresql:/var/run/postgresql -v /home/pulp/.gnupg:/home/pulp/.gnupg -v /var/run/gpg-vault/S.gpg-agent:/home/pulp/.gnupg/S.gpg-agent pulp_image pulpcore-manager shell --command=#{Shellwords.shellescape(signing_service_create_cmd)}"
-  end
-
-  execute 'systemctl daemon-reload' do
-    action :nothing
   end
 
   template "/etc/systemd/system/pulp-api-endpoint.service" do
