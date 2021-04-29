@@ -201,8 +201,7 @@ unclassified:
         d+)( \\((.+)\\))?)?:\\n(?!  Manually-specified variables were not used by\
         \ the project:)(  .+\\n)?(.+\\n(  .+\\n)*)?"
       script: |-
-        import hudson.plugins.analysis.util.model.Priority
-        import hudson.plugins.warnings.parser.Warning
+        import edu.hm.hafner.analysis.Severity
 
         String messageType = matcher.group(1)
         String fileName = matcher.group(3)
@@ -229,13 +228,20 @@ unclassified:
             message += "<pre>" + callStack + "</pre>"
         }
 
-        Priority priority = Priority.NORMAL
+        Severity severity = Severity.WARNING_NORMAL
         if (messageType == "Deprecation Warning") {
-            priority = Priority.LOW
+            severity = Severity.WARNING_LOW
         } else if (messageType == "Error") {
-            priority = Priority.HIGH
+            severity = Severity.WARNING_HIGH
         }
-        return new Warning(fileName, Integer.parseInt(lineNumber), "CMake", scope, message, priority);
+
+        builder.setFileName(fileName)
+          .setLineStart(Integer.parseInt(lineNumber))
+          .setSeverity(severity)
+          .setType("CMake")
+          .setCategory(scope)
+
+        return builder.buildOptional()
       example: ""
 tool:
   git:
