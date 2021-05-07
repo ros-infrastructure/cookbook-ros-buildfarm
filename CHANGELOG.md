@@ -2,6 +2,15 @@
 
 This file is used to list changes made in each version of the ros_buildfarm cookbook.
 
+# 0.5.0
+
+* Update xunit and plugin dependencies for Jenkins 2.277 compatibility. [#89](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/89)
+* Use systemd to manage GPG vault socket directory. [#92](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/92)
+* Update plugins to address security advisories. [#91](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/91)
+* Update debug output in GitHub Actions CI. [#71](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/71)
+* Update Jenkins plugins for tables-to-divs changes and security advisories. [#93](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/93)
+  * Fixes [#90](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/90)
+
 # 0.4.0
 
 - Support RHEL repositories in upload script. [#86](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/86)
