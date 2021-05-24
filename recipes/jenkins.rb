@@ -257,8 +257,12 @@ if node['ros_buildfarm']['letsencrypt_enabled']
       --fullchain-file #{cert_path}
       --key-file #{key_path}
       --reloadcmd /root/cert-update-hook.sh
+      --force
     )
-    not_if "test -d /root/.acme.sh/#{server_name}"
+    not_if {
+      File.directory?("/root/.acme.sh/#{server_name}") and not
+      File.read("/root/.acme.sh/#{server_name}/#{server_name}.conf").match(/Le_ReloadCmd=''/)
+    }
   end
 else
   template '/etc/nginx/sites-enabled/jenkins' do
