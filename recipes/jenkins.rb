@@ -240,6 +240,13 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     not_if 'test -x /root/.acme.sh/acme.sh'
   end
 
+  cookbook_file "/root/cert-update-hook.sh" do
+    source "cert-update-hook.sh"
+    owner "root"
+    group "root"
+    mode "0700"
+  end
+
   # Create Let's Encrypt signed cert if it has not already been done.
   execute 'acme-issue-cert' do
     environment 'HOME' => '/root'
@@ -249,6 +256,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
       --domain #{server_name}
       --fullchain-file #{cert_path}
       --key-file #{key_path}
+      --reloadcmd /root/cert-update-hook.sh
     )
     not_if "test -d /root/.acme.sh/#{server_name}"
   end
