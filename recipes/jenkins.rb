@@ -261,8 +261,8 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     )
     not_if {
       # TODO the second guard clause can be removed after >= 0.6.0
-      File.directory?("/root/.acme.sh/#{server_name}") and not
-      File.read("/root/.acme.sh/#{server_name}/#{server_name}.conf").match(/Le_ReloadCmd=''/)
+      File.directory?("/root/.acme.sh/#{server_name}") and
+      File.read("/root/.acme.sh/#{server_name}/#{server_name}.conf").match(/Le_ReloadCmd='__ACME_BASE64__START_c3lzdGVtY3RsIHJlc3RhcnQgbmdpbng=__ACME_BASE64__END_'/)
     }
   end
 else
