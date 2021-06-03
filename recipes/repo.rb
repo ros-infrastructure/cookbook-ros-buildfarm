@@ -117,24 +117,26 @@ file '/home/gpg-vault/.gnupg/gpg_public_key.pub' do
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0644'
+  notifies :run, 'execute[gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub]', :immediately
 end
 execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
   environment 'HOME' => '/home/gpg-vault'
   user 'gpg-vault'
   group 'gpg-vault'
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+  action :nothing # Only run if public key has changed.
 end
 file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
   content gpg_key['private_key']
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0600'
+  notifies :run, 'execute[gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec]', :immediately
 end
 execute 'gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec' do
   environment 'HOME' => '/home/gpg-vault'
   user 'gpg-vault'
   group 'gpg-vault'
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+  action :nothing # Only run if secret key has changed.
 end
 group 'gpg-vault' do
   append true
@@ -191,12 +193,15 @@ file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
   group agent_username
   mode '0600'
   content gpg_key['private_key']
+  notifies :run, "execute[gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec]", :immediately
 end
 file '/var/repos/repos.key' do
   owner agent_username
   group agent_username
   mode '0644'
   content gpg_key['public_key']
+
+  notifies :run, 'execute[gpg --import /var/repos/repos.key]', :immediately
 end
 
 # Import public and private keys.
@@ -204,13 +209,13 @@ execute "gpg --import /var/repos/repos.key" do
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+  action :nothing # Only run if key is changed.
 end
 execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+  action :nothing
 end
 
 # Import ROS bootstrap signing key for signature verification
