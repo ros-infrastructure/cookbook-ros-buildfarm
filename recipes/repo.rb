@@ -322,18 +322,26 @@ cookbook_file '/home/pulp/.gnupg/gpg.conf' do
   group 'pulp'
   mode '0600'
 end
-execute "gpg --import /var/repos/repos.key" do
+file '/home/pulp/repos.key' do
+  content gpg_key['public_key']
+  owner 'pulp'
+  group 'pulp'
+  mode '0600'
+  notifies :run, 'execute[gpg --import /home/pulp/repos.key]', :immediately
+  notifies :run, 'execute[trust_public_key]', :immediately
+end
+execute "gpg --import /home/pulp/repos.key" do
   user 'pulp'
   group 'pulp'
   environment 'HOME' => '/home/pulp'
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+  action :nothing
 end
 execute 'trust_public_key' do
   command "(echo 5; echo y; echo save) | gpg --command-fd 0 --no-tty --no-greeting -q --edit-key #{gpg_key['fingerprint']} trust"
   user 'pulp'
   group 'pulp'
   environment 'HOME' => '/home/pulp'
-  not_if "gpg --list-keys #{gpg_key['fingerprint']} | grep -q '\\[ultimate\\]'"
+  action :nothing
 end
 
 directory pulp_data_directory do
