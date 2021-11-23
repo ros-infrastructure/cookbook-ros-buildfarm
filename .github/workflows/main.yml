@@ -26,8 +26,8 @@ jobs:
           - 'repo'
           - 'jenkins'
         chef_version:
-          - '15'
           - '16'
+          - '17'
       fail-fast: false
     steps:
       - name: Check out code
