@@ -119,6 +119,9 @@ def main(argv=sys.argv[1:]):
         time.sleep(1)
         status_timeout -= 1
 
+        if status_timeout <= 0:
+            break
+
     if pulp_is_ready:
         print('Connected - pulpcore is ready.')
     else:
