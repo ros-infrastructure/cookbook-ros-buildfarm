@@ -35,7 +35,7 @@ agent_username = node['ros_buildfarm']['agent']['agent_username']
   end
 end
 
-%w(docs rosdistro_cache status_page).each do |dir|
+%w(ci_archives docs rosdistro_cache status_page).each do |dir|
   directory "/var/repos/#{dir}" do
     owner agent_username
     group agent_username

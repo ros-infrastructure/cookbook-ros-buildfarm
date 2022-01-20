@@ -37,4 +37,5 @@ default['ros_buildfarm']['ssh_publisher']['repo_root_dir'] = '/var/repos/ubuntu/
 default['ros_buildfarm']['ssh_publisher']['docs_root_dir'] = '/var/repos/docs'
 default['ros_buildfarm']['ssh_publisher']['rosdistro_cache_root_dir'] = '/var/repos/rosdistro_cache'
 default['ros_buildfarm']['ssh_publisher']['status_page_root_dir'] = '/var/repos/status_page'
+default['ros_buildfarm']['ssh_publisher']['ci_archives_root_dir'] = '/var/repos/ci_archives'
 
