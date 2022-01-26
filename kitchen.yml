@@ -4,7 +4,7 @@ driver:
 provisioner:
   name: chef_solo
   product_name: chef
-  product_version: 15
+  product_version: 17
   solo_rb:
     environment: test
 
