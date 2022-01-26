@@ -5,4 +5,4 @@ source 'https://supermarket.chef.io'
 metadata
 
 # TODO: Update to a released cookbook version once the auth retry is upstream.
-cookbook "jenkins", "8.0.4"
+cookbook "jenkins", "9.5.0"
