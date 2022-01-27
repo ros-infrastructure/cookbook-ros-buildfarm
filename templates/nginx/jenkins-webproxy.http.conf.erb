@@ -12,8 +12,14 @@ server {
 	listen 80 default_server;
 	server_name <%= @server_name %>;
 
-        # Pass through jenkins headers nginx may consider invalid.
-        ignore_invalid_headers off;
+	# Pass through jenkins headers nginx may consider invalid.
+	ignore_invalid_headers off;
+
+	# Block potentially abuseable plugin test url.
+	location '/descriptorByName/jenkins.plugins.publish_over_ssh.BapSshHostConfiguration' {
+		root /dev/null;
+		deny all;
+	}
 
 	location / {
 		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
