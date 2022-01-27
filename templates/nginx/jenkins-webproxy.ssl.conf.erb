@@ -53,6 +53,12 @@ server {
 		allow all;
 	}
 
+	# Block potentially abuseable plugin test url.
+	location '/descriptorByName/jenkins.plugins.publish_over_ssh.BapSshHostConfiguration' {
+		root /dev/null;
+		deny all;
+	}
+
 	location / {
 		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
 		sendfile off;
