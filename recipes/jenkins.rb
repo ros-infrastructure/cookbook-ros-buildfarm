@@ -246,6 +246,7 @@ if node['ros_buildfarm']['letsencrypt_enabled']
       --fullchain-file #{cert_path}
       --key-file #{key_path}
       --reloadcmd /root/cert-update-hook.sh
+      --server letsencrypt
       --force
     )
     not_if {
