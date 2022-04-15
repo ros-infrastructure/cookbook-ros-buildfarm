@@ -1,7 +1,19 @@
 server {
 	listen 80 default_server;
-	server_name repo;
+	<% if @letsencrypt_enabled %>
+	listen 443 ssl default_server;
+	ssl_certificate <%= @cert_path %>;
+	ssl_certificate_key <%= @key_path %>;
+	<% end %>
+	server_name <% if @server_name %><%= @server_name %><% else %>repo<% end %>;
 	root /var/repos;
+
+	# Allow ACME challenge to access the webroot directly.
+	location '/.well-known/acme-challenge' {
+		default_type "text/plain";
+		root /var/www/html;
+		allow all;
+	}
 
 	location / {
 		autoindex on;

@@ -689,12 +689,53 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
 end
 
 package 'nginx'
+service 'nginx' do
+  action [:start, :enable]
+end
+
+
+server_name = node['ros_buildfarm']['repo']['server_name']
+cert_path = if server_name
+              "/etc/ssl/certs/#{server_name}/fullchain.pem"
+            else
+              nil
+            end
+key_path = if server_name
+             "/etc/ssl/private/#{server_name}.key"
+           else
+             nil
+           end
+
+# Initial configuration of SSL certs for HTTPS
+if node['ros_buildfarm']['letsencrypt_enabled']
+  if server_name.nil?
+    Chef::Log.fatal "No repo server name set for #{node.chef_environment} but it is required when using letsencrypt."
+    Chef::Log.fatal "Define the node['ros_buildfarm']['repo']['server_name'] attribute or set node['ros_buildfarm']['letsencrypt_enabled'] = false"
+    raise
+  end
+
+  # Bootstrap https with self-signed certificates
+  package 'ssl-cert'
+  directory "/etc/ssl/certs/#{server_name}"
+
+  execute "cp /etc/ssl/certs/ssl-cert-snakeoil.pem #{cert_path}" do
+    not_if { ::File.readable? cert_path }
+  end
+  execute "cp /etc/ssl/private/ssl-cert-snakeoil.key #{key_path}" do
+    not_if { ::File.readable? key_path }
+  end
+end
+
 template '/etc/nginx/sites-available/repo' do
   source 'nginx/repo.conf.erb'
   variables Hash[
-    rpm_repos: node['ros_buildfarm']['rpm_repos']
+    letsencrypt_enabled: node['ros_buildfarm']['letsencrypt_enabled'],
+    cert_path: cert_path,
+    key_path: key_path,
+    rpm_repos: node['ros_buildfarm']['rpm_repos'],
+    server_name: server_name,
   ]
-  notifies :restart, 'service[nginx]'
+  notifies :restart, 'service[nginx]', :immediately
 end
 link '/etc/nginx/sites-enabled/default' do
   action :delete
@@ -704,8 +745,36 @@ link '/etc/nginx/sites-enabled/repo' do
   to '/etc/nginx/sites-available/repo'
   notifies :restart, 'service[nginx]'
 end
-service 'nginx' do
-  action [:start, :enable]
+template '/etc/nginx/sites-available/repo' do
+  source 'nginx/repo.conf.erb'
+  variables Hash[
+    letsencrypt_enabled: node['ros_buildfarm']['letsencrypt_enabled'],
+    cert_path: cert_path,
+    key_path: key_path,
+    rpm_repos: node['ros_buildfarm']['rpm_repos'],
+    server_name: server_name,
+  ]
+  notifies :restart, 'service[nginx]', :immediately
+end
+
+# Continue with HTTPS certificate configuration now that nginx is configured.
+if node['ros_buildfarm']['letsencrypt_enabled']
+  include_recipe "ros_buildfarm::acmesh"
+
+  # Create Let's Encrypt signed cert if it has not already been done.
+  execute 'acme-issue-cert' do
+    environment 'HOME' => '/root'
+    command %W(
+      /root/.acme.sh/acme.sh --issue
+      --webroot /var/www/html
+      --domain #{server_name}
+      --fullchain-file #{cert_path}
+      --key-file #{key_path}
+      --reloadcmd /root/cert-update-hook.sh
+      --force
+    )
+    not_if { ::File.directory? "/root/.acme.sh/#{server_name}" }
+  end
 end
 
 # Configure rsync endpoints for repositories
