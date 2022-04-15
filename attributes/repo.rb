@@ -21,6 +21,10 @@ default['ros_buildfarm']['apt_repos']['suites'] = %w[xenial bionic focal stretch
 # ```
 default['ros_buildfarm']['repo']['rsyncd_endpoints'] = Hash[]
 
+# The repository host server name is currently only used to provide
+# a server name when using letsencrypt for https and is environment-specific.
+default['ros_buildfarm']['repo']['server_name'] = nil
+
 # The ros_buildfarm jobs are configured to try and pull the latest container
 # image from the Docker registry at the start of each job.  To prevent that
 # from consuming excess bandwidth and rate limited Docker API requests the repo
