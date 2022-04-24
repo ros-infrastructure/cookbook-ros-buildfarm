@@ -338,6 +338,9 @@ end
 directory "#{pulp_data_directory}/media" do
   owner 'pulp'
 end
+directory "#{pulp_data_directory}/docker_image" do
+  owner 'pulp'
+end
 
 cookbook_file "#{pulp_data_directory}/initialize.py" do
   owner 'pulp'
@@ -375,13 +378,13 @@ remote_file "/usr/local/bin/systemd-docker" do
   source 'https://github.com/nuclearsandwich/systemd-docker/releases/download/subdavis-1.0.0/systemd-docker-linux-amd64'
   mode '0755'
 end
-cookbook_file "#{pulp_data_directory}/Dockerfile" do
+cookbook_file "#{pulp_data_directory}/docker_image/Dockerfile" do
   source 'pulp/Dockerfile'
 end
 
 if node['ros_buildfarm']['repo']['enable_pulp_services']
   execute 'docker build -t pulp_image .' do
-    cwd pulp_data_directory
+    cwd "#{pulp_data_directory}/docker_image"
   end
 
   execute 'pulp_django_migration' do
