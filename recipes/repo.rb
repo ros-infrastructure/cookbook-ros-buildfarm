@@ -321,6 +321,13 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
         not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml") }
       end
 
+      execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{srpms_dir}/repodata/repomd.xml" do
+        user agent_username
+        group agent_username
+        environment 'HOME' => "/home/#{agent_username}"
+        not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml.asc") }
+      end
+
       architectures.each do |arch|
         arch_dir = "#{version_dir}/#{arch}"
         debug_dir = "#{arch_dir}/debug"
@@ -338,10 +345,24 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
           not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml") }
         end
 
+        execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{arch_dir}/repodata/repomd.xml" do
+          user agent_username
+          group agent_username
+          environment 'HOME' => "/home/#{agent_username}"
+          not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml.asc") }
+        end
+
         execute "createrepo_c --no-database #{debug_dir}" do
           user agent_username
           group agent_username
           not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml") }
+        end
+
+        execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{debug_dir}/repodata/repomd.xml" do
+          user agent_username
+          group agent_username
+          environment 'HOME' => "/home/#{agent_username}"
+          not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml.asc") }
         end
       end
     end
