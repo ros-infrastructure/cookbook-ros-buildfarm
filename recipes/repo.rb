@@ -296,7 +296,7 @@ package 'createrepo-c'
 package 'rpm'
 
 node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
-  dist_dir = "/var/repos/#{dist}_cra"
+  dist_dir = "/var/repos/#{dist}"
 
   %w(building testing main).each do |repo|
     repo_dir = "#{dist_dir}/#{repo}"
@@ -706,7 +706,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       end
     end
 
-    dist_dir = "/var/repos/#{dist}"
+    dist_dir = "/var/repos/#{dist}_pulp"
     directory dist_dir do
       owner agent_username
       group agent_username
