@@ -713,7 +713,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       mode '0755'
     end
 
-    %w(building testing main).each do |repo|
+    %w(building).each do |repo|
       repo_dir = "#{dist_dir}/#{repo}"
       directory repo_dir do
         owner agent_username
