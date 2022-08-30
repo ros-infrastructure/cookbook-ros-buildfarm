@@ -371,12 +371,12 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
   end
 end
 
-if node['ros_buildfarm']['rpm_repos']['bootstrap_url']
+if not node['ros_buildfarm']['rpm_bootstrap_url'].empty?
   file "/home/#{agent_username}/ros_bootstrap_rpm_urls.txt" do
     owner agent_username
     group agent_username
     mode '0644'
-    content node['ros_buildfarm']['rpm_repos']['bootstrap_url']
+    content node['ros_buildfarm']['rpm_bootstrap_url']
   end
 end
 
