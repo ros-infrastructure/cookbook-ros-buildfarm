@@ -295,6 +295,8 @@ package 'createrepo-c'
 
 package 'rpm'
 
+package 'socat'
+
 node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
   dist_dir = "/var/repos/#{dist}"
 
