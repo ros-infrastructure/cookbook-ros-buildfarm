@@ -42,6 +42,7 @@ default['ros_buildfarm']['repo']['container_registry_cache_enabled'] = true
 default['ros_buildfarm']['repo']['pulp_worker_count'] = 2
 default['ros_buildfarm']['repo']['enable_pulp_services'] = true
 default['ros_buildfarm']['rpm_repos']['rhel']['8'] = %w[x86_64]
+default['ros_buildfarm']['rpm_repos']['bootstrap_url'] = 'http://repos.ros.org/repos/$distname/ros_bootstrap/$releasever/$basearch/'
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['rhel']['8'] = Hash[
   architectures: %w[x86_64],
   binary: 'http://repos.ros.org/repos/rhel/ros_bootstrap/8/$basearch/',

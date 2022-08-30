@@ -369,6 +369,15 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
   end
 end
 
+if node['ros_buildfarm']['rpm_repos']['bootstrap_url']
+  file "/home/#{agent_username}/ros_bootstrap_rpm_urls.txt" do
+    owner agent_username
+    group agent_username
+    mode '0644'
+    content node['ros_buildfarm']['rpm_repos']['bootstrap_url']
+  end
+end
+
 # Pulp setup
 pulp_data_directory = '/var/repos/.pulp'
 user 'pulp' do
