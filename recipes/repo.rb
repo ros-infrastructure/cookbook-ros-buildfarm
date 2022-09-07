@@ -289,22 +289,15 @@ apt_repository 'createrepo-agent-ppa' do
   uri 'ppa:osrf/createrepo-agent'
 end
 
-package 'createrepo-agent'
-
-package 'createrepo-c'
-
-package 'rpm'
-
-package 'socat'
+%w[createrepo-agent createrepo-c rpm socat].each do |pkg|
+  package pkg
+end
 
 node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
   dist_dir = "/var/repos/#{dist}"
 
   %w(building testing main).each do |repo|
     repo_dir = "#{dist_dir}/#{repo}"
-    file "#{repo_dir}/RPM-GPG-KEY-ros-#{repo}" do
-      action :delete
-    end
 
     versions.each do |version, architectures|
       version_dir = "#{repo_dir}/#{version}"
@@ -371,12 +364,12 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
   end
 end
 
-if not node['ros_buildfarm']['rpm_bootstrap_url'].empty?
+if not node['ros_buildfarm']['rpm_bootstrap_urls'].empty?
   file "/home/#{agent_username}/ros_bootstrap_rpm_urls.txt" do
     owner agent_username
     group agent_username
     mode '0644'
-    content node['ros_buildfarm']['rpm_bootstrap_url']
+    content node['ros_buildfarm']['rpm_bootstrap_urls'].join("\n")
   end
 end
 
