@@ -284,6 +284,95 @@ end
   end
 end
 
+# RPM repository setup
+apt_repository 'createrepo-agent-ppa' do
+  uri 'ppa:osrf/createrepo-agent'
+end
+
+%w[createrepo-agent createrepo-c rpm socat].each do |pkg|
+  package pkg
+end
+
+node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
+  dist_dir = "/var/repos/#{dist}"
+
+  %w(building testing main).each do |repo|
+    repo_dir = "#{dist_dir}/#{repo}"
+
+    versions.each do |version, architectures|
+      version_dir = "#{repo_dir}/#{version}"
+      srpms_dir = "#{version_dir}/SRPMS"
+      [dist_dir, repo_dir, version_dir, srpms_dir].each do |dir|
+        directory dir do
+          owner agent_username
+          group agent_username
+          mode '0755'
+        end
+      end
+
+      execute "createrepo_c --no-database #{srpms_dir}" do
+        user agent_username
+        group agent_username
+        not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml") }
+      end
+
+      execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{srpms_dir}/repodata/repomd.xml" do
+        user agent_username
+        group agent_username
+        environment 'HOME' => "/home/#{agent_username}"
+        not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml.asc") }
+      end
+
+      architectures.each do |arch|
+        arch_dir = "#{version_dir}/#{arch}"
+        debug_dir = "#{arch_dir}/debug"
+        [arch_dir, debug_dir].each do |dir|
+          directory dir do
+            owner agent_username
+            group agent_username
+            mode '0755'
+          end
+        end
+
+        execute "createrepo_c --no-database #{arch_dir} --excludes=debug/*" do
+          user agent_username
+          group agent_username
+          not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml") }
+        end
+
+        execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{arch_dir}/repodata/repomd.xml" do
+          user agent_username
+          group agent_username
+          environment 'HOME' => "/home/#{agent_username}"
+          not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml.asc") }
+        end
+
+        execute "createrepo_c --no-database #{debug_dir}" do
+          user agent_username
+          group agent_username
+          not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml") }
+        end
+
+        execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{debug_dir}/repodata/repomd.xml" do
+          user agent_username
+          group agent_username
+          environment 'HOME' => "/home/#{agent_username}"
+          not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml.asc") }
+        end
+      end
+    end
+  end
+end
+
+if not node['ros_buildfarm']['rpm_bootstrap_urls'].empty?
+  file "/home/#{agent_username}/ros_bootstrap_rpm_urls.txt" do
+    owner agent_username
+    group agent_username
+    mode '0644'
+    content node['ros_buildfarm']['rpm_bootstrap_urls'].join("\n")
+  end
+end
+
 # Pulp setup
 pulp_data_directory = '/var/repos/.pulp'
 user 'pulp' do
@@ -621,7 +710,7 @@ if node['ros_buildfarm']['repo']['enable_pulp_services']
       end
     end
 
-    dist_dir = "/var/repos/#{dist}"
+    dist_dir = "/var/repos/#{dist}_pulp"
     directory dist_dir do
       owner agent_username
       group agent_username
