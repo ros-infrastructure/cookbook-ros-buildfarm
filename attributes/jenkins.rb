@@ -19,3 +19,5 @@ default['ros_buildfarm']['letsencrypt_enabled'] = false
 
 # When set to true a postfix SMTP server will be configured for use by Jenkins via sendmail.
 default['ros_buildfarm']['smtp'] = false
+
+default['jenkins']['master']['version'] = '2.346.1'
