@@ -30,7 +30,7 @@ end
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
 
-package 'openjdk-8-jdk-headless'
+package 'openjdk-11-jdk-headless'
 include_recipe 'jenkins::master'
 
 # Set up authentication
