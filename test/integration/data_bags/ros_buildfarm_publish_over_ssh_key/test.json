@@ -1,4 +1,5 @@
 {
   "id": "test",
-  "ssh_key": "SSH KEY TEXT"
+  "private_key": "SSH KEY TEXT",
+  "public_key": "PUBLIC KEY TEXT"
 }
