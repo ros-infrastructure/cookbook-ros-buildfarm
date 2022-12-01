@@ -38,9 +38,7 @@ default['ros_buildfarm']['repo']['server_name'] = nil
 # ```
 # ['http://repo.test.ros.org:5000']
 # ```
-default['ros_buildfarm']['repo']['container_registry_cache_enabled'] = true
-default['ros_buildfarm']['repo']['pulp_worker_count'] = 2
-default['ros_buildfarm']['repo']['enable_pulp_services'] = true
+default['ros_buildfarm']['repo']['container_registry_cache_enabled'] = false
 default['ros_buildfarm']['rpm_repos']['rhel']['8'] = %w[x86_64]
 default['ros_buildfarm']['rpm_repos']['rhel']['9'] = %w[x86_64]
 default['ros_buildfarm']['rpm_bootstrap_urls'] = ['http://repos.ros.org/repos/$distname/ros_bootstrap/$releasever/$basearch/']

@@ -20,25 +20,6 @@ server {
 		index index.html;
 	}
 
-	<%- @rpm_repos.each do |dist, versions| -%>
-		<%- versions.each do |version, architectures| -%>
-	location /<%= dist %>_pulp/building/<%= version %>/SRPMS/ {
-		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-SRPMS/;
-	}
-			<%- architectures.each do |arch| -%>
-	location /<%= dist %>_pulp/building/<%= version %>/<%= arch %>/debug/ {
-		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>-debug/;
-	}
-	location /<%= dist %>_pulp/building/<%= version %>/<%= arch %>/ {
-		# TODO more proxy_pass args
-		proxy_pass	http://127.0.0.1:24816/pulp/content/ros-building-<%= dist %>-<%= version %>-<%= arch %>/;
-	}
-
-			<%- end -%>
-		<%- end -%>
-	<%- end -%>
 	location ^~ \.(dsc|deb|tar\.gz)$ {
 		# Use sendfile to send debs directly via kernel syscalls,
 		# avoiding copying data from kernel to userspace and back.
