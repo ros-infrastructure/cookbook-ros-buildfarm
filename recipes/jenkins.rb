@@ -31,6 +31,53 @@ end
 apt_update
 
 package 'openjdk-8-jdk-headless'
+# Jenkins downgrade protection
+#
+# The Jenkins package has transitioned to using systemd units instead of
+# sysvinit style init scripts. In order to maintain this cookbook the last
+# version of Jenkins which is packaged with a sysvinit script is pinned.
+# However Jenkins cannot be safely downgraded and some configurations of
+# Jenkins will continue to function once initially configured even after the
+# systemd switch.
+# To protect users from unintentional downgrades we're going to do something really ugly here.
+package 'jenkins' do
+  action :lock
+  only_if { -> do
+    jenkins_info = `dpkg -s jenkins`
+    if $?.exitstatus != 0
+       return false
+    end
+
+    version_line = jenkins_info.lines.select{|line| line =~ /^Version: /}.first
+    if version_line.nil?
+      return false
+    end
+
+    # Transform "Version: 2.319.1\n" to ["2", "319", "1"]
+    version_components = version_line.chomp.split(": ")[1].split(".")
+    # The first systemd versions are 2.335 (weekly) and 2.332.1 (LTS)
+    if version_components[0].to_i > 2 or version_components[1].to_i >= 332
+      node.run_state[:jenkins_package_version_lock] = version_components.join('.')
+      Chef::Log.warn("Chef detected this Jenkins version: #{node.run_state[:jenkins_package_version_lock]}")
+      return true
+    end
+    # Jenkins is installed but is older than the maximum and can be upgraded.
+    return false
+  end.call }
+end
+
+ruby_block 'prevent jenkins downgrade' do
+  block do
+    if node.run_state[:jenkins_package_version_lock]
+      if node['jenkins']['master']['version'] != node.run_state[:jenkins_package_version_lock]
+        Chef::Log.fatal("Before this cookbook continues. please set the node['jenkins']['master']['version'] attribute to #{node.run_state[:jenkins_package_version_lock]} or this cookbook will attempt to downgrade your Jenkins version.")
+        Chef::Log.fatal("See https://github.com/ros-infrastructure/cookbook-ros-buildfarm/issues/121 for more information")
+        raise
+      end
+    end
+  end
+end
+
 include_recipe 'jenkins::master'
 
 # Set up authentication
