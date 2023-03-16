@@ -170,6 +170,7 @@ cookbook_file "/home/#{agent_username}/.gnupg/gpg.conf" do
 end
 link "/home/#{agent_username}/.gnupg/S.gpg-agent" do
   action :delete
+  only_if { ::File.symlink?("/home/#{agent_username}/.gnupg/S.gpg-agent") }
 end
 
 # Set up ssh authorized keys for publish over ssh.
