@@ -471,6 +471,9 @@ end
 cookbook_file "#{pulp_data_directory}/docker_image/Dockerfile" do
   source 'pulp/Dockerfile'
 end
+cookbook_file "#{pulp_data_directory}/docker_image/constraints.txt" do
+  source 'pulp/constraints.txt'
+end
 
 if node['ros_buildfarm']['repo']['enable_pulp_services']
   execute 'docker build -t pulp_image .' do
