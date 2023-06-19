@@ -75,13 +75,15 @@ RUN dnf install \
   zlib-devel \
   -y
 
+COPY constraints.txt /tmp/constraints.txt
+
 RUN python3 -m venv --system-site-packages /usr/local/lib/pulp
 ENV PATH="/usr/local/lib/pulp/bin:${PATH}"
 ENV PYTHONPATH="/usr/local/lib/pulp/lib/python3.6/site-packages"
 
-RUN pip3 install scikit-build
-RUN pip3 install pulpcore==3.9.1 pulp-rpm==3.9.0 git+https://github.com/cottsay/pulp_rsync.git@0.0.3
-RUN pip3 install --upgrade jsonschema
+RUN pip3 install -c /tmp/constraints.txt scikit-build
+RUN pip3 install -c /tmp/constraints.txt pulpcore==3.9.1 pulp-rpm==3.9.0 git+https://github.com/cottsay/pulp_rsync.git@0.0.3
+RUN pip3 install -c /tmp/constraints.txt --upgrade jsonschema
 
 ENV DJANGO_SETTINGS_MODULE="pulpcore.app.settings"
 ENV LANG="en_US.utf8"
