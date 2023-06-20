@@ -50,7 +50,7 @@ ply==3.9
 productmd==1.35
 psycopg2==2.7.5
 pulp-rpm==3.9.0
-pulp-rsync==0.0.3
+#pulp-rsync==0.0.3  # installation from path or url cannot be constrained
 pulpcore==3.9.1
 pycairo==1.16.3
 pycares==3.1.1
