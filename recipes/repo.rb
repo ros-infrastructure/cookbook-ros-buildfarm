@@ -375,6 +375,63 @@ if not node['ros_buildfarm']['rpm_bootstrap_urls'].empty?
 end
 
 
+# Pulp setup
+node['ros_buildfarm']['rpm_repos'].keys.each do |dist|
+  dist_dir = "/var/repos/#{dist}_pulp"
+  directory dist_dir do
+    action :delete
+    recursive true
+  end
+end
+
+0.upto(10) do |i|
+  service "pulp-worker@#{i}" do
+    action [:stop, :disable]
+    only_if { File.exist?("/etc/systemd/system/pulp-worker@.service") }
+  end
+end
+file "/etc/systemd/system/pulp-worker@.service" do
+  action :delete
+end
+%w(pulp-api-endpoint pulp-content-endpoint pulp-resource-manager pulp-rsync-endpoint).each do |service_name|
+  service service_name do
+    action [:stop, :disable]
+    only_if { File.exist?("/etc/systemd/system/#{service_name}.service") }
+  end
+  file "/etc/systemd/system/#{service_name}.service" do
+    action :delete
+  end
+end
+
+file '/usr/local/bin/systemd-docker' do
+  action :delete
+end
+
+service 'postgresql' do
+  action [:stop, :disable]
+  only_if { File.exist?('/usr/lib/systemd/system/postgresql.service') }
+end
+
+service 'redis' do
+  action [:stop, :disable]
+  only_if { File.exist?('/usr/lib/systemd/system/redis.service') }
+end
+
+pulp_data_directory = '/var/repos/.pulp'
+directory pulp_data_directory do
+  action :delete
+  recursive true
+end
+
+user 'pulp' do
+  action :remove
+end
+directory '/home/pulp' do
+  action :delete
+  recursive true
+end
+
+
 package 'nginx'
 service 'nginx' do
   action [:start, :enable]

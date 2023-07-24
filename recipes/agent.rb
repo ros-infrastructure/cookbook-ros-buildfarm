@@ -98,6 +98,13 @@ end
   package vcspkg
 end
 
+# Client utilities for pulp content manager
+%w[pulp-rpm-client pulpcore-client].each do |pulppkg|
+    execute "python3 -m pip uninstall -y #{pulppkg}" do
+      only_if "python3 -m pip show #{pulppkg}"
+    end
+end
+
 # TODO install this only on amd64?
 package 'qemu-user-static'
 
