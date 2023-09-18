@@ -29,3 +29,6 @@ default['ros_buildfarm']['agent']['executors'] = 4
 # The set of Jenkins labels that will be applied to agents created with this recipe.
 # The example build farm configurations assume that the 'buildagent' label is the default for building sourcedeb and binarydeb packages. Other labels may be used to control where other jobs run.
 default['ros_buildfarm']['agent']['labels'] = %w(buildagent)
+
+# Prevents docker and containerd from getting updates and restarting mid build. See https://github.com/ros2/ci/issues/702
+default['ros_buildfarm']['unattended_upgrades']['package_blacklist'] = %w[docker.io containerd]
