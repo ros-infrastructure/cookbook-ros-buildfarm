@@ -1,6 +1,29 @@
 apt_update
 package 'docker.io'
 
+# Create a directory for the apt-daily-upgrade.timer.d override (doesn't exist by default)
+directory '/etc/systemd/system/apt-daily-upgrade.timer.d' do
+  recursive true
+end
+
+# Moves the unattended daily upgrades to 1am
+cookbook_file '/etc/systemd/system/apt-daily-upgrade.timer.d/override.conf' do
+  source 'apt-daily-upgrade.timer.override'
+  notifies :reload_or_try_restart, 'systemd_unit[apt-daily-upgrade.timer]', :delayed
+end
+
+systemd_unit 'apt-daily-upgrade.timer' do
+  action :nothing
+end
+
+template '/etc/apt/apt.conf.d/50unattended-upgrades' do
+  source '50unattended-upgrades.erb'
+  variables(
+    blacklist: node['ros_buildfarm']['unattended_upgrades']['package_blacklist']
+  )
+
+end
+
 # Add a containerd service override to work around
 # https://bugs.launchpad.net/ubuntu/+source/unattended-upgrades/+bug/1870876?comments=all
 directory '/etc/systemd/system/containerd.service.d' do
