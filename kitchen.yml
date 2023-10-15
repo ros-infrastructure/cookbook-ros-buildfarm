@@ -3,7 +3,8 @@ driver:
   vagrant
 provisioner:
   name: chef_solo
-  product_name: chef
+  product_name: cinc
+  download_url: https://omnitruck.cinc.sh/install.sh
   product_version: 17
   solo_rb:
     environment: test
