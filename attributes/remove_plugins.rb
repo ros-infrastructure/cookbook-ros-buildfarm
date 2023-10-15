@@ -5,5 +5,7 @@ default['ros_buildfarm']['jenkins']['remove_plugins'] = %w[
   analysis-core
   config-file-provider
   cvs
+  greenballs
   icon-shim
+  modernstatus
 ]
