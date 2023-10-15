@@ -54,8 +54,3 @@ suites:
     verifier:
       inspec_tests:
         - test/integration/repo
-    attributes:
-      ros_buildfarm:
-        repo:
-          # pulp services cannot run due to docker-in-docker issues
-          enable_pulp_services: false

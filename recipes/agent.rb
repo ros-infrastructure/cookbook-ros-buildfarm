@@ -122,9 +122,10 @@ end
 end
 
 # Client utilities for pulp content manager
-package "python3-pip"
-%w[pulp-rpm-client==3.9.0 pulpcore-client==3.9.1].each do |pulppkg|
-  execute "python3 -m pip install #{pulppkg}"
+%w[pulp-rpm-client pulpcore-client].each do |pulppkg|
+    execute "python3 -m pip uninstall -y #{pulppkg}" do
+      only_if "python3 -m pip show #{pulppkg}"
+    end
 end
 
 # TODO install this only on amd64?
