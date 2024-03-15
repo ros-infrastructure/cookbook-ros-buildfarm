@@ -111,31 +111,35 @@ systemd_unit 'gpg-vault-agent.service' do
   triggers_reload true
   action [:start, :enable]
 end
-gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
-file '/home/gpg-vault/.gnupg/gpg_public_key.pub' do
-  content gpg_key['public_key']
-  owner 'gpg-vault'
-  group 'gpg-vault'
-  mode '0644'
+gpg_keys = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
+gpg_keys.each do |gpg_key|
+  file "/home/gpg-vault/.gnupg/#{gpg_key['name']}.pub" do
+    content gpg_key['public_key']
+    owner 'gpg-vault'
+    group 'gpg-vault'
+    mode '0644'
+  end
+  execute "gpg --import /home/gpg-vault/.gnupg/#{gpg_key['name']}.pub" do
+    environment 'HOME' => '/home/gpg-vault'
+    user 'gpg-vault'
+    group 'gpg-vault'
+    not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+  end
+
+  file "/home/gpg-vault/.gnupg/#{gpg_key['name']}.sec" do
+    content gpg_key['private_key']
+    owner 'gpg-vault'
+    group 'gpg-vault'
+    mode '0600'
+  end
+  execute "gpg --import /home/gpg-vault/.gnupg/#{gpg_key['name']}.sec" do
+    environment 'HOME' => '/home/gpg-vault'
+    user 'gpg-vault'
+    group 'gpg-vault'
+    not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+  end
 end
-execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
-  environment 'HOME' => '/home/gpg-vault'
-  user 'gpg-vault'
-  group 'gpg-vault'
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
-end
-file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
-  content gpg_key['private_key']
-  owner 'gpg-vault'
-  group 'gpg-vault'
-  mode '0600'
-end
-execute 'gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec' do
-  environment 'HOME' => '/home/gpg-vault'
-  user 'gpg-vault'
-  group 'gpg-vault'
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
-end
+
 group 'gpg-vault' do
   append true
   members [agent_username]
