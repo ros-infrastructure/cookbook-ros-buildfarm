@@ -3,7 +3,7 @@ driver:
   vagrant
 provisioner:
   name: chef_solo
-  product_name: chef
+  product_name: cinc
   product_version: 17
   solo_rb:
     environment: test
