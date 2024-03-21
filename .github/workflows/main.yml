@@ -31,15 +31,17 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@main
-      - name: Install Chef
+      - name: Install Cinc
         uses: actionshub/chef-install@main
+        with:
+          omnitruckUrl: omnitruck.cinc.sh
+          project: cinc-workstation
       - name: Test-Kitchen
         uses: actionshub/test-kitchen@main
         with:
           suite: ${{ matrix.suite }}
           os: 'ubuntu-2004'
         env:
-          CHEF_LICENSE: accept-no-persist
           CHEF_VERSION: ${{ matrix.chef_version }}
           KITCHEN_LOCAL_YAML: kitchen.dokken.yml
       - name: Print debug output (journalctl)
