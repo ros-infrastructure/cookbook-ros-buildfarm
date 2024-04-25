@@ -50,7 +50,8 @@ package 'jenkins' do
 
     version_line = jenkins_info.lines.select{|line| line =~ /^Version: /}.first
     if version_line.nil?
-      return false
+      Chef::Log.fatal("Could not determine Jenkins version from dpkg but it does seem installed.")
+      raise
     end
 
     # Transform "Version: 2.319.1\n" to ["2", "319", "1"]
