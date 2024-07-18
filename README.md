@@ -51,7 +51,12 @@ kitchen login jenkins
 ### Installing test kitchen with RubyGems
 
 If the chef workstation isn't available for your platform you can install test kitchen with RubyGems and Bundler.
-You'll need Ruby, ideally Ruby 2.7, RubyGems, and Bundler.
+You'll need Ruby, ideally Ruby >= 2.7, RubyGems, and Bundler.
+
+To install gems locally without affecting system- or user-wide installation, set a vendor path:
+```
+bundle config set --local path vendor/bundle
+```
 
 Run `bundle install` to install the gems declared in `gems.rb`.
 In order to use test kitchen from bundler all kitchen commands must be prefixed with `bundle exec`. For example:
