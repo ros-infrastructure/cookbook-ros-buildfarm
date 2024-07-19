@@ -1,0 +1,10 @@
+# Configuration variables for reprepro-sign.sh
+GPG_OPTS=""
+
+KEY_OPTS=""
+<% if @signing_key_ids.size != 0 -%>
+<% @signing_key_ids.each do |fingerprint| -%>
+KEY_OPTS="$KEY_OPTS -u <%= fingerprint %>"
+<% end -%>
+<% end -%>
+export GPG_OPTS KEY_OPTS
