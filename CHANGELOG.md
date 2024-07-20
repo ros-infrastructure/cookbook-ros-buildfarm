@@ -2,6 +2,24 @@
 
 This file is used to list changes made in each version of the ros_buildfarm cookbook.
 
+# Forthcoming
+
+* Add support for multiple GPG key signatures on apt repositories. [#FORTHCOMING]()
+  In order to allow for easier rotation of repository signing keys, we've added
+  the ability to set and sign apt repositories with multiple keys. When coupled
+  with a ros-archive-keyring package that supplies apt repository configuration
+  this will allow for seamless updating of repository signing keys for ROS
+  users. Previously, only one signing key was supported per chef environment
+  and the data bag id was the name of the environment. Now, all keys matching
+  `CHEF_ENVIRONMENT-IDENTIFIER` will be installed on the system and used to
+  sign apt package repositories.
+  It is possible to migrate your current signing key without adding any
+  additional keys.
+  To do so rename your current data bag item from
+  `CHEF_ENVIRONMENT.json` to `CHEF_ENVIRONMENT-default.json`, update the `id`
+  field of the item likewise from `CHEF_ENVIRONMENT` to
+  `CHEF_ENVIRONMENT-default`, and add a `"default": true` field.
+
 # 0.5.1
 
 * Update plugins to resolve security issues. [#94](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/94)
