@@ -4,7 +4,7 @@ This file is used to list changes made in each version of the ros_buildfarm cook
 
 # Forthcoming
 
-* Add support for multiple GPG key signatures on apt repositories. [#FORTHCOMING]()
+* Add support for multiple GPG key signatures on apt repositories. [#137](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/137)
   In order to allow for easier rotation of repository signing keys, we've added
   the ability to set and sign apt repositories with multiple keys. When coupled
   with a ros-archive-keyring package that supplies apt repository configuration
