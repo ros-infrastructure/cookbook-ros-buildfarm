@@ -2,6 +2,48 @@
 
 This file is used to list changes made in each version of the ros_buildfarm cookbook.
 
+# 0.5.1
+
+* Update plugins to resolve security issues. [#94](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/94)
+* Add certificate update hook script for acme.sh. [#95](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/95)
+  * Always force the renewing of the acme certificate with extra guards.
+  * Add a TODO noting when the Le_ReloadCmd guard clause can be removed.
+  * Test exact reloadcmd match.
+  * Use correct base64 encoded script.
+* Bump to pulp_rsync 0.0.3 [#100](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/100)
+* Update pulp base image to use Alma Linux. [#99](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/99)
+* Break out of the loop when timeout is exceeded. [#103](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/103)
+* Add an SSH publish endpoint for CI archives. [#104](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/104)
+* Update tested chef version to 17. [#105](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/105)
+  * Update jenkins cookbook to latest.
+  * Use chef 17 in CI workflows.
+* Bundle publish-over-ssh plugin. [#106](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/106)
+*   Block potentially abusable publish-over-ssh connection test url.
+*   Bump addressable from 2.7.0 to 2.8.0
+*   Update structs plugin version.
+* Update seccomp profile to moby/moby 20.10.12. [#109](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/109)
+* Add letsencrypt support for the repository host. [#110](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/110)
+  * Add ros_buildfarm.repo.server_name attribute.
+  * Extract acme.sh installation into a recipe.
+  * Add letsencrypt support for repo host.
+  * As of acme 3.0 letsencrypt is no longer the default but is still selectable.
+* Build the pulp docker image in its own directory. [#111](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/111)
+* Switch from Pulp to createrepo-agent for RPMs [#116](https://github.com/ros-infrastructure/coookbook-ros-buildfarm/pull/116)
+* Add RHEL 9 repositories. [#125](https://github.com/ros-infrastructure/coookbook-ros-buildfarm/pull/125)
+* Only delete S.gpg-agent if it is a symlink. [#128](https://github.com/ros-infrastructure/coookbook-ros-buildfarm/pull/128)
+* Push out expiration of test keys. [#131](https://github.com/ros-infrastructure/coookbook-ros-buildfarm/pull/131)
+* Constrain python packages to the versions last successfully deployed. [#130](https://github.com/ros-infrastructure/coookbook-ros-buildfarm/pull/130)
+  * Apply and use constraints file in Docker build.
+  * pulp-rsync can't be listed in the constraints file.
+* Change default config for unattended upgrades. [#132](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/132)
+* Pin the last Jenkins package which uses sysvinit scripts. [#119](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/119)
+  * Add a convoluted hold and runtime check to prevent Jenkins downgrade.
+  * Update jenkins cookbook to fix upstream GPG key change.
+  * Make this weird case a fatal error rather.
+* Use cinc for test kitchen. [#133](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/133)
+  * Use cinc rather than chef workstation to run tests.
+* Comment out de-listed plugin for Windows agent support. [#138](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/138)
+
 # 0.5.0
 
 * Update xunit and plugin dependencies for Jenkins 2.277 compatibility. [#89](https://github.com/ros-infrastructure/cookbook-ros-buildfarm/pull/89)
