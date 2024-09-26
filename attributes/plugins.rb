@@ -101,7 +101,7 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "translation" => "1.16",
   "trilead-api" => "1.0.13",
   "warnings-ng" => "9.0.1",
-  "windows-slaves" => "1.3.1",
+  #"windows-slaves" => "1.3.1", # Delisted https://github.com/jenkinsci/windows-slaves-plugin?tab=readme-ov-file#notice-of-deprecation
   "workflow-api" => "2.42",
   "workflow-cps" => "2.90",
   "workflow-cps-global-lib" => "2.15",
