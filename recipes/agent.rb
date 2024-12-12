@@ -95,6 +95,7 @@ data_bag('ros_buildfarm_ssh_known_hosts').each do |id|
   end
 end
 
+## CHANGEME! 
 package 'openjdk-8-jdk-headless'
 
 swarm_client_version = node['ros_buildfarm']['jenkins']['plugins']['swarm']
@@ -109,6 +110,7 @@ remote_file swarm_client_jarfile_path do
   mode '0444'
 end
 
+## Probably need to pin this to empy3
 package 'python3-empy'
 
 directory "/home/#{agent_username}/.ccache" do

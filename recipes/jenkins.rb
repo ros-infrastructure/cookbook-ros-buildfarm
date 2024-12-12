@@ -30,7 +30,11 @@ end
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
 
+## CHANGEME: use osrf_java -> JDK 8 y JDK 21
+## Specify java version in attributes
 package 'openjdk-8-jdk-headless'
+
+## VERIFY: Is it needed?
 # Jenkins downgrade protection
 #
 # The Jenkins package has transitioned to using systemd units instead of
@@ -79,6 +83,7 @@ ruby_block 'prevent jenkins downgrade' do
   end
 end
 
+## CHANGEME: Add new jenkins recipe
 include_recipe 'jenkins::master'
 
 # Set up authentication
@@ -87,6 +92,7 @@ node.run_state[:jenkins_username] = chef_user['username']
 node.run_state[:jenkins_password] = chef_user['password']
 node.default['jenkins']['executor']['protocol'] = 'http'
 
+## CHANGEME: Port to plugin manager or other
 # Remove plugins that were required previously but are not now.
 node['ros_buildfarm']['jenkins']['remove_plugins'].each do |plugin|
   jenkins_plugin plugin do
@@ -94,6 +100,8 @@ node['ros_buildfarm']['jenkins']['remove_plugins'].each do |plugin|
     notifies :restart, 'service[jenkins]', :delayed
   end
 end
+
+## Confirm with Steven! if we want to nuke it
 # Install bundled publish-over-ssh plugin which was delisted from the Jenkins plugin server
 cookbook_file '/tmp/publish-over-ssh.hpi' do
   source 'publish-over-ssh.hpi'
@@ -103,6 +111,8 @@ end
 jenkins_plugin 'publish-over-ssh' do
   source 'file:///tmp/publish-over-ssh.hpi'
 end
+
+## CHANGEME 
 # Install plugins required to run ros_buildfarm.
 node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   jenkins_plugin plugin do
@@ -174,6 +184,7 @@ if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
     Chef::Log.fatal("No auth strategy script for #{node.chef_environment} in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
     raise
   end
+  ## CHANGEME: Use cli to run groovy scripts and all usages of jenkins_script
   jenkins_script 'auth_strategy' do
     command auth_strategy_script['command']
   end
@@ -315,6 +326,7 @@ end
 
 package 'python3-yaml'
 
+# CHECK IF THIS IS LEGACY
 package 'docker.io'
 
 data_bag('ros_buildfarm_password_credentials').each do |item|
