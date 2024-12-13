@@ -23,4 +23,4 @@ default['ros_buildfarm']['smtp'] = false
 # Last version supporting Java 8
 #default['jenkins']['master']['version'] = '2.346.1'
 # Last version supporting sysvinit scripts
-default['jenkins']['master']['version'] = '2.319.3'
+default['jenkins']['master']['version'] = '2.479.2'
