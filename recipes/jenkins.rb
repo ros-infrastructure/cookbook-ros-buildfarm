@@ -30,7 +30,11 @@ end
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
 
-package 'openjdk-8-jdk-headless'
+## CHANGEME: use osrf_java -> JDK 8 y JDK 21
+## Specify java version in attributes
+package 'openjdk-21-jdk-headless'
+
+## VERIFY: Is it needed?
 # Jenkins downgrade protection
 #
 # The Jenkins package has transitioned to using systemd units instead of
@@ -91,7 +95,9 @@ node.default['jenkins']['executor']['protocol'] = 'http'
 # Remove plugins that were required previously but are not now.
 # Delete *.jpi files in plugin directory by filtering plugins to remove from a grep command
 plugin_remove_filter = node.default['ros_buildfarm']['jenkins']['remove_plugins'].map! {|e| "#{e}.jpi"}.join("|")
-execute "ls /var/lib/jenkins/plugins | grep -E \"#{plugin_remove_filter}\" | xargs rm" do
+execute "ls /var/lib/jenkins/plugins | grep -E \"#{plugin_remove_filter}\" | xargs -r rm" do
+  # If there are no plugins, then we don't need to remove anythi  ng
+  only_if { ::Dir.exist? '/var/lib/jenkins/plugins/' }
 end
 
 # Install plugins required to run ros_buildfarm.
