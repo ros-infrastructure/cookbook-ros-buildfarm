@@ -95,15 +95,7 @@ node.default['jenkins']['executor']['protocol'] = 'http'
 plugin_remove_filter = node.default['ros_buildfarm']['jenkins']['remove_plugins'].map! {|e| "#{e}.jpi"}.join("|")
 execute "ls /var/lib/jenkins/plugins | grep -E \"#{plugin_remove_filter}\" | xargs rm" do
 end
-# Install bundled publish-over-ssh plugin which was delisted from the Jenkins plugin server
-cookbook_file '/tmp/publish-over-ssh.hpi' do
-  source 'publish-over-ssh.hpi'
-  owner 'jenkins'
-  mode '0600'
-end
-jenkins_plugin 'publish-over-ssh' do
-  source 'file:///tmp/publish-over-ssh.hpi'
-end
+
 # Install plugins required to run ros_buildfarm.
 include_recipe '::plugins'
 
