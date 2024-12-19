@@ -168,7 +168,7 @@ unclassified:
     configs:
     - credentialsId: "github_pull_request_builder"
     hookUrl: "<%= @scheme %>://<%= @server_name %>/github-webhook/"
-  gitSCM:
+  scmGit:
     createAccountBasedOnEmail: false
     globalConfigEmail: "jenkins@build.ros.org"
     globalConfigName: "jenkins"
@@ -187,7 +187,7 @@ unclassified:
     localRepository: "default"
   pollSCM:
     pollingThreadCount: 10
-  timestamperConfig:
+  timestamper:
     allPipelines: false
     elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
     systemTimeFormat: "'<b>'HH:mm:ss'</b> '"
