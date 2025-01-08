@@ -238,7 +238,6 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   matrix_auth_permissions_script = <<~GROOVY
       import hudson.security.ProjectMatrixAuthorizationStrategy
 
-      def jenkins = Jenkins.getInstance()
       matrix_auth = new ProjectMatrixAuthorizationStrategy()
 
       #{permissions.map { |p, u| "matrix_auth.add(#{p}, \"#{u}\")" }.join "\n"}
