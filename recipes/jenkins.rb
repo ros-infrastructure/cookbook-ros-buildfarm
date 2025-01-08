@@ -222,13 +222,12 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     next if user['username'] == 'anonymous'
 
     user_creation_script = <<~GROOVY
-      user = hudson.model.User.get("crolaTest")
-      user.setFullName(#{user['username']})
+      user = hudson.model.User.get("#{user['username']}")
       if (#{!user['email'].nil?}) {
-        email = new hudson.tasks.Mailer.UserProperty(#{user['email']})
+        email = new hudson.tasks.Mailer.UserProperty("#{user['email']}")
         user.addProperty(email)
       }
-      password = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword(#{user['password']})
+      password = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword("#{user['password']}")
       user.addProperty(password)
       keys = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl(#{user['public_keys'].join('\n')})
       user.addProperty(keys)
