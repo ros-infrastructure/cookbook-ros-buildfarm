@@ -221,7 +221,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     # username anonymous so let's just don't.
     next if user['username'] == 'anonymous'
 
-    user_creation_script <<~GROOVY
+    user_creation_script = <<~GROOVY
       user = hudson.model.User.get("crolaTest")
       user.setFullName(#{user['username']})
       if (#{!user['email'].nil?}) {
