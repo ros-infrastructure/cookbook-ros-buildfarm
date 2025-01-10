@@ -386,14 +386,6 @@ data_bag('ros_buildfarm_password_credentials').each do |item|
         credentials_store.addCredentials(global_domain, credentials)
       }
     GROOVY
-
-  # TODO: (Crola1702) Use new jenkins cookbook
-  # jenkins_password_credentials password_credential['id'] do
-  #   id password_credential['id']
-  #   description password_credential['description']
-  #   username password_credential['username'] if password_credential['username']
-  #   password password_credential['password']
-  # end
 end
 
 data_bag('ros_buildfarm_private_key_credentials').each do |item|
@@ -426,13 +418,6 @@ data_bag('ros_buildfarm_private_key_credentials').each do |item|
         credentials_store.addCredentials(global_domain, credentials)
       }
     GROOVY
-
-  # TODO: (Crola1702) Use new jenkins cookbook
-  # jenkins_private_key_credentials private_key_credential['name'] do
-  #   id private_key_credential['name']
-  #   description private_key_credential['description']
-  #   private_key private_key_credential['private_key']
-  # end
 end
 
 data_bag('ros_buildfarm_secret_text_credentials').each do |item|
@@ -468,13 +453,6 @@ data_bag('ros_buildfarm_secret_text_credentials').each do |item|
         credentials_store.addCredentials(global_domain, credentials)
       }
     GROOVY
-
-  # TODO: (Crola1702) Use new jenkins cookbook
-  # jenkins_secret_text_credentials secret_text_credential['name'] do
-  #   id secret_text_credential['name']
-  #   description secret_text_credential['description']
-  #   secret secret_text_credential['secret_text']
-  # end
 end
 
 file '/var/lib/jenkins/init.groovy.d/credentials_config.groovy' do
