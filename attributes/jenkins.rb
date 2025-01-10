@@ -24,3 +24,6 @@ default['ros_buildfarm']['smtp'] = false
 #default['jenkins']['master']['version'] = '2.346.1'
 # Last version supporting sysvinit scripts
 default['jenkins']['master']['version'] = '2.479.2'
+
+# JDK version to install
+default['jenkins']['master']['jdk_version'] = 21

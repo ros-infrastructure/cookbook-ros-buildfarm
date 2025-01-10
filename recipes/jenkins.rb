@@ -30,11 +30,10 @@ end
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
 
-## CHANGEME: use osrf_java -> JDK 8 y JDK 21
-## Specify java version in attributes
-package 'openjdk-21-jdk-headless'
+# Parametrize java version from attributes
+jdk_version = node.default['jenkins']['master']['jdk_version']
+package "openjdk-#{jdk_version}-jdk-headless"
 
-## VERIFY: Is it needed?
 # Jenkins downgrade protection
 #
 # The Jenkins package has transitioned to using systemd units instead of
@@ -83,7 +82,6 @@ ruby_block 'prevent jenkins downgrade' do
   end
 end
 
-## CHANGEME: Add new jenkins recipe
 include_recipe 'jenkins::jenkins'
 
 # Set up authentication
