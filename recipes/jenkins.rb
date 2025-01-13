@@ -157,7 +157,7 @@ directory '/var/lib/jenkins/init.groovy.d' do
   group 'jenkins'
 end
 
-if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
+if node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
   auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')[node.chef_environment]
   if auth_strategy_script.nil?
     Chef::Log.fatal("No auth strategy script for #{node.chef_environment} in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
@@ -170,9 +170,7 @@ if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
     owner 'jenkins'
     group 'jenkins'
   end
-
-elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
-  ## TODO: (Crola1702) CHANGEME: cli to run groovy scripts
+elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   default_auth_script = <<~GROOVY
     import hudson.model.*
     import jenkins.model.*
@@ -231,6 +229,7 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       user.addProperty(password)
       keys = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl(#{user['public_keys'].join('\n')})
       user.addProperty(keys)
+      user.save()
     GROOVY
 
     users_creation_scripts << user_creation_script
