@@ -413,7 +413,7 @@ data_bag('ros_buildfarm_private_key_credentials').each do |item|
       )
       existing_credentials = CredentialsMatchers.firstOrNull(
         available_credentials,
-        CredentialsMatchers.withId("#{password_credential['id']}")
+        CredentialsMatchers.withId("#{private_key_credential['id']}")
       )
 
       if (existing_credentials != null) {
@@ -453,7 +453,7 @@ data_bag('ros_buildfarm_secret_text_credentials').each do |item|
         hudson.security.ACL.SYSTEM
       ).findAll({
         it.secret == secret &&
-        it.description = "#{secret_text_credential['description']}"
+        it.description == "#{secret_text_credential['description']}"
       })
 
       existing_credentials = available_secret_text.size() > 0 ? available_secret_text[0] : null
