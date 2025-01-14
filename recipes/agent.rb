@@ -95,7 +95,8 @@ data_bag('ros_buildfarm_ssh_known_hosts').each do |id|
   end
 end
 
-package 'openjdk-8-jdk-headless'
+jdk_version = node.default['ros_buildfarm']['agent']['jdk_version']
+package "openjdk-#{jdk_version}-jdk-headless"
 
 swarm_client_version = node['ros_buildfarm']['jenkins']['plugins']['swarm']
 swarm_client_url = "https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/#{swarm_client_version}/swarm-client-#{swarm_client_version}.jar"
