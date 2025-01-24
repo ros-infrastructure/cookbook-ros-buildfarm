@@ -111,6 +111,7 @@ remote_file swarm_client_jarfile_path do
 end
 
 package 'python3-empy'
+package 'bzip2'
 
 directory "/home/#{agent_username}/.ccache" do
   group agent_username
