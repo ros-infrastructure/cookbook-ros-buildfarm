@@ -111,6 +111,8 @@ remote_file swarm_client_jarfile_path do
 end
 
 package 'python3-empy'
+
+# Install bzip2 as it's not present in ubuntu noble by default
 package 'bzip2'
 
 directory "/home/#{agent_username}/.ccache" do
