@@ -90,14 +90,6 @@ node.run_state[:jenkins_username] = chef_user['username']
 node.run_state[:jenkins_password] = chef_user['password']
 node.default['jenkins']['executor']['protocol'] = 'http'
 
-# Remove plugins that were required previously but are not now.
-# Delete *.jpi files in plugin directory by filtering plugins to remove from a grep command
-plugin_remove_filter = node.default['ros_buildfarm']['jenkins']['remove_plugins'].map! {|e| "#{e}.jpi"}.join("|")
-execute "ls /var/lib/jenkins/plugins | grep -E \"#{plugin_remove_filter}\" | xargs -r rm" do
-  # If there are no plugins, then we don't need to remove anythi  ng
-  only_if { ::Dir.exist? '/var/lib/jenkins/plugins/' }
-end
-
 # Install plugins required to run ros_buildfarm.
 include_recipe '::plugins'
 
