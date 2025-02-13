@@ -30,7 +30,10 @@ end
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
 
-package 'openjdk-8-jdk-headless'
+# Parametrize java version from attributes
+jdk_version = node.default['jenkins']['master']['jdk_version']
+package "openjdk-#{jdk_version}-jdk-headless"
+
 # Jenkins downgrade protection
 #
 # The Jenkins package has transitioned to using systemd units instead of
@@ -79,7 +82,7 @@ ruby_block 'prevent jenkins downgrade' do
   end
 end
 
-include_recipe 'jenkins::master'
+include_recipe 'jenkins::jenkins'
 
 # Set up authentication
 chef_user = search('ros_buildfarm_jenkins_users', 'chef_user:true').first
@@ -87,30 +90,8 @@ node.run_state[:jenkins_username] = chef_user['username']
 node.run_state[:jenkins_password] = chef_user['password']
 node.default['jenkins']['executor']['protocol'] = 'http'
 
-# Remove plugins that were required previously but are not now.
-node['ros_buildfarm']['jenkins']['remove_plugins'].each do |plugin|
-  jenkins_plugin plugin do
-    action :uninstall
-    notifies :restart, 'service[jenkins]', :delayed
-  end
-end
-# Install bundled publish-over-ssh plugin which was delisted from the Jenkins plugin server
-cookbook_file '/tmp/publish-over-ssh.hpi' do
-  source 'publish-over-ssh.hpi'
-  owner 'jenkins'
-  mode '0600'
-end
-jenkins_plugin 'publish-over-ssh' do
-  source 'file:///tmp/publish-over-ssh.hpi'
-end
 # Install plugins required to run ros_buildfarm.
-node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
-  jenkins_plugin plugin do
-    version ver
-    install_deps false
-    notifies :restart, 'service[jenkins]', :delayed
-  end
-end
+include_recipe '::plugins'
 
 ## Jenkins configuration
 # Most of our Jenkins configuration has been consolidated into this one yaml
