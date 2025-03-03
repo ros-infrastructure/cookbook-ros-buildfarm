@@ -152,7 +152,7 @@ end
 
 # Create init.groovy.d directory to save important groovy files
 directory '/var/lib/jenkins/init.groovy.d' do
-  mode '0755'
+  mode '0500'
   owner 'jenkins'
   group 'jenkins'
 end
@@ -166,7 +166,7 @@ if node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
 
   file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
     content auth_strategy_script['command']
-    mode '0755'
+    mode '0500'
     owner 'jenkins'
     group 'jenkins'
   end
@@ -187,7 +187,7 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
 
   file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
     content default_auth_script
-    mode '0755'
+    mode '0500'
     owner 'jenkins'
     group 'jenkins'
   end
@@ -253,7 +253,7 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
 
   file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
     content users_creation_scripts.join("\n")
-    mode '0755'
+    mode '0500'
     owner 'jenkins'
     group 'jenkins'
   end
