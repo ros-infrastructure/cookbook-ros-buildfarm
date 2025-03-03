@@ -95,7 +95,8 @@ data_bag('ros_buildfarm_ssh_known_hosts').each do |id|
   end
 end
 
-package 'openjdk-8-jdk-headless'
+jdk_version = node.default['ros_buildfarm']['agent']['jdk_version']
+package "openjdk-#{jdk_version}-jdk-headless"
 
 swarm_client_version = node['ros_buildfarm']['jenkins']['plugins']['swarm']
 swarm_client_url = "https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/#{swarm_client_version}/swarm-client-#{swarm_client_version}.jar"
@@ -110,6 +111,9 @@ remote_file swarm_client_jarfile_path do
 end
 
 package 'python3-empy'
+
+# Install bzip2 as it's not present in ubuntu noble by default
+package 'bzip2'
 
 directory "/home/#{agent_username}/.ccache" do
   group agent_username
