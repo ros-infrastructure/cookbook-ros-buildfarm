@@ -149,30 +149,47 @@ end
 #   This method uses the Jenkins internal user database and manages permissions directly with chef.
 # * Groovy scripted:
 #   This method can be used to enable more complex authentication / authorization strategies and security realms.
-if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
+
+# Create init.groovy.d directory to save important groovy files
+directory '/var/lib/jenkins/init.groovy.d' do
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+if node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
   auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')[node.chef_environment]
   if auth_strategy_script.nil?
     Chef::Log.fatal("No auth strategy script for #{node.chef_environment} in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
     raise
   end
-  jenkins_script 'auth_strategy' do
-    command auth_strategy_script['command']
-  end
-elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
-  jenkins_script 'establish security realm' do
-    command <<~GROOVY
-      import hudson.model.*
-      import jenkins.model.*
-      import hudson.security.HudsonPrivateSecurityRealm
-      import hudson.security.SecurityRealm
 
-      def jenkins = Jenkins.getInstance()
-      // Boolean `!` binds closer than instanceof so parenthesize the instanceof operation
-      if (!(jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm)) {
-        jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false))
-        jenkins.save()
-      }
-    GROOVY
+  file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
+    content auth_strategy_script['command']
+    mode '0500'
+    owner 'jenkins'
+    group 'jenkins'
+  end
+elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
+  default_auth_script = <<~GROOVY
+    import hudson.model.*
+    import jenkins.model.*
+    import hudson.security.HudsonPrivateSecurityRealm
+    import hudson.security.SecurityRealm
+
+    def jenkins = Jenkins.getInstance()
+    // Boolean `!` binds closer than instanceof so parenthesize the instanceof operation
+    if (!(jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm)) {
+      jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false))
+      jenkins.save()
+    }
+  GROOVY
+
+  file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
+    content default_auth_script
+    mode '0500'
+    owner 'jenkins'
+    group 'jenkins'
   end
 
   # Restart jenkins after updating the security realm otherwise running without
@@ -182,6 +199,10 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   end
 
   # Aggregate permissions to assign to each user with a groovy script.
+  users_creation_scripts = [
+    default_auth_script
+  ]
+
   permissions = []
   data_bag('ros_buildfarm_jenkins_users').each do |id|
     user = data_bag_item('ros_buildfarm_jenkins_users', id)
@@ -197,16 +218,24 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     # not know what would happen if we tried to create a concrete user with the
     # username anonymous so let's just don't.
     next if user['username'] == 'anonymous'
-    jenkins_user user['username'] do
-      password user['password']
-      public_keys user['public_keys']
-      email user['email'] if user['email']
-    end
+
+    user_creation_script = <<~GROOVY
+      user = hudson.model.User.get("#{user['username']}")
+      if (#{!user['email'].nil?}) {
+        email = new hudson.tasks.Mailer.UserProperty("#{user['email']}")
+        user.addProperty(email)
+      }
+      password = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword("#{user['password']}")
+      user.addProperty(password)
+      keys = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl(#{user['public_keys'].join('\n')})
+      user.addProperty(keys)
+      user.save()
+    GROOVY
+
+    users_creation_scripts << user_creation_script
   end
-  jenkins_script 'matrix_authentication_permissions' do
-    command <<~GROOVY
-      import hudson.model.*
-      import jenkins.model.*
+
+  matrix_auth_permissions_script = <<~GROOVY
       import hudson.security.ProjectMatrixAuthorizationStrategy
 
       def jenkins = Jenkins.getInstance()
@@ -219,6 +248,14 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
         jenkins.save()
       }
     GROOVY
+
+  users_creation_scripts << matrix_auth_permissions_script
+
+  file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
+    content users_creation_scripts.join("\n")
+    mode '0500'
+    owner 'jenkins'
+    group 'jenkins'
   end
 else
   Chef::Log.warn("Jenkins auth_strategy attribute `#{node['ros_buildfarm']['jenkins']['auth_strategy']}` is unknown. No authentication will be configured.")
