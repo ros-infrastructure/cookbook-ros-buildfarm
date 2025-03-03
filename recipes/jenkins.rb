@@ -238,7 +238,6 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   matrix_auth_permissions_script = <<~GROOVY
       import hudson.security.ProjectMatrixAuthorizationStrategy
 
-      def jenkins = Jenkins.getInstance()
       matrix_auth = new ProjectMatrixAuthorizationStrategy()
 
       #{permissions.map { |p, u| "matrix_auth.add(#{p}, \"#{u}\")" }.join "\n"}
@@ -335,32 +334,132 @@ package 'python3-yaml'
 
 package 'docker.io'
 
+# Setup credentials
+
+credentials_scripts = [
+  <<~GROOVY
+    import jenkins.model.*
+    import com.cloudbees.plugins.credentials.*
+    import com.cloudbees.plugins.credentials.impl.*
+    import com.cloudbees.plugins.credentials.common.*
+    import com.cloudbees.plugins.credentials.domains.*
+    import com.cloudbees.jenkins.plugins.sshcredentials.impl.*
+    import hudson.util.Secret;
+    import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
+    import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+
+    global_domain = Domain.global()
+    credentials_store = Jenkins.instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+
+    available_credentials = CredentialsProvider.lookupCredentials(
+      StandardUsernameCredentials.class,
+      Jenkins.getInstance(),
+      hudson.security.ACL.SYSTEM,
+      new SchemeRequirement("ssh")
+    )
+  GROOVY
+]
+
 data_bag('ros_buildfarm_password_credentials').each do |item|
   password_credential = data_bag_item('ros_buildfarm_password_credentials', item)
-  jenkins_password_credentials password_credential['id'] do
-    id password_credential['id']
-    description password_credential['description']
-    username password_credential['username'] if password_credential['username']
-    password password_credential['password']
-  end
+
+    credentials_scripts << <<~GROOVY
+      credentials = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        "#{password_credential['id']}",
+        "#{password_credential['description']}",
+        "#{password_credential['username'] if password_credential['username']}",
+        "#{password_credential['password']}"
+      )
+      existing_credentials = CredentialsMatchers.firstOrNull(
+        available_credentials,
+        CredentialsMatchers.withId("#{password_credential['id']}")
+      )
+
+      if (existing_credentials != null) {
+      credentials_store.updateCredentials(
+        global_domain,
+        existing_credentials,
+        credentials
+      )
+      } else {
+        credentials_store.addCredentials(global_domain, credentials)
+      }
+    GROOVY
 end
 
 data_bag('ros_buildfarm_private_key_credentials').each do |item|
   private_key_credential = data_bag_item('ros_buildfarm_private_key_credentials', item)[node.chef_environment]
-  jenkins_private_key_credentials private_key_credential['name'] do
-    id private_key_credential['name']
-    description private_key_credential['description']
-    private_key private_key_credential['private_key']
-  end
+
+    credentials_scripts << <<~GROOVY
+      private_key = """#{private_key_credential['private_key']}
+      """
+
+      credentials = new BasicSSHUserPrivateKey(
+        CredentialsScope.GLOBAL,
+        "#{private_key_credential['name']}",
+        "#{private_key_credential['username'] if private_key_credential['username']}",
+        new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(private_key),
+        "#{private_key_credential['passphrase'] if private_key_credential['passphrase']}",
+        "#{private_key_credential['description']}"
+      )
+      existing_credentials = CredentialsMatchers.firstOrNull(
+        available_credentials,
+        CredentialsMatchers.withId("#{private_key_credential['id']}")
+      )
+
+      if (existing_credentials != null) {
+      credentials_store.updateCredentials(
+        global_domain,
+        existing_credentials,
+        credentials
+      )
+      } else {
+        credentials_store.addCredentials(global_domain, credentials)
+      }
+    GROOVY
 end
 
 data_bag('ros_buildfarm_secret_text_credentials').each do |item|
   secret_text_credential = data_bag_item('ros_buildfarm_secret_text_credentials', item)[node.chef_environment]
-  jenkins_secret_text_credentials secret_text_credential['name'] do
-    id secret_text_credential['name']
-    description secret_text_credential['description']
-    secret secret_text_credential['secret_text']
-  end
+    credentials_scripts << <<~GROOVY
+      secret = new Secret("#{secret_text_credential['secret_text']}")
+
+      credentials = new StringCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        "#{secret_text_credential['name']}",
+        "#{secret_text_credential['description']}",
+        secret
+      )
+
+      available_secret_text = CredentialsProvider.lookupCredentials(
+        StringCredentials.class,
+        Jenkins.getInstance(),
+        hudson.security.ACL.SYSTEM
+      ).findAll({
+        it.secret == secret &&
+        it.description == "#{secret_text_credential['description']}"
+      })
+
+      existing_credentials = available_secret_text.size() > 0 ? available_secret_text[0] : null
+
+      if (existing_credentials != null) {
+        credentials_store.updateCredentials(
+          global_domain,
+          existing_credentials,
+          credentials
+        )
+      } else {
+        credentials_store.addCredentials(global_domain, credentials)
+      }
+    GROOVY
+end
+
+file '/var/lib/jenkins/init.groovy.d/credentials_config.groovy' do
+  content credentials_scripts.join("\n")
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
 end
 
 # Remove Jenkins fingerprint files
