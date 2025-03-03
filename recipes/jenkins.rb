@@ -457,7 +457,7 @@ end
 
 file '/var/lib/jenkins/init.groovy.d/credentials_config.groovy' do
   content credentials_scripts.join("\n")
-  mode '0755'
+  mode '0500'
   owner 'jenkins'
   group 'jenkins'
 end
