@@ -31,7 +31,7 @@ default['ros_buildfarm']['agent']['executors'] = 4
 default['ros_buildfarm']['agent']['labels'] = %w(buildagent)
 
 # JDK version to install
-default['ros_buildfarm']['agent']['jdk_version'] = 21
+default['ros_buildfarm']['agent']['jdk_version'] = 17
 
 # Prevents docker and containerd from getting updates and restarting mid build. See https://github.com/ros2/ci/issues/702
 default['ros_buildfarm']['unattended_upgrades']['package_blacklist'] = %w[docker.io containerd]
