@@ -157,7 +157,7 @@ directory '/var/lib/jenkins/init.groovy.d' do
   group 'jenkins'
 end
 
-if node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
+if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
   auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')[node.chef_environment]
   if auth_strategy_script.nil?
     Chef::Log.fatal("No auth strategy script for #{node.chef_environment} in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
