@@ -555,9 +555,3 @@ group 'docker' do
   append true
   action :manage
 end
-
-group 'jenkins-agent' do
-  members ['jenkins']
-  append true
-  action :manage
-end
