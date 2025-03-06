@@ -453,6 +453,7 @@ end
 
 data_bag('ros_buildfarm_secret_text_credentials').each do |item|
   secret_text_credential = data_bag_item('ros_buildfarm_secret_text_credentials', item)[node.chef_environment]
+    next if secret_text_credential.nil?
     credentials_scripts << <<~GROOVY
       secret = new Secret("#{secret_text_credential['secret_text']}")
 
