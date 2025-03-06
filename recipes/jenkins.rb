@@ -483,6 +483,16 @@ directory '/var/lib/jenkins/fingerprints' do
   owner 'jenkins'
   group 'jenkins'
 end
+
+# Groovy system scripts use the master node user, i.e., jenkins (See ros_buildfarm/templates/snippet/builder_system-groovy.xml).
+# This is a problem, as the reconfigure jobs need access to views under jenkins-agent user workspace
+# Everything under /home/jenkins-agent has 750 permissions, so jenkins user does not have access by default.
+# Adding jenkins to the group will give the jenkins admin access to the jenkins agent data.
+group 'jenkins-agent' do
+  members ['jenkins']
+  append true
+  action :manage
+end
 service 'jenkins' do
   action :start
 end
