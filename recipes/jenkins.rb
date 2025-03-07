@@ -164,7 +164,7 @@ if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
     raise
   end
 
-  file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
+  file '/var/lib/jenkins/init.groovy.d/01-auth_strategy.groovy' do
     content auth_strategy_script['command']
     mode '0500'
     owner 'jenkins'
@@ -250,7 +250,7 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
 
   users_creation_scripts << matrix_auth_permissions_script
 
-  file '/var/lib/jenkins/init.groovy.d/auth_strategy.groovy' do
+  file '/var/lib/jenkins/init.groovy.d/01-auth_strategy.groovy' do
     content users_creation_scripts.join("\n")
     mode '0500'
     owner 'jenkins'
@@ -455,7 +455,7 @@ data_bag('ros_buildfarm_secret_text_credentials').each do |item|
     GROOVY
 end
 
-file '/var/lib/jenkins/init.groovy.d/credentials_config.groovy' do
+file '/var/lib/jenkins/init.groovy.d/02-credentials_config.groovy' do
   content credentials_scripts.join("\n")
   mode '0500'
   owner 'jenkins'
