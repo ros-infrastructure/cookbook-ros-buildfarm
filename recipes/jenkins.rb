@@ -462,7 +462,7 @@ file '/var/lib/jenkins/init.groovy.d/credentials_config.groovy' do
   group 'jenkins'
 end
 
-file '/var/lib/jenkins/init.groovy.d/approved_signatures.groovy' do
+file '/var/lib/jenkins/init.groovy.d/99-approved_signatures.groovy' do
   content <<~GROOVY
   import org.jenkinsci.plugins.scriptsecurity.scripts.*
   ScriptApproval scriptApproval = ScriptApproval.get()
