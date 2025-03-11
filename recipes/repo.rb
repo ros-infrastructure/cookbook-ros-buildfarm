@@ -191,7 +191,7 @@ file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
   owner agent_username
   group agent_username
   mode '0600'
-  content gpg_key['private_key']
+  content gpg_key['private-key']
 end
 file '/var/repos/repos.key' do
   owner agent_username
