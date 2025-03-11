@@ -112,6 +112,24 @@ node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
   end
 end
 
+directory '/var/lib/jenkins/init.groovy.d' do
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+file '/var/lib/jenkins/init.groovy.d/start-quiet.groovy' do
+  content <<-GROOVY
+import jenkins.model.*
+
+Jenkins.get().doQuietDown()
+  GROOVY
+
+  mode '0660'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+
 ## Jenkins configuration
 # Most of our Jenkins configuration has been consolidated into this one yaml
 # file thanks to the Jenkins configuration-as-code plugin which provides a
