@@ -9,7 +9,7 @@ ExecStart=/bin/sh -c "/usr/bin/java $JAVA_ARGS -jar $SWARM_CLIENT_JAR \
 -master $JENKINS_URL -username $USERNAME -passwordFile /etc/jenkins-agent/token \
 -name $NAME -description \"$DESCRIPTION\" -mode $MODE -executors $EXECUTORS \
 -fsroot $FSROOT -labels \"$LABELS\" $JENKINS_ARGS"
-
+TimeoutSec=2000
 User=<%= @username %>
 Restart=always
 
