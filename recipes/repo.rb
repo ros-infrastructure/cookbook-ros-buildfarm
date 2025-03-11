@@ -125,7 +125,7 @@ execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
   not_if "gpg --list-keys #{gpg_key['fingerprint']}"
 end
 file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
-  content gpg_key['private_key']
+  content gpg_key['private-key']
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0600'
