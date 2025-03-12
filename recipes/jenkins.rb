@@ -34,6 +34,14 @@ apt_update
 jdk_version = node.default['jenkins']['master']['jdk_version']
 package "openjdk-#{jdk_version}-jdk-headless"
 
+ruby_block "needrestart-config-jenkins" do
+  block do
+    file = Chef::Util::FileEdit.new("/etc/needrestart/needrestart.conf")
+    file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins\.service$)} = 0;])
+    file.write_file
+  end
+end
+
 # Jenkins downgrade protection
 #
 # The Jenkins package has transitioned to using systemd units instead of
