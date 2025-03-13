@@ -157,6 +157,13 @@ directory '/var/lib/jenkins/init.groovy.d' do
   group 'jenkins'
 end
 
+cookbook_file "/var/lib/jenkins/init.groovy.d/10-default-view.groovy" do
+  source "jenkins/groovy-scripts/default-view.groovy"
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
 if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
   auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')[node.chef_environment]
   if auth_strategy_script.nil?
