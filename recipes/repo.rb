@@ -125,7 +125,7 @@ execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
   not_if "gpg --list-keys #{gpg_key['fingerprint']}"
 end
 file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
-  content gpg_key['private-key']
+  content gpg_key['private_key']
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0600'
@@ -191,7 +191,7 @@ file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
   owner agent_username
   group agent_username
   mode '0600'
-  content gpg_key['private-key']
+  content gpg_key['private_key']
 end
 file '/var/repos/repos.key' do
   owner agent_username
