@@ -525,7 +525,10 @@ if node['ros_buildfarm']['letsencrypt_enabled']
       --server letsencrypt
       --force
     )
-    not_if { ::File.directory? "/root/.acme.sh/#{server_name}" }
+    not_if {
+      File.directory?("/root/.acme.sh/#{server_name}_ecc") and
+      File.read("/root/.acme.sh/#{server_name}_ecc/#{server_name}.conf").match(/Le_ReloadCmd='__ACME_BASE64__START_L3Jvb3QvY2VydC11cGRhdGUtaG9vay5zaA==__ACME_BASE64__END_'/)
+    }
   end
 end
 
