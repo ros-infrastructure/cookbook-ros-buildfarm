@@ -104,7 +104,7 @@ template '/etc/systemd/system/jenkins.service.d/override.conf' do
   owner node['jenkins']['master']['user']
   group node['jenkins']['master']['group']
   variables Hash[
-    timeout_start_sec: 360
+    timeout_start_sec: 180
   ]
 end
 
