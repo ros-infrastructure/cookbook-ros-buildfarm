@@ -223,12 +223,6 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     group 'jenkins'
   end
 
-  # Restart jenkins after updating the security realm otherwise running without
-  # authentication yields 403 errors when configuring.
-  service 'jenkins' do
-    action :restart
-  end
-
   # Aggregate permissions to assign to each user with a groovy script.
   users_creation_scripts = [
     default_auth_script
