@@ -92,6 +92,22 @@ end
 
 include_recipe 'jenkins::jenkins'
 
+# Increase timeout of jenkins systemd unit
+directory '/etc/systemd/system/jenkins.service.d' do
+  mode '0755'
+  owner 'root'
+  group 'root'
+end
+
+template '/etc/systemd/system/jenkins.service.d/override.conf' do
+  source 'jenkins/jenkins-service-override.conf.erb'
+  owner node['jenkins']['master']['user']
+  group node['jenkins']['master']['group']
+  variables Hash[
+    timeout_start_sec: 360
+  ]
+end
+
 # Set up authentication
 chef_user = search('ros_buildfarm_jenkins_users', 'chef_user:true').first
 node.run_state[:jenkins_username] = chef_user['username']
