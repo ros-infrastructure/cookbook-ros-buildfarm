@@ -30,5 +30,8 @@ default['ros_buildfarm']['agent']['executors'] = 4
 # The example build farm configurations assume that the 'buildagent' label is the default for building sourcedeb and binarydeb packages. Other labels may be used to control where other jobs run.
 default['ros_buildfarm']['agent']['labels'] = %w(buildagent)
 
+# JDK version to install
+default['ros_buildfarm']['agent']['jdk_version'] = 21
+
 # Prevents docker and containerd from getting updates and restarting mid build. See https://github.com/ros2/ci/issues/702
 default['ros_buildfarm']['unattended_upgrades']['package_blacklist'] = %w[docker.io containerd]

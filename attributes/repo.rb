@@ -9,7 +9,7 @@ default['ros_buildfarm']['apt_repos']['component'] = 'main'
 default['ros_buildfarm']['apt_repos']['architectures'] = %w[i386 amd64 arm64 armhf source]
 
 # The list of Debian and Ubuntu distributions supported by your build farm.
-default['ros_buildfarm']['apt_repos']['suites'] = %w[xenial bionic focal stretch buster]
+default['ros_buildfarm']['apt_repos']['suites'] = %w[xenial bionic focal stretch buster noble]
 
 # The official buildfarm provides rsync endpoints to allow syncing between mirrors.
 # Endpoints are defined in a nested hash structure with an example below

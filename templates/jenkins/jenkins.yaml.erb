@@ -1,7 +1,4 @@
 jenkins:
-  agentProtocols:
-  - "JNLP4-connect"
-  - "Ping"
   crumbIssuer:
     standard:
       excludeClientIPFromCrumb: false
@@ -14,8 +11,6 @@ jenkins:
   numExecutors: 1
   projectNamingStrategy: "standard"
   quietPeriod: 5
-  remotingSecurity:
-    enabled: true
   scmCheckoutRetryCount: 0
   slaveAgentPort: 0
   updateCenter:
@@ -30,80 +25,6 @@ security:
     usageStatisticsEnabled: true
   sSHD:
     port: -1
-  scriptApproval:
-    approvedSignatures:
-    - "field hudson.model.View name"
-    - "field java.util.ArrayList size"
-    - "method groovy.lang.Binding getVariables"
-    - "method groovy.lang.Script println java.lang.Object"
-    - "method hudson.XmlFile getFile"
-    - "method hudson.model.AbstractBuild getWorkspace"
-    - "method hudson.model.AbstractItem getConfigFile"
-    - "method hudson.model.AbstractItem updateByXml javax.xml.transform.stream.StreamSource"
-    - "method hudson.model.AbstractProject getUpstreamProjects"
-    - "method hudson.model.AbstractProject isDisabled"
-    - "method hudson.model.BuildableItem scheduleBuild hudson.model.Cause"
-    - "method hudson.model.Item delete"
-    - "method hudson.model.Item getName"
-    - "method hudson.model.ItemGroup getAllItems"
-    - "method hudson.model.Job getLastBuild"
-    - "method hudson.model.Job getNextBuildNumber"
-    - "method hudson.model.Job isBuilding"
-    - "method hudson.model.Job isInQueue"
-    - "method hudson.model.ModifiableViewGroup addView hudson.model.View"
-    - "method hudson.model.Result isWorseOrEqualTo hudson.model.Result"
-    - "method hudson.model.Run getNumber"
-    - "method hudson.model.Run getResult"
-    - "method hudson.model.View updateByXml javax.xml.transform.Source"
-    - "method hudson.model.View writeXml java.io.OutputStream"
-    - "method hudson.model.ViewGroup getViews"
-    - "method java.io.File getName"
-    - "method java.io.File getPath"
-    - "method java.io.File listFiles"
-    - "method java.lang.Thread isInterrupted"
-    - "method javax.xml.parsers.DocumentBuilder parse java.io.File"
-    - "method javax.xml.parsers.DocumentBuilder parse java.io.InputStream"
-    - "method javax.xml.parsers.DocumentBuilder parse org.xml.sax.InputSource"
-    - "method javax.xml.parsers.DocumentBuilderFactory newDocumentBuilder"
-    - "method jenkins.model.Jenkins getAllItems"
-    - "method jenkins.model.Jenkins getItemByFullName java.lang.String"
-    - "method jenkins.model.Jenkins rebuildDependencyGraph"
-    - "method jenkins.model.ModifiableTopLevelItemGroup createProjectFromXML java.lang.String\
-      \ java.io.InputStream"
-    - "method jenkins.model.ParameterizedJobMixIn$ParameterizedJob isDisabled"
-    - "method org.apache.xml.serialize.DOMSerializer serialize org.w3c.dom.Document"
-    - "method org.apache.xml.serialize.OutputFormat setIndent int"
-    - "method org.apache.xml.serialize.OutputFormat setIndenting boolean"
-    - "method org.w3c.dom.Document getElementsByTagName java.lang.String"
-    - "method org.w3c.dom.Document importNode org.w3c.dom.Node boolean"
-    - "method org.w3c.dom.Element getElementsByTagName java.lang.String"
-    - "method org.w3c.dom.Node appendChild org.w3c.dom.Node"
-    - "method org.w3c.dom.Node setTextContent java.lang.String"
-    - "method org.w3c.dom.NodeList getLength"
-    - "method org.w3c.dom.NodeList item int"
-    - "new hudson.model.Cause$UpstreamCause hudson.model.AbstractBuild"
-    - "new java.io.ByteArrayOutputStream"
-    - "new java.io.File java.lang.String"
-    - "new java.io.StringBufferInputStream java.lang.String"
-    - "new java.lang.InterruptedException java.lang.String"
-    - "new javax.xml.transform.stream.StreamSource java.io.Reader"
-    - "new org.apache.xml.serialize.OutputFormat org.w3c.dom.Document"
-    - "new org.apache.xml.serialize.XMLSerializer java.io.Writer org.apache.xml.serialize.OutputFormat"
-    - "new org.xml.sax.InputSource java.io.Reader"
-    - "staticMethod difflib.DiffUtils diff java.util.List java.util.List"
-    - "staticMethod difflib.DiffUtils generateUnifiedDiff java.lang.String java.lang.String\
-      \ java.util.List difflib.Patch int"
-    - "staticMethod hudson.model.View createViewFromXML java.lang.String java.io.InputStream"
-    - "staticMethod java.lang.Thread currentThread"
-    - "staticMethod javax.xml.parsers.DocumentBuilderFactory newInstance"
-    - "staticMethod jenkins.model.Jenkins getInstance"
-    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getText java.io.File\
-      \ java.lang.String"
-    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods multiply java.lang.String\
-      \ java.lang.Number"
-    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods println groovy.lang.Closure\
-      \ java.lang.Object"
-    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods sort java.lang.Object[]"
 unclassified:
   audit-trail:
     logBuildCause: true
@@ -168,7 +89,7 @@ unclassified:
     configs:
     - credentialsId: "github_pull_request_builder"
     hookUrl: "<%= @scheme %>://<%= @server_name %>/github-webhook/"
-  gitSCM:
+  scmGit:
     createAccountBasedOnEmail: false
     globalConfigEmail: "jenkins@build.ros.org"
     globalConfigName: "jenkins"
@@ -187,7 +108,7 @@ unclassified:
     localRepository: "default"
   pollSCM:
     pollingThreadCount: 10
-  timestamperConfig:
+  timestamper:
     allPipelines: false
     elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
     systemTimeFormat: "'<b>'HH:mm:ss'</b> '"

@@ -95,7 +95,8 @@ data_bag('ros_buildfarm_ssh_known_hosts').each do |id|
   end
 end
 
-package 'openjdk-8-jdk-headless'
+jdk_version = node.default['ros_buildfarm']['agent']['jdk_version']
+package "openjdk-#{jdk_version}-jdk-headless"
 
 swarm_client_version = node['ros_buildfarm']['jenkins']['plugins']['swarm']
 swarm_client_url = "https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/#{swarm_client_version}/swarm-client-#{swarm_client_version}.jar"
@@ -110,6 +111,10 @@ remote_file swarm_client_jarfile_path do
 end
 
 package 'python3-empy'
+
+# Install bzip2 as it's not present in ubuntu noble by default and is needed by ci_jobs
+# To compress artifact results. See ros-infrastructure/ros_buildfarm ci_job.xml.em template
+package 'bzip2'
 
 directory "/home/#{agent_username}/.ccache" do
   group agent_username
@@ -155,6 +160,14 @@ file '/etc/jenkins-agent/token' do
   mode '0640'
   owner 'root'
   group agent_username
+end
+
+ruby_block "needrestart-config" do
+  block do
+    file = Chef::Util::FileEdit.new("/etc/needrestart/needrestart.conf")
+    file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins-agent\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins-agent\.service$)} = 0;])
+    file.write_file
+  end
 end
 
 template '/etc/systemd/system/jenkins-agent.service' do

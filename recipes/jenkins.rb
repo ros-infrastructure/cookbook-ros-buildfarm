@@ -30,7 +30,18 @@ end
 # Without this the recipe fails on AWS instances with empty apt caches.
 apt_update
 
-package 'openjdk-8-jdk-headless'
+# Parametrize java version from attributes
+jdk_version = node.default['jenkins']['master']['jdk_version']
+package "openjdk-#{jdk_version}-jdk-headless"
+
+ruby_block "needrestart-config-jenkins" do
+  block do
+    file = Chef::Util::FileEdit.new("/etc/needrestart/needrestart.conf")
+    file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins\.service$)} = 0;])
+    file.write_file
+  end
+end
+
 # Jenkins downgrade protection
 #
 # The Jenkins package has transitioned to using systemd units instead of
@@ -79,7 +90,7 @@ ruby_block 'prevent jenkins downgrade' do
   end
 end
 
-include_recipe 'jenkins::master'
+include_recipe 'jenkins::jenkins'
 
 # Set up authentication
 chef_user = search('ros_buildfarm_jenkins_users', 'chef_user:true').first
@@ -87,30 +98,8 @@ node.run_state[:jenkins_username] = chef_user['username']
 node.run_state[:jenkins_password] = chef_user['password']
 node.default['jenkins']['executor']['protocol'] = 'http'
 
-# Remove plugins that were required previously but are not now.
-node['ros_buildfarm']['jenkins']['remove_plugins'].each do |plugin|
-  jenkins_plugin plugin do
-    action :uninstall
-    notifies :restart, 'service[jenkins]', :delayed
-  end
-end
-# Install bundled publish-over-ssh plugin which was delisted from the Jenkins plugin server
-cookbook_file '/tmp/publish-over-ssh.hpi' do
-  source 'publish-over-ssh.hpi'
-  owner 'jenkins'
-  mode '0600'
-end
-jenkins_plugin 'publish-over-ssh' do
-  source 'file:///tmp/publish-over-ssh.hpi'
-end
 # Install plugins required to run ros_buildfarm.
-node['ros_buildfarm']['jenkins']['plugins'].each do |plugin, ver|
-  jenkins_plugin plugin do
-    version ver
-    install_deps false
-    notifies :restart, 'service[jenkins]', :delayed
-  end
-end
+include_recipe '::plugins'
 
 ## Jenkins configuration
 # Most of our Jenkins configuration has been consolidated into this one yaml
@@ -168,30 +157,54 @@ end
 #   This method uses the Jenkins internal user database and manages permissions directly with chef.
 # * Groovy scripted:
 #   This method can be used to enable more complex authentication / authorization strategies and security realms.
+
+# Create init.groovy.d directory to save important groovy files
+directory '/var/lib/jenkins/init.groovy.d' do
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+cookbook_file "/var/lib/jenkins/init.groovy.d/10-default-view.groovy" do
+  source "jenkins/groovy-scripts/default-view.groovy"
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
 if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
   auth_strategy_script = data_bag_item('ros_buildfarm_jenkins_scripts', 'auth_strategy')[node.chef_environment]
   if auth_strategy_script.nil?
     Chef::Log.fatal("No auth strategy script for #{node.chef_environment} in ros_buildfarm_jenkins_scripts but auth_strategy is set to groovy.")
     raise
   end
-  jenkins_script 'auth_strategy' do
-    command auth_strategy_script['command']
-  end
-elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
-  jenkins_script 'establish security realm' do
-    command <<~GROOVY
-      import hudson.model.*
-      import jenkins.model.*
-      import hudson.security.HudsonPrivateSecurityRealm
-      import hudson.security.SecurityRealm
 
-      def jenkins = Jenkins.getInstance()
-      // Boolean `!` binds closer than instanceof so parenthesize the instanceof operation
-      if (!(jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm)) {
-        jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false))
-        jenkins.save()
-      }
-    GROOVY
+  file '/var/lib/jenkins/init.groovy.d/01-auth_strategy.groovy' do
+    content auth_strategy_script['command']
+    mode '0500'
+    owner 'jenkins'
+    group 'jenkins'
+  end
+elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
+  default_auth_script = <<~GROOVY
+    import hudson.model.*
+    import jenkins.model.*
+    import hudson.security.HudsonPrivateSecurityRealm
+    import hudson.security.SecurityRealm
+
+    def jenkins = Jenkins.getInstance()
+    // Boolean `!` binds closer than instanceof so parenthesize the instanceof operation
+    if (!(jenkins.getSecurityRealm() instanceof HudsonPrivateSecurityRealm)) {
+      jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(false))
+      jenkins.save()
+    }
+  GROOVY
+
+  file '/var/lib/jenkins/init.groovy.d/01-auth_strategy.groovy' do
+    content default_auth_script
+    mode '0500'
+    owner 'jenkins'
+    group 'jenkins'
   end
 
   # Restart jenkins after updating the security realm otherwise running without
@@ -201,6 +214,10 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   end
 
   # Aggregate permissions to assign to each user with a groovy script.
+  users_creation_scripts = [
+    default_auth_script
+  ]
+
   permissions = []
   data_bag('ros_buildfarm_jenkins_users').each do |id|
     user = data_bag_item('ros_buildfarm_jenkins_users', id)
@@ -216,19 +233,26 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     # not know what would happen if we tried to create a concrete user with the
     # username anonymous so let's just don't.
     next if user['username'] == 'anonymous'
-    jenkins_user user['username'] do
-      password user['password']
-      public_keys user['public_keys']
-      email user['email'] if user['email']
-    end
+
+    user_creation_script = <<~GROOVY
+      user = hudson.model.User.get("#{user['username']}")
+      if (#{!user['email'].nil?}) {
+        email = new hudson.tasks.Mailer.UserProperty("#{user['email']}")
+        user.addProperty(email)
+      }
+      password = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword("#{user['password']}")
+      user.addProperty(password)
+      keys = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl(#{user['public_keys'].join('\n')})
+      user.addProperty(keys)
+      user.save()
+    GROOVY
+
+    users_creation_scripts << user_creation_script
   end
-  jenkins_script 'matrix_authentication_permissions' do
-    command <<~GROOVY
-      import hudson.model.*
-      import jenkins.model.*
+
+  matrix_auth_permissions_script = <<~GROOVY
       import hudson.security.ProjectMatrixAuthorizationStrategy
 
-      def jenkins = Jenkins.getInstance()
       matrix_auth = new ProjectMatrixAuthorizationStrategy()
 
       #{permissions.map { |p, u| "matrix_auth.add(#{p}, \"#{u}\")" }.join "\n"}
@@ -238,6 +262,14 @@ elsif node['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
         jenkins.save()
       }
     GROOVY
+
+  users_creation_scripts << matrix_auth_permissions_script
+
+  file '/var/lib/jenkins/init.groovy.d/01-auth_strategy.groovy' do
+    content users_creation_scripts.join("\n")
+    mode '0500'
+    owner 'jenkins'
+    group 'jenkins'
   end
 else
   Chef::Log.warn("Jenkins auth_strategy attribute `#{node['ros_buildfarm']['jenkins']['auth_strategy']}` is unknown. No authentication will be configured.")
@@ -299,8 +331,8 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     )
     not_if {
       # TODO the second guard clause can be removed after >= 0.6.0
-      File.directory?("/root/.acme.sh/#{server_name}") and
-      File.read("/root/.acme.sh/#{server_name}/#{server_name}.conf").match(/Le_ReloadCmd='__ACME_BASE64__START_L3Jvb3QvY2VydC11cGRhdGUtaG9vay5zaA==__ACME_BASE64__END_'/)
+      File.directory?("/root/.acme.sh/#{server_name}_ecc") and
+      File.read("/root/.acme.sh/#{server_name}_ecc/#{server_name}.conf").match(/Le_ReloadCmd='__ACME_BASE64__START_L3Jvb3QvY2VydC11cGRhdGUtaG9vay5zaA==__ACME_BASE64__END_'/)
     }
   end
 else
@@ -317,32 +349,139 @@ package 'python3-yaml'
 
 package 'docker.io'
 
+# Setup credentials
+
+credentials_scripts = [
+  <<~GROOVY
+    import jenkins.model.*
+    import com.cloudbees.plugins.credentials.*
+    import com.cloudbees.plugins.credentials.impl.*
+    import com.cloudbees.plugins.credentials.common.*
+    import com.cloudbees.plugins.credentials.domains.*
+    import com.cloudbees.jenkins.plugins.sshcredentials.impl.*
+    import hudson.util.Secret;
+    import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
+    import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+
+    global_domain = Domain.global()
+    credentials_store = Jenkins.instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+
+    available_credentials = CredentialsProvider.lookupCredentials(
+      StandardUsernameCredentials.class,
+      Jenkins.getInstance(),
+      hudson.security.ACL.SYSTEM,
+      new SchemeRequirement("ssh")
+    )
+  GROOVY
+]
+
 data_bag('ros_buildfarm_password_credentials').each do |item|
   password_credential = data_bag_item('ros_buildfarm_password_credentials', item)
-  jenkins_password_credentials password_credential['id'] do
-    id password_credential['id']
-    description password_credential['description']
-    username password_credential['username'] if password_credential['username']
-    password password_credential['password']
-  end
+
+    credentials_scripts << <<~GROOVY
+      credentials = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        "#{password_credential['id']}",
+        "#{password_credential['description']}",
+        "#{password_credential['username'] if password_credential['username']}",
+        "#{password_credential['password']}"
+      )
+      existing_credentials = CredentialsMatchers.firstOrNull(
+        available_credentials,
+        CredentialsMatchers.withId("#{password_credential['id']}")
+      )
+
+      if (existing_credentials != null) {
+      credentials_store.updateCredentials(
+        global_domain,
+        existing_credentials,
+        credentials
+      )
+      } else {
+        credentials_store.addCredentials(global_domain, credentials)
+      }
+    GROOVY
 end
 
 data_bag('ros_buildfarm_private_key_credentials').each do |item|
   private_key_credential = data_bag_item('ros_buildfarm_private_key_credentials', item)[node.chef_environment]
-  jenkins_private_key_credentials private_key_credential['name'] do
-    id private_key_credential['name']
-    description private_key_credential['description']
-    private_key private_key_credential['private_key']
-  end
+
+    credentials_scripts << <<~GROOVY
+      private_key = """#{private_key_credential['private_key']}
+      """
+
+      credentials = new BasicSSHUserPrivateKey(
+        CredentialsScope.GLOBAL,
+        "#{private_key_credential['name']}",
+        "#{private_key_credential['username'] if private_key_credential['username']}",
+        new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(private_key),
+        "#{private_key_credential['passphrase'] if private_key_credential['passphrase']}",
+        "#{private_key_credential['description']}"
+      )
+      existing_credentials = CredentialsMatchers.firstOrNull(
+        available_credentials,
+        CredentialsMatchers.withId("#{private_key_credential['id']}")
+      )
+
+      if (existing_credentials != null) {
+      credentials_store.updateCredentials(
+        global_domain,
+        existing_credentials,
+        credentials
+      )
+      } else {
+        credentials_store.addCredentials(global_domain, credentials)
+      }
+    GROOVY
 end
 
 data_bag('ros_buildfarm_secret_text_credentials').each do |item|
   secret_text_credential = data_bag_item('ros_buildfarm_secret_text_credentials', item)[node.chef_environment]
-  jenkins_secret_text_credentials secret_text_credential['name'] do
-    id secret_text_credential['name']
-    description secret_text_credential['description']
-    secret secret_text_credential['secret_text']
-  end
+    credentials_scripts << <<~GROOVY
+      secret = new Secret("#{secret_text_credential['secret_text']}")
+
+      credentials = new StringCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        "#{secret_text_credential['name']}",
+        "#{secret_text_credential['description']}",
+        secret
+      )
+
+      available_secret_text = CredentialsProvider.lookupCredentials(
+        StringCredentials.class,
+        Jenkins.getInstance(),
+        hudson.security.ACL.SYSTEM
+      ).findAll({
+        it.secret == secret &&
+        it.description == "#{secret_text_credential['description']}"
+      })
+
+      existing_credentials = available_secret_text.size() > 0 ? available_secret_text[0] : null
+
+      if (existing_credentials != null) {
+        credentials_store.updateCredentials(
+          global_domain,
+          existing_credentials,
+          credentials
+        )
+      } else {
+        credentials_store.addCredentials(global_domain, credentials)
+      }
+    GROOVY
+end
+
+file '/var/lib/jenkins/init.groovy.d/02-credentials_config.groovy' do
+  content credentials_scripts.join("\n")
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+cookbook_file "/var/lib/jenkins/init.groovy.d/99-approved_signatures.groovy" do
+  source "jenkins/groovy-scripts/approved-signatures.groovy"
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
 end
 
 # Remove Jenkins fingerprint files
@@ -365,6 +504,16 @@ end
 directory '/var/lib/jenkins/fingerprints' do
   owner 'jenkins'
   group 'jenkins'
+end
+
+# Groovy system scripts use the master node user, i.e., jenkins (See ros_buildfarm/templates/snippet/builder_system-groovy.xml).
+# This is a problem, as the reconfigure jobs need access to views under jenkins-agent user workspace
+# Everything under /home/jenkins-agent has 750 permissions, so jenkins user does not have access by default.
+# Adding jenkins to the group will give the jenkins admin access to the jenkins agent data.
+group 'jenkins-agent' do
+  members ['jenkins']
+  append true
+  action :manage
 end
 service 'jenkins' do
   action :start
