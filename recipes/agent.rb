@@ -112,7 +112,8 @@ end
 
 package 'python3-empy'
 
-# Install bzip2 as it's not present in ubuntu noble by default
+# Install bzip2 as it's not present in ubuntu noble by default and is needed by ci_jobs
+# To compress artifact results. See ros-infrastructure/ros_buildfarm ci_job.xml.em template
 package 'bzip2'
 
 directory "/home/#{agent_username}/.ccache" do
