@@ -99,13 +99,14 @@ directory '/etc/systemd/system/jenkins.service.d' do
   group 'root'
 end
 
-template '/etc/systemd/system/jenkins.service.d/override.conf' do
-  source 'jenkins/jenkins-service-override.conf.erb'
-  owner node['jenkins']['master']['user']
-  group node['jenkins']['master']['group']
-  variables Hash[
-    timeout_start_sec: 180
-  ]
+cookbook_file '/etc/systemd/system/jenkins.service.d/500-timeout.conf' do
+  source 'jenkins/service/500-timeout.conf'
+  owner 'root'
+  group 'root'
+end
+
+execute "systemctl-daemon-reload" do
+  command "systemctl daemon-reload"
 end
 
 # Set up authentication
@@ -221,6 +222,12 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     mode '0500'
     owner 'jenkins'
     group 'jenkins'
+  end
+
+  # Restart jenkins after updating the security realm otherwise running without
+  # authentication yields 403 errors when configuring.
+  service 'jenkins' do
+    action :restart
   end
 
   # Aggregate permissions to assign to each user with a groovy script.
