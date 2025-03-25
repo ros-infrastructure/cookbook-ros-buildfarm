@@ -124,7 +124,7 @@ import jenkins.model.*
 Jenkins.get().doQuietDown()
   GROOVY
 
-  mode '0660'
+  mode '0500'
   owner 'jenkins'
   group 'jenkins'
 end
