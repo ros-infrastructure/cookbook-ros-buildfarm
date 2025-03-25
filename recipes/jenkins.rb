@@ -117,7 +117,7 @@ directory '/var/lib/jenkins/init.groovy.d' do
   group 'jenkins'
 end
 
-file '/var/lib/jenkins/init.groovy.d/start-quiet.groovy' do
+file '/var/lib/jenkins/init.groovy.d/03-start-quiet.groovy' do
   content <<-GROOVY
 import jenkins.model.*
 
