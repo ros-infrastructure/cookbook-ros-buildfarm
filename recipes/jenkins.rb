@@ -101,6 +101,24 @@ node.default['jenkins']['executor']['protocol'] = 'http'
 # Install plugins required to run ros_buildfarm.
 include_recipe '::plugins'
 
+directory '/var/lib/jenkins/init.groovy.d' do
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+file '/var/lib/jenkins/init.groovy.d/03-start-quiet.groovy' do
+  content <<-GROOVY
+import jenkins.model.*
+
+Jenkins.get().doQuietDown()
+  GROOVY
+
+  mode '0500'
+  owner 'jenkins'
+  group 'jenkins'
+end
+
+
 ## Jenkins configuration
 # Most of our Jenkins configuration has been consolidated into this one yaml
 # file thanks to the Jenkins configuration-as-code plugin which provides a
