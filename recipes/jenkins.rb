@@ -93,6 +93,7 @@ end
 include_recipe 'jenkins::jenkins'
 
 # Increase timeout of jenkins systemd unit
+# Timeout extension prevents Jenkins startup failures due to slow init scripts execution
 directory '/etc/systemd/system/jenkins.service.d' do
   mode '0755'
   owner 'root'
