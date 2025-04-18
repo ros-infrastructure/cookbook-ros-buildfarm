@@ -19,10 +19,13 @@ host_keys = data_bag_item('ros_buildfarm_host_keys', 'repo')[node.chef_environme
     content host_keys[type]['public']
     mode '0644'
   end
-
-  notifies :restart, 'service[ssh]'
 end
 
+# This block is only needed to notify ssh restart
+ruby_block 'notify-ssh-restart' do
+  block {}
+  notifies :restart, 'service[ssh]'
+end
 
 # Update attributes to get a "building repository" agent instead of a generic
 # "buildagent".
