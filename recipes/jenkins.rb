@@ -78,17 +78,17 @@ package 'jenkins' do
   end.call }
 end
 
-ruby_block 'prevent jenkins downgrade' do
-  block do
-    if node.run_state[:jenkins_package_version_lock]
-      if node['jenkins']['master']['version'] != node.run_state[:jenkins_package_version_lock]
-        Chef::Log.fatal("Before this cookbook continues, please set the node['jenkins']['master']['version'] attribute to #{node.run_state[:jenkins_package_version_lock]} or this cookbook will attempt to downgrade your Jenkins version.")
-        Chef::Log.fatal("See https://github.com/ros-infrastructure/cookbook-ros-buildfarm/issues/121 for more information")
-        raise
-      end
-    end
-  end
-end
+# ruby_block 'prevent jenkins downgrade' do
+#   block do
+#     if node.run_state[:jenkins_package_version_lock]
+#       if node['jenkins']['master']['version'] != node.run_state[:jenkins_package_version_lock]
+#         Chef::Log.fatal("Before this cookbook continues, please set the node['jenkins']['master']['version'] attribute to #{node.run_state[:jenkins_package_version_lock]} or this cookbook will attempt to downgrade your Jenkins version.")
+#         Chef::Log.fatal("See https://github.com/ros-infrastructure/cookbook-ros-buildfarm/issues/121 for more information")
+#         raise
+#       end
+#     end
+#   end
+# end
 
 include_recipe 'jenkins::jenkins'
 
