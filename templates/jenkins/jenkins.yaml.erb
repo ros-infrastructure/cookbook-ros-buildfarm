@@ -108,6 +108,19 @@ unclassified:
     localRepository: "default"
   pollSCM:
     pollingThreadCount: 10
+  priorityConfiguration:
+    jobGroups:
+      - jobGroupStrategy: "allJobs"
+        priority: -1
+        priorityStrategies:
+          - priorityStrategy: "jobPropertyStrategy"
+        usePriorityStrategies: true
+  prioritySorterConfiguration:
+    onlyAdminsMayEditPriorityConfiguration: true
+    strategy:
+      absoluteStrategy:
+        defaultPriority: 99
+        numberOfPriorities: 99
   timestamper:
     allPipelines: false
     elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
