@@ -168,6 +168,8 @@ ruby_block "needrestart-config" do
     file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins-agent\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins-agent\.service$)} = 0;])
     file.write_file
   end
+
+  only_if { File.exist? "/etc/needrestart/needrestart.conf" }
 end
 
 template '/etc/systemd/system/jenkins-agent.service' do

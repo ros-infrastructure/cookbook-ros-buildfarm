@@ -40,6 +40,8 @@ ruby_block "needrestart-config-jenkins" do
     file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins\.service$)} = 0;])
     file.write_file
   end
+
+  only_if { File.exist? "/etc/needrestart/needrestart.conf" }
 end
 
 # Jenkins downgrade protection
