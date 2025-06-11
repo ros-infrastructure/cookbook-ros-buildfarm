@@ -131,7 +131,7 @@ execute 'gpg-vault-import-gpg-pub-key' do
   user 'gpg-vault'
   group 'gpg-vault'
   action :nothing
-end 
+end
 
 file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
   content gpg_key['private_key']
