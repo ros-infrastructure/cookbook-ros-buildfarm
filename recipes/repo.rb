@@ -91,6 +91,7 @@ execute 'gpg-init' do
   group 'gpg-vault'
   creates '/home/gpg-vault/.gnupg'
 end
+
 cookbook_file '/home/gpg-vault/.gnupg/gpg.conf' do
   source 'gpg-vault.conf'
   owner 'gpg-vault'
@@ -103,6 +104,7 @@ cookbook_file '/home/gpg-vault/.gnupg/gpg-agent.conf' do
   group 'gpg-vault'
   mode '0600'
 end
+
 cookbook_file '/etc/systemd/system/gpg-vault-agent.service' do
   source 'gpg-vault-agent.service'
   notifies :run, 'execute[systemctl daemon-reload]', :immediately
@@ -111,31 +113,43 @@ systemd_unit 'gpg-vault-agent.service' do
   triggers_reload true
   action [:start, :enable]
 end
+
 gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
+
+
 file '/home/gpg-vault/.gnupg/gpg_public_key.pub' do
   content gpg_key['public_key']
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0644'
+  notifies :run, 'execute[gpg-vault-import-gpg-pub-key]', :immediately
 end
-execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
+
+execute 'gpg-vault-import-gpg-pub-key' do
+  command 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub'
   environment 'HOME' => '/home/gpg-vault'
   user 'gpg-vault'
   group 'gpg-vault'
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
-end
+  action :nothing
+end 
+
 file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
   content gpg_key['private_key']
   owner 'gpg-vault'
   group 'gpg-vault'
   mode '0600'
+  notifies :run, 'execute[gpg-vault-import-gpg-private-key]', :immediately
 end
-execute 'gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec' do
+
+
+execute 'gpg-vault-import-gpg-private-key' do
+  command 'gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec'
   environment 'HOME' => '/home/gpg-vault'
   user 'gpg-vault'
   group 'gpg-vault'
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+  action :nothing
 end
+
 group 'gpg-vault' do
   append true
   members [agent_username]
@@ -149,6 +163,7 @@ execute "gpgconf --kill gpg-agent" do
   environment 'HOME' => "/home/#{agent_username}"
   only_if "gpg-agent"
 end
+
 file "/home/#{agent_username}/.ssh/gpg_public_key.pub" do
   action :delete
 end
@@ -192,26 +207,32 @@ file "/home/#{agent_username}/.ssh/gpg_private_key.sec" do
   group agent_username
   mode '0600'
   content gpg_key['private_key']
+  notifies :run, 'execute[jenkins-agent-import-private-key]', :immediately
 end
+
 file '/var/repos/repos.key' do
   owner agent_username
   group agent_username
   mode '0644'
   content gpg_key['public_key']
+  notifies :run, 'execute[jenkins-agent-import-pub-key]', :immediately
 end
 
 # Import public and private keys.
-execute "gpg --import /var/repos/repos.key" do
+execute 'jenkins-agent-import-pub-key' do
+  command 'gpg --import /var/repos/repos.key'
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+  action :nothing
 end
-execute "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec" do
+
+execute 'jenkins-agent-import-private-key' do
+  command "gpg --import /home/#{agent_username}/.ssh/gpg_private_key.sec"
   user agent_username
   group agent_username
   environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
+  action :nothing
 end
 
 # Import ROS bootstrap signing key for signature verification
