@@ -338,11 +338,24 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
         not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml") }
       end
 
+      file "#{srpms_dir}/repodata/repomd.xml.asc" do
+        content ""
+        owner agent_username
+        group agent_username
+
+        # Placeholder to trigger gpg signature creation.
+        action :create_if_missing
+      end
+
       execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{srpms_dir}/repodata/repomd.xml" do
         user agent_username
         group agent_username
         environment 'HOME' => "/home/#{agent_username}"
-        not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml.asc") }
+
+        # Sign when the signature is first created or when the repository key is modified.
+        action :nothing
+        subscribes :run, "file[#{srpms_dir}/repodata/repomd.xml.asc]", :immediately
+        subscribes :run, "file[/home/#{agent_username}/.ssh/gpg_private_key.sec]", :immediately
       end
 
       architectures.each do |arch|
@@ -362,11 +375,24 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
           not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml") }
         end
 
+        file "#{arch_dir}/repodata/repomd.xml.asc" do
+          content ""
+          owner agent_username
+          group agent_username
+
+          # Placeholder to trigger gpg signature creation.
+          action :create_if_missing
+        end
+
         execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{arch_dir}/repodata/repomd.xml" do
           user agent_username
           group agent_username
           environment 'HOME' => "/home/#{agent_username}"
-          not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml.asc") }
+
+          # Sign when the signature is first created or when the repository key is modified.
+          action :nothing
+          subscribes :run, "file[#{arch_dir}/repodata/repomd.xml.asc]", :immediately
+          subscribes :run, "file[/home/#{agent_username}/.ssh/gpg_private_key.sec]", :immediately
         end
 
         execute "createrepo_c --no-database #{debug_dir}" do
@@ -375,11 +401,25 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
           not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml") }
         end
 
+        file "#{debug_dir}/repodata/repomd.xml.asc" do
+          content ""
+          owner agent_username
+          group agent_username
+
+          # Placeholder to trigger gpg signature creation.
+          action :create_if_missing
+        end
+
+
         execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{debug_dir}/repodata/repomd.xml" do
           user agent_username
           group agent_username
           environment 'HOME' => "/home/#{agent_username}"
-          not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml.asc") }
+
+          # Sign when the signature is first created or when the repository key is modified.
+          action :nothing
+          subscribes :run, "file[#{debug_dir}/repodata/repomd.xml.asc]", :immediately
+          subscribes :run, "file[/home/#{agent_username}/.ssh/gpg_private_key.sec]", :immediately
         end
       end
     end
