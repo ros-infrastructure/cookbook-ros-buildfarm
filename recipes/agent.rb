@@ -1,3 +1,5 @@
+include_recipe 'ros_buildfarm::security-patches'
+
 apt_update
 package 'docker.io'
 
