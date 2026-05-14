@@ -1,3 +1,16 @@
+# Rate limit for most urls to avoid DDOS attacks.
+limit_req_zone $binary_remote_addr zone=soft_limit:20m rate=10r/s;
+# Rate limit meant to prevent bots crawling on specific urls.
+limit_req_zone $binary_remote_addr zone=hard_limit:10m rate=2r/m;
+# Rate limit based on request_uri to pace queries to specific uri in general.
+limit_req_zone $request_uri zone=perurl_limit:10m rate=30r/m;
+# Zone to limit the number of concurrent connections by ip.
+limit_conn_zone $binary_remote_addr zone=bot:20m;
+
+limit_req_status 429;
+
+proxy_cache_path /data/nginx/cache keys_zone=main_cache:50m loader_threshold=300 loader_files=200;
+
 # Establish the local jenkins server as an upstream
 # application server.
 upstream jenkins {
@@ -21,7 +34,37 @@ server {
 		deny all;
 	}
 
+	# Don't rate limit and cache buildStatus icons since freshness is important here.
+	location '/buildStatus/icon' {
+		proxy_set_header Host $host:$server_port;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_redirect http:// https://;
+		proxy_buffering off;
+		proxy_pass http://jenkins;
+	}
+
+	location ~* /testReport(/|$) {
+		# Apply both per-url and per-ip limits on these endpoints.
+		limit_req zone=hard_limit burst=4 delay=2;
+		limit_req zone=perurl_limit;
+		# Limit to 5 concurrent connections from the same ip.
+		limit_conn bot 5;
+		proxy_cache main_cache;
+		proxy_set_header Host $host:$server_port;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_redirect http:// https://;
+		proxy_buffering off;
+		proxy_pass http://jenkins;
+	}
+
 	location / {
+		# Allows bursting to accommodate bursty nature of browsers.
+		limit_req zone=soft_limit burst=20 nodelay;
+		proxy_cache main_cache;
 		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
 		sendfile off;
 		client_max_body_size 10m;
