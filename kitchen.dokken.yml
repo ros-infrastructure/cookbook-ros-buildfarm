@@ -11,7 +11,7 @@ transport:
 
 provisioner:
   name: dokken
-  chef_binary: /opt/chef/bin/chef-solo
+  chef_binary: /opt/cinc/bin/cinc-solo
   chef_options: "-Etest"
   chef_log_level: debug
   chef_output_format: doc
