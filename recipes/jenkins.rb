@@ -157,7 +157,7 @@ template '/var/lib/jenkins/jenkins.yaml' do
     server_name: node['ros_buildfarm']['jenkins']['server_name'],
     admin_email: node['ros_buildfarm']['jenkins']['admin_email'],
   ]
-  notifies :restart, 'service[jenkins]', :immediately
+  notifies :restart, 'service[jenkins]', :delayed
 end
 
 ## Configuration for the publish-over-ssh plugin.
@@ -189,7 +189,7 @@ template '/var/lib/jenkins/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugi
     plugin_version: node['ros_buildfarm']['jenkins']['plugins']['publish-over-ssh'],
     ssh_key: data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)['private_key']
   ]
-  notifies :restart, 'service[jenkins]', :immediately
+  notifies :restart, 'service[jenkins]', :delayed
 end
 
 # Jenkins authentication.
@@ -542,6 +542,7 @@ directory '/var/lib/jenkins/fingerprints' do
   action :delete
   recursive true
 end
+
 directory '/var/lib/jenkins/fingerprints' do
   owner 'jenkins'
   group 'jenkins'
