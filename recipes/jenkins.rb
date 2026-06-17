@@ -35,7 +35,12 @@ jdk_version = node.default['jenkins']['master']['jdk_version']
 package "openjdk-#{jdk_version}-jdk-headless"
 
 
-directory '/etc/needrestart/conf.d' 
+directory '/etc/needrestart/conf.d' do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
 
 file '/etc/needrestart/conf.d/jenkins.conf' do
   content "$nrconf{override_rc}{qr(^jenkins\.service$)} = 0;\n"
@@ -551,9 +556,7 @@ group 'jenkins-agent' do
   append true
   action :manage
 end
-service 'jenkins' do
-  action :start
-end
+
 
 # Configure agent on jenkins
 # TODO: (nuclearsandwich) This is going to require re-organization to suite an all-in-one setup.

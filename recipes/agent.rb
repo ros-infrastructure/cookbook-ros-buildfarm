@@ -141,6 +141,7 @@ package 'qemu-user-static'
 
 jenkins_username = node['ros_buildfarm']['agent']['username']
 agent_jenkins_user = search('ros_buildfarm_jenkins_users', "username:#{jenkins_username}").first
+
 template '/etc/default/jenkins-agent' do
   source 'jenkins-agent.env.erb'
   variables Hash[
@@ -154,8 +155,8 @@ template '/etc/default/jenkins-agent' do
     user_home: agent_homedir,
     labels: node['ros_buildfarm']['agent']['labels'],
   ]
-  notifies :restart, 'service[jenkins-agent]'
 end
+
 directory '/etc/jenkins-agent'
 file '/etc/jenkins-agent/token' do
   content agent_jenkins_user['password']
@@ -164,7 +165,12 @@ file '/etc/jenkins-agent/token' do
   group agent_username
 end
 
-directory '/etc/needrestart/conf.d' 
+directory '/etc/needrestart/conf.d' do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
 
 file '/etc/needrestart/conf.d/jenkins-agent.conf' do
   content "$nrconf{override_rc}{qr(^jenkins-agent\\.service$)} = 0;\n"
