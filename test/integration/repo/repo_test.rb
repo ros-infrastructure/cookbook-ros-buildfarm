@@ -21,3 +21,16 @@ end
 #describe command('docker run hello-world') do
 #  its('exit_status') { should eq 0 }
 #end
+
+describe file('/var/repos/repos.key') do
+  it { should exist }
+  it { should be_symlink }
+end
+
+describe file('/var/repos/ubuntu/main/dists/focal/InRelease') do
+  it { should exist }
+end
+
+describe command('su - jenkins-agent -c "gpg --verify /var/repos/ubuntu/main/dists/focal/InRelease"') do
+  its('exit_status') { should eq 0 }
+end

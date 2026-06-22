@@ -111,35 +111,100 @@ systemd_unit 'gpg-vault-agent.service' do
   triggers_reload true
   action [:start, :enable]
 end
-gpg_key = data_bag_item('ros_buildfarm_repository_signing_keys', node.chef_environment)
-file '/home/gpg-vault/.gnupg/gpg_public_key.pub' do
-  content gpg_key['public_key']
-  owner 'gpg-vault'
-  group 'gpg-vault'
-  mode '0644'
+
+directory "/home/#{agent_username}/.ssh" do
+  owner agent_username
+  group agent_username
+  mode '0700'
 end
-execute 'gpg --import /home/gpg-vault/.gnupg/gpg_public_key.pub' do
-  environment 'HOME' => '/home/gpg-vault'
-  user 'gpg-vault'
-  group 'gpg-vault'
-  not_if "gpg --list-keys #{gpg_key['fingerprint']}"
+
+gpg_keys = search('ros_buildfarm_repository_signing_keys', "id:#{node.chef_environment}-*")
+if gpg_keys.size == 0
+  Chef::Log.warn("Support for multiple GPG keys has changed the layout if this data bag.")
+  Chef::Log.warn("Please see the Changelog entry Forthcoming for details.")
+  Chef::Log.warn("The sole key will be assumed the default.")
+  gpg_keys = search('ros_buildfarm_repository_signing_keys', "id:#{node.chef_environment}")
+  gpg_keys[0]["default"] = true
 end
-file '/home/gpg-vault/.gnupg/gpg_private_key.sec' do
-  content gpg_key['private_key']
-  owner 'gpg-vault'
-  group 'gpg-vault'
-  mode '0600'
+default_gpg_key = if gpg_keys.count{|key| key["default"]} > 1
+  Chef::Log.fatal "More than one default GPG key is not supported."
+  raise
+elsif gpg_keys.count{|key| key["default"]} < 1
+  Chef::Log.fatal "No default GPG key is specified."
+  raise
+else
+  gpg_keys.select{|key| key["default"]}.first
 end
-execute 'gpg --import /home/gpg-vault/.gnupg/gpg_private_key.sec' do
-  environment 'HOME' => '/home/gpg-vault'
-  user 'gpg-vault'
-  group 'gpg-vault'
-  not_if "gpg --list-secret-keys #{gpg_key['fingerprint']}"
-end
-group 'gpg-vault' do
-  append true
-  members [agent_username]
-  action [:manage]
+
+gpg_keys.each do |key|
+  key_name = key["id"].delete_prefix("#{node.chef_environment}-")
+  # GPG-agent user configuration
+  file "/home/gpg-vault/.gnupg/#{key_name}.pub" do
+    content key['public_key']
+    owner 'gpg-vault'
+    group 'gpg-vault'
+    mode '0644'
+  end
+  execute "gpg --import /home/gpg-vault/.gnupg/#{key_name}.pub" do
+    environment 'HOME' => '/home/gpg-vault'
+    user 'gpg-vault'
+    group 'gpg-vault'
+    not_if "gpg --list-keys #{key['fingerprint']}"
+  end
+  file "/home/gpg-vault/.gnupg/#{key_name}.sec" do
+    content key['private_key']
+    owner 'gpg-vault'
+    group 'gpg-vault'
+    mode '0600'
+  end
+
+  execute "gpg --import /home/gpg-vault/.gnupg/#{key_name}.sec" do
+    environment 'HOME' => '/home/gpg-vault'
+    user 'gpg-vault'
+    group 'gpg-vault'
+    not_if "gpg --list-secret-keys #{key['fingerprint']}"
+  end
+  group 'gpg-vault' do
+    append true
+    members [agent_username]
+    action [:manage]
+  end
+
+  # Jenkins agent user configuration
+  file "/home/#{agent_username}/.ssh/#{key_name}.sec" do
+    owner agent_username
+    group agent_username
+    mode '0600'
+    content key['private_key']
+  end
+  file "/var/repos/repos-#{key_name}.key" do
+    owner agent_username
+    group agent_username
+    mode '0644'
+    content key['public_key']
+  end
+
+  link "/var/repos/repos.key" do
+    owner agent_username
+    group agent_username
+    mode '0644'
+    to "/var/repos/repos-#{key_name}.key"
+    only_if { key["default"] }
+  end
+
+  # Import public and private keys.
+  execute "gpg --import /var/repos/repos-#{key_name}.key" do
+    user agent_username
+    group agent_username
+    environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
+    not_if "gpg --list-keys #{key['fingerprint']}"
+  end
+  execute "gpg --import /home/#{agent_username}/.ssh/#{key_name}.sec" do
+    user agent_username
+    group agent_username
+    environment 'PATH' => '/bin:/usr/bin', 'HOME' => "/home/#{agent_username}"
+    not_if "gpg --list-secret-keys #{key['fingerprint']}"
+  end
 end
 
 # Remove previous GPG deployment
@@ -173,12 +238,15 @@ link "/home/#{agent_username}/.gnupg/S.gpg-agent" do
   only_if { ::File.symlink?("/home/#{agent_username}/.gnupg/S.gpg-agent") }
 end
 
-# Set up ssh authorized keys for publish over ssh.
-directory "/home/#{agent_username}/.ssh" do
+cookbook_file "/home/#{agent_username}/reprepro-sign.sh" do
+  source "reprepro-sign.sh"
   owner agent_username
   group agent_username
-  mode '0700'
+  mode "0700"
 end
+
+
+# Set up ssh authorized keys for publish over ssh.
 ssh_key = data_bag_item('ros_buildfarm_publish_over_ssh_key', node.chef_environment)
 file "/home/#{agent_username}/.ssh/authorized_keys" do
   content ssh_key['public_key']
@@ -268,9 +336,19 @@ template "/home/#{agent_username}/.buildfarm/reprepro-updater.ini" do
   mode '0600'
   variables Hash[
     architectures: node['ros_buildfarm']['apt_repos']['architectures'],
-    signing_key: gpg_key['fingerprint'],
+    signing_key: "! /home/#{agent_username}/reprepro-sign.sh",
     suites: node['ros_buildfarm']['apt_repos']['suites'],
     upstream_config: "/home/#{agent_username}/reprepro_config"
+  ]
+end
+
+template "/home/#{agent_username}/.buildfarm/reprepro-sign-config.sh" do
+  source "reprepro-sign-config.sh.erb"
+  owner agent_username
+  group agent_username
+  mode '0600'
+  variables Hash[
+    signing_key_ids: gpg_keys.map{|key| key["fingerprint"]}
   ]
 end
 
@@ -317,7 +395,7 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
         not_if { ::File.exist?("#{srpms_dir}/repodata/repomd.xml") }
       end
 
-      execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{srpms_dir}/repodata/repomd.xml" do
+      execute "gpg --armor --detach --sign --yes --default-key=#{default_gpg_key['fingerprint']} #{srpms_dir}/repodata/repomd.xml" do
         user agent_username
         group agent_username
         environment 'HOME' => "/home/#{agent_username}"
@@ -341,7 +419,7 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
           not_if { ::File.exist?("#{arch_dir}/repodata/repomd.xml") }
         end
 
-        execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{arch_dir}/repodata/repomd.xml" do
+        execute "gpg --armor --detach --sign --yes --default-key=#{default_gpg_key['fingerprint']} #{arch_dir}/repodata/repomd.xml" do
           user agent_username
           group agent_username
           environment 'HOME' => "/home/#{agent_username}"
@@ -354,7 +432,7 @@ node['ros_buildfarm']['rpm_repos'].each do |dist, versions|
           not_if { ::File.exist?("#{debug_dir}/repodata/repomd.xml") }
         end
 
-        execute "gpg --armor --detach --sign --yes --default-key=#{gpg_key['fingerprint']} #{debug_dir}/repodata/repomd.xml" do
+        execute "gpg --armor --detach --sign --yes --default-key=#{default_gpg_key['fingerprint']} #{debug_dir}/repodata/repomd.xml" do
           user agent_username
           group agent_username
           environment 'HOME' => "/home/#{agent_username}"
