@@ -39,38 +39,38 @@ default['ros_buildfarm']['repo']['server_name'] = nil
 # ['http://repo.test.ros.org:5000']
 # ```
 default['ros_buildfarm']['repo']['container_registry_cache_enabled'] = true
-default['ros_buildfarm']['rpm_repos']['fedora']['43'] = %w[x86_64]
-default['ros_buildfarm']['rpm_repos']['fedora']['44'] = %w[x86_64]
-default['ros_buildfarm']['rpm_repos']['rhel']['8'] = %w[x86_64]
-default['ros_buildfarm']['rpm_repos']['rhel']['9'] = %w[x86_64]
-default['ros_buildfarm']['rpm_repos']['rhel']['10'] = %w[x86_64]
+default['ros_buildfarm']['rpm_repos']['fedora']['43'] = %w[aarch64 x86_64]
+default['ros_buildfarm']['rpm_repos']['fedora']['44'] = %w[aarch64 x86_64]
+default['ros_buildfarm']['rpm_repos']['rhel']['8'] = %w[aarch64 x86_64]
+default['ros_buildfarm']['rpm_repos']['rhel']['9'] = %w[aarch64 x86_64]
+default['ros_buildfarm']['rpm_repos']['rhel']['10'] = %w[aarch64 x86_64]
 default['ros_buildfarm']['rpm_bootstrap_urls'] = ['http://repos.ros.org/repos/$distname/ros_bootstrap/$releasever/$basearch/']
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['fedora']['43'] = Hash[
-  architectures: %w[x86_64],
+  architectures: %w[aarch64 x86_64],
   binary: 'http://repos.ros.org/repos/fedora/ros_bootstrap/43/$basearch/',
   debug: 'http://repos.ros.org/repos/fedora/ros_bootstrap/43/$basearch/debug/',
   source: 'http://repos.ros.org/repos/fedora/ros_bootstrap/43/SRPMS/'
 ]
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['fedora']['44'] = Hash[
-  architectures: %w[x86_64],
+  architectures: %w[aarch64 x86_64],
   binary: 'http://repos.ros.org/repos/fedora/ros_bootstrap/44/$basearch/',
   debug: 'http://repos.ros.org/repos/fedora/ros_bootstrap/44/$basearch/debug/',
   source: 'http://repos.ros.org/repos/fedora/ros_bootstrap/44/SRPMS/'
 ]
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['rhel']['8'] = Hash[
-  architectures: %w[x86_64],
+  architectures: %w[aarch64 x86_64],
   binary: 'http://repos.ros.org/repos/rhel/ros_bootstrap/8/$basearch/',
   debug: 'http://repos.ros.org/repos/rhel/ros_bootstrap/8/$basearch/debug/',
   source: 'http://repos.ros.org/repos/rhel/ros_bootstrap/8/SRPMS/'
 ]
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['rhel']['9'] = Hash[
-  architectures: %w[x86_64],
+  architectures: %w[aarch64 x86_64],
   binary: 'http://repos.ros.org/repos/rhel/ros_bootstrap/9/$basearch/',
   debug: 'http://repos.ros.org/repos/rhel/ros_bootstrap/9/$basearch/debug/',
   source: 'http://repos.ros.org/repos/rhel/ros_bootstrap/9/SRPMS/'
 ]
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['rhel']['10'] = Hash[
-  architectures: %w[x86_64],
+  architectures: %w[aarch64 x86_64],
   binary: 'http://repos.ros.org/repos/rhel/ros_bootstrap/10/$basearch/',
   debug: 'http://repos.ros.org/repos/rhel/ros_bootstrap/10/$basearch/debug/',
   source: 'http://repos.ros.org/repos/rhel/ros_bootstrap/10/SRPMS/'
