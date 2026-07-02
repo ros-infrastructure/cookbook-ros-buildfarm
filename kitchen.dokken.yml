@@ -15,7 +15,7 @@ provisioner:
   chef_options: "-Etest"
   chef_log_level: debug
   chef_output_format: doc
-  idempotency_test: true
+  enforce_idempotency: true
   multiple_converge: 2
 
 platforms:
