@@ -1,8 +1,9 @@
 ---
 driver:
   name: dokken
-  chef_version: <%= ENV['CHEF_VERSION'] || 'current' %>
+  chef_version: <%= ENV['CHEF_VERSION'] || 'latest' %>
   use_sudo: false
+  chef_image: cincproject/cinc
   privileged: true
   env: [CHEF_LICENSE=accept]
 
@@ -11,10 +12,12 @@ transport:
 
 provisioner:
   name: dokken
-  chef_binary: /opt/chef/bin/chef-solo
-  chef_options: "-Etest"
+  product_name: cinc_solo
+  chef_binary: /opt/cinc/bin/cinc-solo
   chef_log_level: debug
   chef_output_format: doc
+  client_rb:
+    environment: test
 
 platforms:
   - name: ubuntu-20.04
@@ -23,6 +26,7 @@ platforms:
       pid_one_command: /bin/systemd
       intermediate_instructions:
         - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get install -y needrestart
 
 verifier:
   name: inspec
