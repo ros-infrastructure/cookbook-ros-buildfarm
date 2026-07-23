@@ -1,7 +1,7 @@
 ---
 driver:
   name: dokken
-  chef_version: <%= ENV['CHEF_VERSION'] || 'latest' %>
+  chef_version: <%= ENV['CHEF_VERSION'] || '19' %>
   use_sudo: false
   chef_image: cincproject/cinc
   privileged: true
@@ -16,6 +16,8 @@ provisioner:
   chef_binary: /opt/cinc/bin/cinc-solo
   chef_log_level: debug
   chef_output_format: doc
+  # enforce_idempotency: true
+  # multiple_converge: 2
   client_rb:
     environment: test
 
@@ -23,6 +25,13 @@ platforms:
   - name: ubuntu-20.04
     driver:
       image: dokken/ubuntu-20.04
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update
+        - RUN /usr/bin/apt-get install -y needrestart
+  - name: ubuntu-24.04
+    driver:
+      image: dokken/ubuntu-24.04
       pid_one_command: /bin/systemd
       intermediate_instructions:
         - RUN /usr/bin/apt-get update
@@ -46,7 +55,6 @@ suites:
       ros_buildfarm:
         smtp: true
     run_list:
-      - recipe[ros_buildfarm::agent]
       - recipe[ros_buildfarm::jenkins]
     verifier:
       inspec_tests:
