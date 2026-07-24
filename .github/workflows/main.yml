@@ -28,7 +28,6 @@ jobs:
           - '17'
           - '19'
         os:
-          - 'ubuntu-2004'
           - 'ubuntu-2404'
       fail-fast: false
     steps:
