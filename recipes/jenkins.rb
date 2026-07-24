@@ -234,7 +234,7 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
       }
       password = hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword("#{user['password']}")
       user.addProperty(password)
-      keys = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl(#{user['public_keys'].join('\n')})
+      keys = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl("""#{user['public_keys'].join("\n")}""")
       user.addProperty(keys)
       user.save()
     GROOVY
