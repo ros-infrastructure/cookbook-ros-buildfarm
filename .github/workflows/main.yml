@@ -1,4 +1,3 @@
----
 name: ci
 
 # yamllint disable-line rule:truthy
@@ -27,6 +26,9 @@ jobs:
           - 'jenkins'
         chef_version:
           - '17'
+          - '19'
+        os:
+          - 'ubuntu-2404'
       fail-fast: false
     steps:
       - name: Check out code
@@ -40,7 +42,7 @@ jobs:
         uses: actionshub/test-kitchen@main
         with:
           suite: ${{ matrix.suite }}
-          os: 'ubuntu-2004'
+          os: ${{ matrix.os }}
         env:
           CHEF_VERSION: ${{ matrix.chef_version }}
           KITCHEN_LOCAL_YAML: kitchen.dokken.yml
