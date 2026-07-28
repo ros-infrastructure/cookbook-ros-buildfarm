@@ -20,10 +20,8 @@ default['ros_buildfarm']['letsencrypt_enabled'] = false
 # When set to true a postfix SMTP server will be configured for use by Jenkins via sendmail.
 default['ros_buildfarm']['smtp'] = false
 
-# Last version supporting Java 8
-#default['jenkins']['master']['version'] = '2.346.1'
-# Last version supporting sysvinit scripts
-default['jenkins']['master']['version'] = '2.492.2'
+# LTS version of Jenkins to install (https://www.jenkins.io/changelog-stable/)
+default['jenkins']['master']['version'] = '2.555.3'
 
 # JDK version to install
 default['jenkins']['master']['jdk_version'] = 21
