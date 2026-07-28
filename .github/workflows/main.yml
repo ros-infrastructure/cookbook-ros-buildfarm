@@ -25,7 +25,6 @@ jobs:
           - 'repo'
           - 'jenkins'
         chef_version:
-          - '17'
           - '19'
         os:
           - 'ubuntu-2404'
