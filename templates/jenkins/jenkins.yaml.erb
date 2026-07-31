@@ -4,6 +4,10 @@ jenkins:
     rawHtml:
       disableSyntaxHighlighting: false
   mode: NORMAL
+  nodeMonitors:
+  - diskSpace:
+      freeSpaceThreshold: 20G
+      freeSpaceWarningThreshold: 40G
   numExecutors: 1
   projectNamingStrategy: "standard"
   quietPeriod: 5
