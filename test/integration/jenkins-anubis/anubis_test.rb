@@ -2,6 +2,11 @@
 # templates/nginx/jenkins-webproxy.ssl.conf.erb when node['jenkins']['anubis']
 # is enabled. The suite runs with letsencrypt_enabled so that the SSL template
 # (the only one carrying the Anubis configuration) is the one installed.
+#
+# Anubis itself is never installed here, the cookbook does not manage it. The
+# recipe's guard against the flag being enabled without a running anubis@jenkins
+# unit is skipped in the 'test' chef environment for that reason, so these tests
+# cover the rendered configuration rather than a live Anubis instance.
 
 jenkins_site = '/etc/nginx/sites-enabled/jenkins'
 

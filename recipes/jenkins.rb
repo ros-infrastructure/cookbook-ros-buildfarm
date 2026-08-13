@@ -270,6 +270,25 @@ end
 timezone node['ros_buildfarm']['jenkins']['timezone']
 
 ## Configure web proxy ##
+
+# Anubis is not installed or managed by this cookbook, it is expected to
+# already be running as the anubis@jenkins systemd unit. Refuse to render a
+# proxy configuration pointing at a socket nothing is listening on rather than
+# leaning on the upstream's backup server to hide the misconfiguration.
+if node['jenkins']['anubis'] && node.chef_environment != 'test'
+  anubis_socket = '/run/anubis/jenkins/instance.sock'
+
+  unless shell_out('systemctl is-active --quiet anubis@jenkins').exitstatus.zero?
+    raise "node['jenkins']['anubis'] is enabled but the anubis@jenkins service is not running. " \
+      "Start the service or set node['jenkins']['anubis'] = false."
+  end
+
+  unless ::File.socket?(anubis_socket)
+    raise "node['jenkins']['anubis'] is enabled but #{anubis_socket} is not a socket. " \
+      "The nginx configuration proxies to that path, check the Anubis instance configuration."
+  end
+end
+
 package 'nginx'
 service 'nginx' do
   action [ :enable, :start]
