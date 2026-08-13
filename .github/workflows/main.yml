@@ -24,6 +24,7 @@ jobs:
           - 'agent'
           - 'repo'
           - 'jenkins'
+          - 'jenkins-anubis'
         chef_version:
           - '19'
         os:
@@ -53,14 +54,14 @@ jobs:
                 ${{ matrix.suite }}-${{ matrix.os }} \
                 -c "journalctl -l"
       - name: Print debug output on failure (jenkins.log)
-        if: failure() && matrix.suite == 'jenkins'
+        if: failure() && startsWith(matrix.suite, 'jenkins')
         run: |
             set -x
             KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
                 ${{ matrix.suite }}-${{ matrix.os }} \
                 -c "cat /var/log/jenkins/jenkins.log"
       - name: Print debug output on failure (systemctl jenkins status)
-        if: failure() && matrix.suite == 'jenkins'
+        if: failure() && startsWith(matrix.suite, 'jenkins')
         run: |
             set -x
             KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
