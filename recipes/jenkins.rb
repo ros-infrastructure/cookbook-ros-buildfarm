@@ -273,23 +273,38 @@ timezone node['ros_buildfarm']['jenkins']['timezone']
 
 # Anubis is not installed or managed by this cookbook, it is expected to
 # already be running as the anubis@<instance> systemd unit. Refuse to render a
-# proxy configuration pointing at a socket nothing is listening on. 
-if node['jenkins']['anubis'] && node.chef_environment != 'test'
-  require 'socket'
+# proxy configuration pointing at a socket nothing is listening on.
+#
+# This is a ruby_block rather than inline recipe code because chef compiles the
+# whole run_list before converging any of it. Inline code runs during the
+# compile phase, so a recipe earlier in the run_list which starts Anubis has
+# only been compiled by then and has not started anything yet. As a resource
+# this runs in converge order, after those recipes have done their work and
+# before the nginx configuration below is written.
+ruby_block 'verify anubis is accepting connections' do
+  block do
+    require 'socket'
 
-  # Anubis runs as the systemd template unit anubis@<instance>, which keeps its
-  # listening socket in /run/anubis/<instance>/instance.sock. This is the path
-  # the nginx template proxies to, so the unit name is derived from it rather
-  # than spelled out twice.
-  anubis_socket = node['anubis']['socket']
-  anubis_unit = "anubis@#{::File.basename(::File.dirname(anubis_socket))}"
+    anubis_socket = node['anubis']['socket'].to_s
+    if anubis_socket.empty?
+      raise "node['jenkins']['anubis'] is enabled but node['anubis']['socket'] is not set. " \
+        "Set it to the listening socket of the Anubis instance in front of Jenkins."
+    end
 
-  begin
-    ::UNIXSocket.new(anubis_socket).close
-  rescue SystemCallError => e
-    raise "node['jenkins']['anubis'] is enabled but nothing is accepting connections on " \
-      "#{anubis_socket} (#{e.class}). Start #{anubis_unit} or set node['jenkins']['anubis'] = false."
+    # Anubis runs as the systemd template unit anubis@<instance>, which keeps
+    # its listening socket in /run/anubis/<instance>/instance.sock. This is the
+    # path the nginx template proxies to, so the unit name is derived from it
+    # rather than spelled out twice.
+    anubis_unit = "anubis@#{::File.basename(::File.dirname(anubis_socket))}"
+
+    begin
+      ::UNIXSocket.new(anubis_socket).close
+    rescue SystemCallError => e
+      raise "node['jenkins']['anubis'] is enabled but nothing is accepting connections on " \
+        "#{anubis_socket} (#{e.class}). Start #{anubis_unit} or set node['jenkins']['anubis'] = false."
+    end
   end
+  only_if { node['jenkins']['anubis'] && node.chef_environment != 'test' }
 end
 
 package 'nginx'
