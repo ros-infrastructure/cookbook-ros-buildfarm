@@ -7,6 +7,17 @@ upstream jenkins {
 	server 127.0.0.1:8080 fail_timeout=0;
 }
 
+# Configure Anubis Upstream
+# It's expected to be running as anubis@jenkins systemd unit
+<% if (node['jenkins']['anubis']) %>
+upstream anubis {
+	server unix:/run/anubis/jenkins/instance.sock fail_timeout=0;
+  # Fallback to serving through nginx to avoid downtime if anubis is down
+  server 127.0.0.1:8080 backup;
+}
+<% end -%>
+
+
 # HTTP server is used just for ACME challenge and allowing build status icon
 # links that are already in the wild to be accepted. Otherwise redirect to
 # HTTPS
@@ -43,8 +54,8 @@ server {
 
 	ssl_certificate <%= @cert_path %>;
 	ssl_certificate_key <%= @key_path %>;
-        # Pass through jenkins headers nginx may consider invalid.
-        ignore_invalid_headers off;
+  # Pass through jenkins headers nginx may consider invalid.
+  ignore_invalid_headers off;
 
 	# Allow ACME challenge to access the webroot directly.
 	location '/.well-known/acme-challenge' {
@@ -58,6 +69,68 @@ server {
 		root /dev/null;
 		deny all;
 	}
+
+  # Mitigate ghprb SECURITY-2789 (CVE-2023-24434/-24435/-24436) — no upstream fix.
+  # Blocks the credential-enumeration + connection-test form-validation endpoints.
+  # see https://github.com/osrf/chef-osrf/issues/367
+  location ~* "/descriptorByName/org\.jenkinsci\.plugins\.ghprb\." {
+      return 403;
+      access_log /var/log/nginx/ghprb_blocked.log;
+  }
+  
+# API endpoints help bots identify how to query the buildfarm
+  # There is no usual usage of them by the dev team so we should disable them
+  location ~* /api/(xml|json|python|schema)(/|$) {
+      return 503;
+  }
+# Configure endpoints that are passed to Anubis
+# If you need an endpoint to not be challenged by Anubis put it above this 
+# since nginx evaluates sequentially it will otherwise be overwritten by anubis
+<% if (node['jenkins']['anubis']) %>
+  # Serve Anubis images
+  location ^~ /.within.website/ {
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-Ip $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    proxy_redirect http:// https://;
+    proxy_buffering off;
+    proxy_pass http://anubis;
+  }
+  # Anubis proxied endpoints
+  location ~* /securityRealm(/|$)  {
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect http:// https://;
+    proxy_buffering off;
+    proxy_pass http://anubis;
+  }  
+  location ~* /testReport(/|$)  {
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect http:// https://;
+    proxy_buffering off;
+    proxy_pass http://anubis;
+  }
+
+  # Build console output and the progressive log endpoints the console page
+  # polls while a build is running.
+  location ~* /(console(Text|Full)?|logText/progressive(Text|Html))(/|$) {
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect http:// https://;
+    proxy_buffering off;
+    proxy_pass http://anubis;
+  }
+
+<% end -%>
 
 	location / {
 		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
