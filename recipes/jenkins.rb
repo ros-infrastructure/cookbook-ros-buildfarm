@@ -326,6 +326,10 @@ if node['ros_buildfarm']['letsencrypt_enabled']
       File.directory?("/root/.acme.sh/#{server_name}_ecc") and
       File.read("/root/.acme.sh/#{server_name}_ecc/#{server_name}.conf").match(/Le_ReloadCmd='__ACME_BASE64__START_L3Jvb3QvY2VydC11cGRhdGUtaG9vay5zaA==__ACME_BASE64__END_'/)
     }
+    # Test Kitchen instances have no publicly resolvable domain so the ACME
+    # challenge can never succeed there. The bootstrap self-signed certificate
+    # written above is enough to bring nginx up for the integration tests.
+    not_if { node.chef_environment == 'test' }
   end
 else
   template '/etc/nginx/sites-enabled/jenkins' do
