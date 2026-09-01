@@ -12,8 +12,6 @@ upstream jenkins {
 <% if (node['jenkins']['anubis']) %>
 upstream anubis {
 	server unix:/run/anubis/jenkins/instance.sock fail_timeout=0;
-  # Fallback to serving through nginx to avoid downtime if anubis is down
-  server 127.0.0.1:8080 backup;
 }
 <% end -%>
 
