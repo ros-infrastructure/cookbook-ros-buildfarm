@@ -378,6 +378,25 @@ else
   end
 end
 
+# Deploy bot protection configs if enabled
+if node['jenkins']['bot_protection']
+  directory '/etc/nginx/conf.d/bot-protection' do
+    mode '0750'
+    owner 'root'
+    group 'www-data'
+  end
+
+  %w(10-bot-detection.conf 15-bot-protection-maps.conf 20-bot-maps.conf bot-actions.conf).each do |config_file|
+    cookbook_file "/etc/nginx/conf.d/bot-protection/#{config_file}" do
+      source "nginx/conf.d/bot-protection/#{config_file}"
+      mode '0640'
+      owner 'root'
+      group 'www-data'
+      notifies :restart, 'service[nginx]', :delayed
+    end
+  end
+end
+
 package 'python3-yaml'
 
 package 'docker.io'
