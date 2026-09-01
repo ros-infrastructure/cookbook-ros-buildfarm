@@ -11,8 +11,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NGINX_DIR="$(cd "$SCRIPT_DIR/../templates/nginx/snippets" && pwd)"
-OUTPUT_FILE="$NGINX_DIR/bot_ua_map.conf"
+NGINX_DIR="$(cd "$SCRIPT_DIR/../files/nginx/conf.d/bot-protection" && pwd)"
+OUTPUT_FILE="$NGINX_DIR/10-bot-detection.conf"
 TEMP_FILE=$(mktemp)
 trap "rm -f $TEMP_FILE" EXIT
 
@@ -36,7 +36,7 @@ Update nginx bot policies from TecharoHQ/anubis
 Usage: ./update-bot-policies.sh [COMMAND]
 
 Commands:
-  (none)   Update bot_ua_map.conf from upstream
+  (none)   Update conf.d/10-bot-detection.conf from upstream
   check    Check for upstream updates without modifying files
   help     Show this help message
 
@@ -48,7 +48,7 @@ Examples:
   ./update-bot-policies.sh check
 
 After updating, you should:
-  1. Review changes: git diff bot_ua_map.conf
+  1. Review changes: git diff conf.d/10-bot-detection.conf
   2. Test nginx config: nginx -t
   3. Reload nginx: systemctl reload nginx
 
@@ -81,15 +81,16 @@ fetch_policy() {
 generate_config() {
     {
         cat << HEADER
-# Extended bot user-agent detection map
-# Based on TecharoHQ/anubis bot policies
+# Bot Detection Maps - 10-bot-detection.conf
+# Generated from TecharoHQ/anubis upstream policies
 # https://github.com/TecharoHQ/anubis/tree/main/data/bots
 #
-# AUTO-GENERATED - Update using: ./tools/update-bot-policies.sh
+# AUTO-GENERATED - Do not edit manually
+# Update using: ./tools/update-bot-policies.sh
 # Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 # Upstream source: https://github.com/TecharoHQ/anubis
 #
-# This map consolidates bot detection across multiple policies
+# Part of: conf.d/bot-protection.conf inclusion chain
 
 HEADER
 
@@ -242,12 +243,15 @@ main() {
             echo ""
             echo "Next steps:"
             echo "  1. Review changes:"
-            echo "     git diff $OUTPUT_FILE"
+            echo "     git diff conf.d/10-bot-detection.conf"
             echo ""
-            echo "  2. Validate nginx config:"
+            echo "  2. Verify bot protection is included:"
+            echo "     grep 'include conf.d/bot-protection.conf' /etc/nginx/nginx.conf"
+            echo ""
+            echo "  3. Validate nginx config:"
             echo "     nginx -t"
             echo ""
-            echo "  3. Reload nginx:"
+            echo "  4. Reload nginx:"
             echo "     sudo systemctl reload nginx"
             ;;
         *)
