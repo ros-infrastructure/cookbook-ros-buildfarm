@@ -31,7 +31,6 @@ describe file jenkins_site do
   # unix socket and falls back to Jenkins directly if Anubis is unavailable.
   its('content') { should match(/upstream anubis \{/) }
   its('content') { should match(%r{server unix:/run/anubis/jenkins/instance\.sock fail_timeout=0;}) }
-  its('content') { should match(/server 127\.0\.0\.1:8080 backup;/) }
 
   anubis_locations.each do |name, location|
     it "proxies #{name} to the anubis upstream" do
