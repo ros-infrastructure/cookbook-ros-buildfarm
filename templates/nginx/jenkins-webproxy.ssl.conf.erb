@@ -7,6 +7,15 @@ upstream jenkins {
 	server 127.0.0.1:8080 fail_timeout=0;
 }
 
+# Cache for /static/, /adjuncts/, and /resources/, which are content-addressed
+# by Jenkins (the hash segment in the path changes whenever the underlying
+# resource does), so cached responses can never go stale.
+# /resources/ requires Overall/Read, unlike /static/ and /adjuncts/ - only
+# cache it if anonymous has been granted that permission, otherwise nginx
+# would serve it from cache without ever re-checking authorization.
+# https://www.jenkins.io/doc/developer/views/exposing-bundled-resources/
+proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
+
 # Configure Anubis Upstream
 # It's expected to be running as anubis@jenkins systemd unit
 <% if (node['jenkins']['anubis']) %>
@@ -165,7 +174,10 @@ server {
       access_log /var/log/nginx/ghprb_blocked.log;
   }
 <% if hardening -%>
-   location ~* ^/(static|adjuncts)/ {
+  # Cache /static/, /adjuncts/, and /resources/ aggressively: see the
+  # proxy_cache_path comment near the top of this file for why these paths
+  # never go stale.
+  location ~* ^/(static|adjuncts|resources)/ {
       proxy_set_header Host $host:$server_port;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
