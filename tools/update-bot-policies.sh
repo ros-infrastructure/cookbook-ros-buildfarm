@@ -117,22 +117,27 @@ SECTION1
         # Fetch and process policies
         log "Fetching policies from Anubis..." >&2
 
-        local ai_catchall
+        local ai_catchall ai_robots
         ai_catchall=$(fetch_policy "ai-catchall.yaml")
-        # Extract and convert user agents
-        echo "$ai_catchall" | grep -A1 "user_agent_regex:" | tail -1 | tr '|' '\n' | \
-            sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
-            while read agent; do
-                [ -n "$agent" ] && echo "    \"~*$agent\" 1;"
-            done
-
-        local ai_robots
         ai_robots=$(fetch_policy "ai-robots-txt.yaml")
-        # Add notable bots from robots.txt list
-        echo "$ai_robots" | grep -A1 "user_agent_regex:" | tail -1 | tr '|' '\n' | \
-            sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -50 | \
-            while read agent; do
-                [ -n "$agent" ] && echo "    \"~*$agent\" 1;"
+
+        # Merge both sources and de-duplicate case-insensitively (also against
+        # the hardcoded headless-browser entries above). nginx's map directive
+        # rejects a re-declared key outright, and ai-catchall/ai-robots-txt
+        # overlap heavily (e.g. AI2Bot, anthropic-ai, Bytespider appear in
+        # both), so this is not just cosmetic.
+        {
+            echo "$ai_catchall" | grep -A1 "user_agent_regex:" | tail -1 | tr '|' '\n'
+            # Limit to the first 50 entries from this source, as before.
+            echo "$ai_robots" | grep -A1 "user_agent_regex:" | tail -1 | tr '|' '\n' | head -50
+        } | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
+            awk 'BEGIN {
+                n = split("lightpanda HeadlessChrome HeadlessChromium hyperbrowser Puppeteer Playwright Selenium", seeded, " ")
+                for (i = 1; i <= n; i++) seen[tolower(seeded[i])] = 1
+            }
+            NF && !seen[tolower($0)]++' | \
+            while read -r agent; do
+                echo "    \"~*$agent\" 1;"
             done
 
         cat << 'SECTION2'
