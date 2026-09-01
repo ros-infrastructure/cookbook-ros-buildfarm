@@ -25,6 +25,7 @@ jobs:
           - 'repo'
           - 'jenkins'
           - 'jenkins-anubis'
+          - 'jenkins-bot-protection'
         chef_version:
           - '19'
         os:
