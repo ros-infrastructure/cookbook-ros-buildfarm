@@ -317,6 +317,24 @@ file '/etc/nginx/sites-enabled/default' do
   manage_symlink_source false
 end
 
+# Deploy bot protection configs if enabled (must be before nginx template)
+if node['jenkins']['bot_protection']
+  directory '/etc/nginx/conf.d/bot-protection' do
+    mode '0750'
+    owner 'root'
+    group 'www-data'
+  end
+
+  %w(10-bot-detection.conf 15-bot-protection-maps.conf 20-bot-maps.conf bot-actions.conf).each do |config_file|
+    cookbook_file "/etc/nginx/conf.d/bot-protection/#{config_file}" do
+      source "nginx/conf.d/bot-protection/#{config_file}"
+      mode '0640'
+      owner 'root'
+      group 'www-data'
+    end
+  end
+end
+
 if node['ros_buildfarm']['letsencrypt_enabled']
   server_name = node['ros_buildfarm']['jenkins']['server_name']
   cert_path = "/etc/ssl/certs/#{server_name}/fullchain.pem"
@@ -375,25 +393,6 @@ else
       server_name: node['ros_buildfarm']['jenkins']['server_name']
     ]
     notifies :restart, 'service[nginx]'
-  end
-end
-
-# Deploy bot protection configs if enabled
-if node['jenkins']['bot_protection']
-  directory '/etc/nginx/conf.d/bot-protection' do
-    mode '0750'
-    owner 'root'
-    group 'www-data'
-  end
-
-  %w(10-bot-detection.conf 15-bot-protection-maps.conf 20-bot-maps.conf bot-actions.conf).each do |config_file|
-    cookbook_file "/etc/nginx/conf.d/bot-protection/#{config_file}" do
-      source "nginx/conf.d/bot-protection/#{config_file}"
-      mode '0640'
-      owner 'root'
-      group 'www-data'
-      notifies :restart, 'service[nginx]', :delayed
-    end
   end
 end
 
