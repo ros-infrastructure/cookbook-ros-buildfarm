@@ -63,6 +63,10 @@ server {
 
 	ssl_certificate <%= @cert_path %>;
 	ssl_certificate_key <%= @key_path %>;
+  
+  access_log      /var/log/nginx/jenkins.access.log;
+  error_log       /var/log/nginx/jenkins.error.log;
+
   # Pass through jenkins headers nginx may consider invalid.
   ignore_invalid_headers off;
 
