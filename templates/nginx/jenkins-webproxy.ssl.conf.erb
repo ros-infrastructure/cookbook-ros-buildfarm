@@ -133,6 +133,7 @@ server {
 	
 	access_log /var/log/nginx/access.log;  
 	access_log /var/log/nginx/bot_denied.log combined if=$stale_ua_pool;
+  error_log       /var/log/nginx/jenkins.error.log;
 <% end -%>
 
 	# Allow ACME challenge to access the webroot directly.
