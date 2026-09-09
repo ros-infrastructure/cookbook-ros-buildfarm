@@ -21,6 +21,16 @@ case "$1" in
 		repo=rhel/testing
 		key=ros-shadow-fixed-rhel-push_id
 		;;
+	fedora-main)
+		user=ros
+		repo=fedora/main
+		key=ros-fedora-push_id
+		;;
+	fedora-testing)
+		user=ros
+		repo=fedora/testing
+		key=ros-shadow-fixed-fedora-push_id
+		;;
 	*)
 		echo "There is no upload configuration for '$1'."
 		exit 1
