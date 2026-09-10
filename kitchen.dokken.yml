@@ -14,7 +14,7 @@ provisioner:
   name: dokken
   product_name: cinc_solo
   chef_binary: /opt/cinc/bin/cinc-solo
-  chef_log_level: debug
+  chef_log_level: info
   chef_output_format: doc
   client_rb:
     environment: test
