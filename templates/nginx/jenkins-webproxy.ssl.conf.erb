@@ -15,6 +15,9 @@ upstream anubis {
 }
 <% end -%>
 
+<% if (node['jenkins']['bot_protection']) %>
+  include conf.d/bot-protection/20-bot-maps.conf;
+<% end -%>
 
 # HTTP server is used just for ACME challenge and allowing build status icon
 # links that are already in the wild to be accepted. Otherwise redirect to
@@ -81,6 +84,11 @@ server {
   location ~* /api/(xml|json|python|schema)(/|$) {
       return 503;
   }
+
+<% if (node['jenkins']['bot_protection']) %>
+  include conf.d/bot-protection/bot-actions.conf;
+<% end -%>
+
 # Configure endpoints that are passed to Anubis
 # If you need an endpoint to not be challenged by Anubis put it above this 
 # since nginx evaluates sequentially it will otherwise be overwritten by anubis

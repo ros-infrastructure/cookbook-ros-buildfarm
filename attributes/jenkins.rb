@@ -32,3 +32,7 @@ default['jenkins']['anubis'] = false
 # Flag to enable/disable Anubis 
 # This only configures nginx assuming Anubis is running as a systemd unit named anubis@jenkins
 default['anubis']['socket'] = ''
+# Flag to enable/disable nginx bot protection
+# This is separate from Anubis and uses known bot UA, IP adresses and other available tools. 
+# It's possible some valid users is affected, use at discretion. 
+default['jenkins']['bot_protection'] = false 
