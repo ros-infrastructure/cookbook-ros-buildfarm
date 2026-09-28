@@ -80,6 +80,14 @@ unclassified:
     precedenceBulk: false
     watchingEnabled: false
   ghprbTrigger:
+<% unless @ghprb_shared_secret.nil? -%>
+    githubAuth:
+    - credentialsId: <%= @ghprb_github_auth['credentials_id'].to_json %>
+      description: "Anonymous connection"
+      id: <%= @ghprb_github_auth['id'].to_json %>
+      secret: <%= @ghprb_shared_secret.to_json %>
+      serverAPIUrl: "https://api.github.com"
+<% end -%>
     extensions:
     - ghprbSimpleStatus:
         addTestResults: false
