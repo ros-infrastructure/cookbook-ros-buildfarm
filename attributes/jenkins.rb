@@ -14,6 +14,11 @@ default['ros_buildfarm']['jenkins']['server_name'] = 'ros_buildfarm'
 # The email address used by Jenkins as the default from-address for Jenkins emails if SMTP is enabled.
 default['ros_buildfarm']['jenkins']['admin_email'] = 'noreply@ros_buildfarm'
 
+# Whether the GitHub Pull Request Builder plugin may create webhooks on the repositories of its jobs.
+# When nil the setting is not managed and Jenkins keeps its own value (the plugin default is true).
+# Set to false on environments (e.g. staging) that must not register hooks on repositories shared with production.
+default['ros_buildfarm']['jenkins']['ghprb_manage_webhooks'] = nil
+
 # When set to true, acme.sh will be installed to provide SSL certificates via LetsEncrypt.org
 default['ros_buildfarm']['letsencrypt_enabled'] = false
 

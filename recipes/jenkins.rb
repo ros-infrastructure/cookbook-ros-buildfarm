@@ -99,6 +99,15 @@ end
 # stable interface to Jenkins' internal describable and data binding APIs.
 # This decreases the configuration file drift based on plugin version artifacts
 # and consolidates everything in to the single file.
+# The GitHub Pull Request Builder "Shared secret" is only managed for
+# environments whose data bag entry defines a `shared_secret` field. The
+# server `id` and `credentials_id` must match the live GitHub server entry, so
+# they come from the `ghprb_github_auth` environment attributes.
+ghprb_credential = {}
+if data_bag('ros_buildfarm_secret_text_credentials').include?('github_pull_request_builder')
+  ghprb_credential = data_bag_item('ros_buildfarm_secret_text_credentials', 'github_pull_request_builder')[node.chef_environment] || {}
+end
+
 template '/var/lib/jenkins/jenkins.yaml' do
   source 'jenkins/jenkins.yaml.erb'
   owner node['jenkins']['master']['user']
@@ -107,7 +116,11 @@ template '/var/lib/jenkins/jenkins.yaml' do
     scheme: if node['ros_buildfarm']['letsencrypt_enabled'] then 'https' else 'http' end,
     server_name: node['ros_buildfarm']['jenkins']['server_name'],
     admin_email: node['ros_buildfarm']['jenkins']['admin_email'],
+    ghprb_shared_secret: ghprb_credential['shared_secret'],
+    ghprb_github_auth: node['ros_buildfarm']['jenkins']['ghprb_github_auth'],
+    ghprb_manage_webhooks: node['ros_buildfarm']['jenkins']['ghprb_manage_webhooks'],
   ]
+  sensitive true
   notifies :restart, 'service[jenkins]', :delayed
 end
 
