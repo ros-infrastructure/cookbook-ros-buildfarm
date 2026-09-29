@@ -7,6 +7,9 @@ upstream jenkins {
 	server 127.0.0.1:8080 fail_timeout=0;
 }
 
+<% if (node['jenkins']['bot_protection']) %>
+  include conf.d/bot-protection/20-bot-maps.conf;
+<% end -%>
 # HTTP reverse proxy for Jenkins.
 server {
 	listen 80 default_server;
@@ -20,6 +23,10 @@ server {
 		root /dev/null;
 		deny all;
 	}
+
+<% if (node['jenkins']['bot_protection']) %>
+	include conf.d/bot-protection/bot-actions.conf;
+<% end -%>
 
 	location / {
 		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/

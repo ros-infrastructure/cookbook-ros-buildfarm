@@ -12,4 +12,10 @@ end
 describe file '/etc/nginx/sites-enabled/jenkins' do
   its('content') { should_not match(/upstream anubis \{/) }
   its('content') { should_not match(%r{proxy_pass http://anubis;}) }
+  # Bot protection is opt-in via node['jenkins']['bot_protection']
+  its('content') { should_not match(%r{include conf\.d/bot-protection/bot-actions\.conf;}) }
+end
+
+describe directory '/etc/nginx/conf.d/bot-protection' do
+  it { should_not exist }
 end

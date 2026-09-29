@@ -64,6 +64,17 @@ suites:
     verifier:
       inspec_tests:
         - test/integration/jenkins-anubis
+  - name: jenkins-bot-protection
+    data_bags_path: "test/integration/data_bags"
+    attributes:
+      jenkins:
+        bot_protection: true
+    run_list:
+      - recipe[ros_buildfarm::agent]
+      - recipe[ros_buildfarm::jenkins]
+    verifier:
+      inspec_tests:
+        - test/integration/jenkins-bot-protection
   - name: repo
     data_bags_path: "test/integration/data_bags"
     run_list:
