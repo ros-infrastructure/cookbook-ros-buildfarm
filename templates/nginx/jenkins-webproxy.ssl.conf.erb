@@ -17,6 +17,7 @@ upstream anubis {
 
 <% hardening = node['jenkins']['anubis'] && node['jenkins']['bot_hardening'] -%>
 <% if hardening -%>
+
 map $http_user_agent $is_headless_bot {
         default 0;
         "~*Lightpanda" 1;
@@ -26,11 +27,8 @@ map $http_user_agent $is_headless_bot {
         "~*Selenium" 1;
 	"~*meta-externalagent" 1;
 }
-
-# Rate limit the submission of Anubis challenge solutions.
 limit_req_zone $binary_remote_addr zone=anubis_submit:10m rate=5r/s;
 
-# Networks that are dropped without an answer.
 geo $remote_addr $blackhole_client {
 	ranges;
         default 0;
@@ -41,9 +39,9 @@ geo $remote_addr $blackhole_client {
 	151.244.30.99-151.244.30.99 1;
 }
 
-# Outdated browser versions that are only seen in bot traffic.
 map $http_user_agent $stale_ua_pool {
     default 0;
+
     "~Chrome/118\.0\.0\.0"          1;
     "~Chrome/119\.0\.0\.0"          1;
     "~Chrome/120\.0\.0\.0"          1;
@@ -53,7 +51,8 @@ map $http_user_agent $stale_ua_pool {
 
 proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
 
-# Catch-all block for any unrecognized or malicious domains
+
+# 1. Catch-all block for any unrecognized or malicious domains
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -98,8 +97,8 @@ server {
     listen [::]:443 ssl default_server;
     server_name _;
 
-	# Drop the connection during the TLS handshake without serving a
-	# mismatched certificate
+    # Drop the connection immediately during the TLS handshake 
+    # without serving a mismatched certificate
     ssl_reject_handshake on;
 }
 
@@ -145,6 +144,7 @@ server {
 	 	return 403;
 	}
 
+
     client_body_timeout 60s;
     client_header_timeout 60s;
     keepalive_timeout 70s;
@@ -158,7 +158,6 @@ server {
       access_log /var/log/nginx/ghprb_blocked.log;
   }
 <% if hardening -%>
-
    location ~* ^/(static|adjuncts)/ {
       proxy_set_header Host $host:$server_port;
       proxy_set_header X-Real-IP $remote_addr;
@@ -173,7 +172,7 @@ server {
   }
 <% end -%>
 <% if node['jenkins']['block_api_endpoints'] -%>
-
+  
 # API endpoints help bots identify how to query the buildfarm
   # There is no usual usage of them by the dev team so we should disable them
   location ~* /api/(xml|json|python|schema)(/|$) {
@@ -184,8 +183,9 @@ server {
 # If you need an endpoint to not be challenged by Anubis put it above this 
 # since nginx evaluates sequentially it will otherwise be overwritten by anubis
 <% if (node['jenkins']['anubis']) %>
+  # Serve Anubis images
 <% if hardening -%>
-  # Rate limited submission of solved challenges
+
 location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     limit_req zone=anubis_submit;
    
@@ -197,10 +197,10 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_redirect http:// https://;
     proxy_buffering off; 
     proxy_pass http://anubis;
+
 }
   
 <% end -%>
-  # Serve Anubis images
   location ^~ /.within.website/ {
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-Ip $remote_addr;
