@@ -118,6 +118,7 @@ template '/var/lib/jenkins/jenkins.yaml' do
     admin_email: node['ros_buildfarm']['jenkins']['admin_email'],
     ghprb_shared_secret: ghprb_credential['shared_secret'],
     ghprb_github_auth: node['ros_buildfarm']['jenkins']['ghprb_github_auth'],
+    ghprb_manage_webhooks: node['ros_buildfarm']['jenkins']['ghprb_manage_webhooks'],
   ]
   sensitive true
   notifies :restart, 'service[jenkins]', :delayed
