@@ -18,12 +18,12 @@ upstream anubis {
 <% hardening = node['jenkins']['anubis'] && node['jenkins']['bot_hardening'] -%>
 <% if hardening -%>
 map $http_user_agent $is_headless_bot {
-	default 0;
-	"~*Lightpanda" 1;
-	"~*HeadlessChrome" 1;
-	"~*Puppeteer" 1;
-	"~*Playwright" 1;
-	"~*Selenium" 1;
+        default 0;
+        "~*Lightpanda" 1;
+        "~*HeadlessChrome" 1;
+        "~*Puppeteer" 1;
+        "~*Playwright" 1;
+        "~*Selenium" 1;
 	"~*meta-externalagent" 1;
 }
 
@@ -33,7 +33,7 @@ limit_req_zone $binary_remote_addr zone=anubis_submit:10m rate=5r/s;
 # Networks that are dropped without an answer.
 geo $remote_addr $blackhole_client {
 	ranges;
-	default 0;
+        default 0;
 	57.141.2.1-57.141.2.78 1;  # This is Meta
 	69.25.91.229-69.25.91.254 1;
 	155.103.64.229-155.103.64.254 1;
@@ -43,22 +43,22 @@ geo $remote_addr $blackhole_client {
 
 # Outdated browser versions that are only seen in bot traffic.
 map $http_user_agent $stale_ua_pool {
-	default 0;
-	"~Chrome/118\.0\.0\.0" 1;
-	"~Chrome/119\.0\.0\.0" 1;
-	"~Chrome/120\.0\.0\.0" 1;
-	"~rv:120\.0\)\ Gecko" 1;
-	"~rv:121\.0\)\ Gecko" 1;
+    default 0;
+    "~Chrome/118\.0\.0\.0"          1;
+    "~Chrome/119\.0\.0\.0"          1;
+    "~Chrome/120\.0\.0\.0"          1;
+    "~rv:120\.0\)\ Gecko"           1;
+    "~rv:121\.0\)\ Gecko"           1;
 }
 
 proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
 
 # Catch-all block for any unrecognized or malicious domains
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
-	server_name _;
-	return 444; # Closes the connection immediately without redirecting
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    return 444; # Closes the connection immediately without redirecting
 }
 <% end -%>
 
@@ -94,13 +94,13 @@ server {
 <% if hardening -%>
 # Catch-all for HTTPS traffic to unrecognized domains or raw IPs
 server {
-	listen 443 ssl default_server;
-	listen [::]:443 ssl default_server;
-	server_name _;
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name _;
 
 	# Drop the connection during the TLS handshake without serving a
 	# mismatched certificate
-	ssl_reject_handshake on;
+    ssl_reject_handshake on;
 }
 
 <% end -%>
@@ -114,8 +114,8 @@ server {
   # Pass through jenkins headers nginx may consider invalid.
   ignore_invalid_headers off;
 <% if hardening -%>
-
-	access_log /var/log/nginx/access.log;
+	
+	access_log /var/log/nginx/access.log;  
 	access_log /var/log/nginx/bot_denied.log combined if=$stale_ua_pool;
 <% end -%>
 
@@ -138,16 +138,16 @@ server {
 	}
 
 	if ($is_headless_bot) {
-		return 403 "Forbidden";
-	}
+        	return 403 "Forbidden";
+    	}
 
 	if ($stale_ua_pool) {
-		return 403;
+	 	return 403;
 	}
 
-	client_body_timeout 60s;
-	client_header_timeout 60s;
-	keepalive_timeout 70s;
+    client_body_timeout 60s;
+    client_header_timeout 60s;
+    keepalive_timeout 70s;
 <% end -%>
 
   # Mitigate ghprb SECURITY-2789 (CVE-2023-24434/-24435/-24436) — no upstream fix.
@@ -159,7 +159,7 @@ server {
   }
 <% if hardening -%>
 
-  location ~* ^/(static|adjuncts)/ {
+   location ~* ^/(static|adjuncts)/ {
       proxy_set_header Host $host:$server_port;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -186,19 +186,19 @@ server {
 <% if (node['jenkins']['anubis']) %>
 <% if hardening -%>
   # Rate limited submission of solved challenges
-  location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
+location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     limit_req zone=anubis_submit;
-
+   
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-Ip $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 
     proxy_redirect http:// https://;
-    proxy_buffering off;
+    proxy_buffering off; 
     proxy_pass http://anubis;
-  }
-
+}
+  
 <% end -%>
   # Serve Anubis images
   location ^~ /.within.website/ {
