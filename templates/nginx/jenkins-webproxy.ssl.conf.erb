@@ -70,7 +70,7 @@ server {
 	server_name <%= @server_name %>;
 
 	location / {
-		return 301 https://$host$request_uri;
+		return 301 https://<%= hardening ? @server_name : '$host' %>$request_uri;
 	}
 
 	# Allow ACME challenge to access the webroot directly.
