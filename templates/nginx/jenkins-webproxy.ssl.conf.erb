@@ -11,7 +11,9 @@ upstream jenkins {
 # It's expected to be running as anubis@jenkins systemd unit
 <% if (node['jenkins']['anubis']) %>
 upstream anubis {
-	server unix:/run/anubis/jenkins/instance.sock fail_timeout=0;
+   server unix:/run/anubis/jenkins/instance.sock fail_timeout=0;
+  # Fallback to serving through nginx to avoid downtime if anubis is down
+	# server 127.0.0.1:8080 backup;
 }
 <% end -%>
 
@@ -116,8 +118,8 @@ server {
 
 	ssl_certificate <%= @cert_path %>;
 	ssl_certificate_key <%= @key_path %>;
-  # Pass through jenkins headers nginx may consider invalid.
-  ignore_invalid_headers off;
+	  # Pass through jenkins headers nginx may consider invalid.
+  	ignore_invalid_headers off;
 <% if hardening -%>
 	
 	access_log /var/log/nginx/access.log;  
@@ -130,12 +132,11 @@ server {
 		root /var/www/html;
 		allow all;
 	}
-
 	# Block potentially abuseable plugin test url.
 	location '/descriptorByName/jenkins.plugins.publish_over_ssh.BapSshHostConfiguration' {
 		root /dev/null;
 		deny all;
-	}
+	} 
 <% if hardening -%>
 
 	if ($blackhole_client) {
@@ -207,7 +208,7 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
 }
   
 <% end -%>
-  location ^~ /.within.website/ {
+    location ^~ /.within.website/ {
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-Ip $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -217,6 +218,7 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_buffering off;
     proxy_pass http://anubis;
   }
+
   # Anubis proxied endpoints
   location ~* /securityRealm(/|$)  {
     proxy_set_header Host $host:$server_port;
@@ -259,25 +261,25 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_pass http://anubis;
   }
 <% end -%>
-
 <% end -%>
 
-	location / {
-		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
-		sendfile off;
-		client_max_body_size 10m;
-		client_body_buffer_size 128k;
-		proxy_set_header Host $host:$server_port;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
-		proxy_redirect http:// https://;
-		proxy_buffering off;
-		proxy_request_buffering off;
-		proxy_connect_timeout 120s;
-		proxy_send_timeout 120s;
-		proxy_read_timeout 180s;
-		proxy_pass http://jenkins;
-	}
+  	location / {
+  
+  		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
+  		sendfile off;
+  		client_max_body_size 10m;
+  		client_body_buffer_size 128k;
+  		proxy_set_header Host $host:$server_port;
+  		proxy_set_header X-Real-IP $remote_addr;
+  		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  		proxy_set_header X-Forwarded-Proto $scheme;
+  		proxy_redirect http:// https://;
+  		proxy_buffering off;
+  		proxy_request_buffering off;
+  		proxy_connect_timeout 120s;
+  		proxy_send_timeout 120s;
+  		proxy_read_timeout 180s;
+  		proxy_pass http://jenkins;
+  	}
 }
 
