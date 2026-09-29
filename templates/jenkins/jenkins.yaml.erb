@@ -88,7 +88,9 @@ unclassified:
       secret: <%= @ghprb_shared_secret.to_json %>
       serverAPIUrl: "https://api.github.com"
 <% end -%>
+<% unless @ghprb_manage_webhooks.nil? -%>
     manageWebhooks: <%= @ghprb_manage_webhooks ? 'true' : 'false' %>
+<% end -%>
     extensions:
     - ghprbSimpleStatus:
         addTestResults: false
