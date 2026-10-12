@@ -29,9 +29,9 @@ default['ros_buildfarm']['smtp'] = false
 default['jenkins']['master']['version'] = '2.555.3'
 
 # JDK version to install
-default['jenkins']['master']['jdk_version'] = 21
+default['jenkins']['master']['jdk_version'] = 25
 
-# Flag to enable/disable Anubis 
+# Flag to enable/disable Anubis
 # This only configures nginx assuming Anubis is running as a systemd unit named anubis@jenkins
 default['jenkins']['anubis'] = false
 
