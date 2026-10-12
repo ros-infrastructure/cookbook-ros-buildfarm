@@ -26,7 +26,7 @@ default['ros_buildfarm']['letsencrypt_enabled'] = false
 default['ros_buildfarm']['smtp'] = false
 
 # LTS version of Jenkins to install (https://www.jenkins.io/changelog-stable/)
-default['jenkins']['master']['version'] = '2.555.3'
+default['jenkins']['master']['version'] = '2.580.1'
 
 # JDK version to install
 default['jenkins']['master']['jdk_version'] = 25
