@@ -34,6 +34,17 @@ default['jenkins']['master']['jdk_version'] = 21
 # Flag to enable/disable Anubis 
 # This only configures nginx assuming Anubis is running as a systemd unit named anubis@jenkins
 default['jenkins']['anubis'] = false
-# Flag to enable/disable Anubis 
+
+# Extra nginx protections for hosts exposed to bot traffic: headless and stale
+# browser user agent blocking, an IP blackhole list, rate limiting of Anubis
+# challenge submissions, static asset caching and catch-all servers that drop
+# requests for unknown hosts. Only takes effect together with `anubis`.
+default['jenkins']['bot_hardening'] = false
+
+# Answer 503 for the Jenkins /api/(xml|json|python|schema) endpoints. Disable it
+# on hosts whose scripts need to query the API.
+default['jenkins']['block_api_endpoints'] = true
+
+# Flag to enable/disable Anubis
 # This only configures nginx assuming Anubis is running as a systemd unit named anubis@jenkins
 default['anubis']['socket'] = ''
