@@ -65,10 +65,6 @@ map $http_user_agent $stale_ua_pool {
     "~rv:121\.0\)\ Gecko"           1;
 }
 
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=jenkins_api_cache:10m max_size=1g inactive=60m use_temp_path=off;
-proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
-
-
 # 1. Catch-all block for any unrecognized or malicious domains
 server {
     listen 80 default_server;
