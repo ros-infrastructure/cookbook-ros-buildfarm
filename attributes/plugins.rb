@@ -85,7 +85,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "mapdb-api" => "1.0.9-44.va_1e1310c9118",
   "matrix-auth" => "3.3",
   "matrix-project" => "917.v22eda_817646e",
-  "maven-plugin" => "3.28",
   "mercurial" => "1323.ve69d2a_db_8a_b_d",
   "metrics" => "4.2.37-494.v06f9a_939d33a_",
   "mina-sshd-api-common" => "2.19.0-192.v2b_a_7b_2c1dc71",
