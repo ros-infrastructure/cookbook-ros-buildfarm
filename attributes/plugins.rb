@@ -72,7 +72,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "jjwt-api" => "0.13.0-141.vd58b_a_9592b_6c",
   "jobConfigHistory" => "1380.v762185b_9a_793",
   "jobrequeue" => "1.1",
-  "jquery" => "1.12.4-3",
   "jquery3-api" => "3.7.1-687.v68d468e40b_30",
   "jsch" => "0.2.16-95.v3eecb_55fa_b_78",
   "json-api" => "20260814-226.v20f9685d642c",
