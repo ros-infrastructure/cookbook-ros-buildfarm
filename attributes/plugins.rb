@@ -17,7 +17,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "checks-api" => "422.vc7e8b_51488c6",
   "cloudbees-folder" => "6.1106.v3a_d9a_6d2465e",
   "collapsing-console-sections" => "1.14.0",
-  "command-launcher" => "141.v9578cf36b_311",
   "commons-compress-api" => "1.28.0-95.vb_e5e24f83645",
   "commons-lang3-api" => "3.21.0-122.v6a_ea_4fd34049",
   "commons-text-api" => "1.15.0-218.va_61573470393",
