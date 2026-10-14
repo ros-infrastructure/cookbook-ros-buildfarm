@@ -66,7 +66,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "jakarta-xml-bind-api" => "4.0.9-19.v2b_a_5b_44d9a_1c",
   "javadoc" => "354.vee1a_660b_4990",
   "javax-activation-api" => "1.2.0-8",
-  "javax-mail-api" => "1.6.2-11",
   "jaxb" => "2.3.9-143.v5979df3304e6",
   "jdk-tool" => "83.v417146707a_3d",
   "jjwt-api" => "0.13.0-141.vd58b_a_9592b_6c",
