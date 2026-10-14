@@ -68,7 +68,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "javax-activation-api" => "1.2.0-8",
   "javax-mail-api" => "1.6.2-11",
   "jaxb" => "2.3.9-143.v5979df3304e6",
-  "jdk-tool" => "83.v417146707a_3d",
   "jjwt-api" => "0.13.0-141.vd58b_a_9592b_6c",
   "jobConfigHistory" => "1380.v762185b_9a_793",
   "jobrequeue" => "1.1",
