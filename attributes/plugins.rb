@@ -46,7 +46,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "git" => "5.11.0",
   "git-client" => "6.6.1",
   "git-forensics" => "4.2463.vf6fecb_444a_b_3",
-  "git-server" => "137.ve0060b_432302",
   "github" => "1.47.0",
   "github-api" => "1.330-492.v3941a_032db_2a_",
   "github-branch-source" => "1983.vfa_27ed961853",
