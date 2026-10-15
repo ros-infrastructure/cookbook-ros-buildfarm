@@ -44,6 +44,8 @@ geo $remote_addr $blackhole_client {
 	155.103.64.229-155.103.64.254 1;
 	# 140.82.115.9-140.82.115.255 1;  # This is GitHub
 	151.244.30.99-151.244.30.99 1;
+  104.237.242.206-104.237.242.206 1; # 126000+ requests on 2026-10-14
+
 }
 
 map $http_user_agent $stale_ua_pool {
@@ -200,6 +202,7 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_set_header X-Real-Ip $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation 
 
     proxy_redirect http:// https://;
     proxy_buffering off; 
@@ -213,7 +216,8 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_set_header X-Real-Ip $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation 
+    
     proxy_redirect http:// https://;
     proxy_buffering off;
     proxy_pass http://anubis;
@@ -225,6 +229,8 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation 
+
     proxy_redirect http:// https://;
     proxy_buffering off;
     proxy_pass http://anubis;
@@ -234,6 +240,8 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation 
+
     proxy_redirect http:// https://;
     proxy_buffering off;
     proxy_pass http://anubis;
@@ -246,6 +254,8 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation 
+
     proxy_redirect http:// https://;
     proxy_buffering off;
     proxy_pass http://anubis;
@@ -255,6 +265,8 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation 
+
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_redirect http:// https://;
     proxy_buffering off;
