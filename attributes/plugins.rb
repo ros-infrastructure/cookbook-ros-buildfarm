@@ -8,7 +8,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "asm-api" => "9.11-224.v369c884f7a_a_b_",
   "audit-trail" => "464.v78b_845ffc5d8",
   "badge" => "3.615.vb_ed967ca_b_e93",
-  "bazaar" => "1.22",
   "bootstrap5-api" => "5.3.8-1048.va_c299057e35c",
   "bouncycastle-api" => "2.30.1.86.1-306.vfc711fa_36d5f",
   "branch-api" => "2.1303.v9f3b_95dc329d",
