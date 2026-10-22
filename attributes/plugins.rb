@@ -82,7 +82,6 @@ default['ros_buildfarm']['jenkins']['plugins'] = {
   "metrics" => "4.2.37-494.v06f9a_939d33a_",
   "mina-sshd-api-common" => "2.19.0-192.v2b_a_7b_2c1dc71",
   "mina-sshd-api-core" => "2.19.0-192.v2b_a_7b_2c1dc71",
-  "modernstatus" => "1.3",
   "monitoring" => "2.9.0",
   "okhttp-api" => "5.3.2-200.vedb_720a_cf1f8",
   "pam-auth" => "1.12",
