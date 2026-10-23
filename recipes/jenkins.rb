@@ -321,6 +321,13 @@ ruby_block 'verify anubis is accepting connections' do
 end
 
 package 'nginx'
+# nginx only creates the last component of a proxy_cache_path and the
+# Ubuntu nginx package does not ship /var/cache/nginx.
+directory '/var/cache/nginx' do
+  owner 'www-data'
+  group 'www-data'
+  mode '0700'
+end
 service 'nginx' do
   action [ :enable, :start]
 end
