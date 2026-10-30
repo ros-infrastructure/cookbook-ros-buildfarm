@@ -17,7 +17,7 @@ anubis_locations = {
   'Anubis static assets' => 'location ^~ /.within.website/',
   'securityRealm' => 'location ~* /securityRealm(/|$)',
   'testReport' => 'location ~* /testReport(/|$)',
-  'build console output' => 'location ~* /(console(Text|Full)?|logText/progressive(Text|Html))(/|$)',
+  'build console output' => 'location ~* /(console(Full)?|logText/progressive(Text|Html))(/|$)',
 }
 
 describe service 'nginx' do
@@ -39,6 +39,17 @@ describe file jenkins_site do
       expect(block).to match(%r{proxy_pass http://anubis;})
       expect(block).to match(/proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;/)
     end
+  end
+
+  it 'routes consoleText to jenkins with Basic auth and to anubis otherwise' do
+    expect(subject.content).to match(
+      /map \$http_authorization \$anubis_or_jenkins \{\s*default anubis;\s*"~\*\^Basic " jenkins;\s*\}/m
+    )
+    console_text_location = 'location ~* /consoleText(/|$)'
+    block = subject.content[/#{Regexp.escape(console_text_location)}.*?\n  \}/m]
+    expect(block).not_to be_nil, "no #{console_text_location.inspect} block in #{jenkins_site}"
+    expect(block).to match(%r{proxy_pass http://\$anubis_or_jenkins;})
+    expect(block).to match(/proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;/)
   end
 
   # Everything which is not explicitly handed to Anubis must still be proxied

@@ -15,6 +15,11 @@ upstream anubis {
   # Fallback to serving through nginx to avoid downtime if anubis is down
 	# server 127.0.0.1:8080 backup;
 }
+
+map $http_authorization $anubis_or_jenkins {
+    default anubis;
+    "~*^Basic " jenkins;
+}
 <% end -%>
 
 <% hardening = node['jenkins']['anubis'] && node['jenkins']['bot_hardening'] -%>
@@ -247,9 +252,23 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_pass http://anubis;
   }
 
+  # Allow HTTP Basic auth to bypass Anubis for plain-text build logs
+  # (Jenkins returns 401 for invalid Basic credentials without falling back to anonymous).
+  location ~* /consoleText(/|$) {
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Original-URI ""; # GHSA-6wcg-mqvh-fcvg mitigation
+
+    proxy_redirect http:// https://;
+    proxy_buffering off;
+    proxy_pass http://$anubis_or_jenkins;
+  }
+
   # Build console output and the progressive log endpoints the console page
   # polls while a build is running.
-  location ~* /(console(Text|Full)?|logText/progressive(Text|Html))(/|$) {
+  location ~* /(console(Full)?|logText/progressive(Text|Html))(/|$) {
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
