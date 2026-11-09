@@ -41,6 +41,7 @@ default['ros_buildfarm']['repo']['server_name'] = nil
 default['ros_buildfarm']['repo']['container_registry_cache_enabled'] = true
 default['ros_buildfarm']['rpm_repos']['fedora']['43'] = %w[aarch64 x86_64]
 default['ros_buildfarm']['rpm_repos']['fedora']['44'] = %w[aarch64 x86_64]
+default['ros_buildfarm']['rpm_repos']['fedora']['45'] = %w[aarch64 x86_64]
 default['ros_buildfarm']['rpm_repos']['rhel']['8'] = %w[aarch64 x86_64]
 default['ros_buildfarm']['rpm_repos']['rhel']['9'] = %w[aarch64 x86_64]
 default['ros_buildfarm']['rpm_repos']['rhel']['10'] = %w[aarch64 x86_64]
@@ -56,6 +57,12 @@ default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['fedora']['44'] = Ha
   binary: 'http://repos.ros.org/repos/fedora/ros_bootstrap/44/$basearch/',
   debug: 'http://repos.ros.org/repos/fedora/ros_bootstrap/44/$basearch/debug/',
   source: 'http://repos.ros.org/repos/fedora/ros_bootstrap/44/SRPMS/'
+]
+default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['fedora']['45'] = Hash[
+  architectures: %w[aarch64 x86_64],
+  binary: 'http://repos.ros.org/repos/fedora/ros_bootstrap/45/$basearch/',
+  debug: 'http://repos.ros.org/repos/fedora/ros_bootstrap/45/$basearch/debug/',
+  source: 'http://repos.ros.org/repos/fedora/ros_bootstrap/45/SRPMS/'
 ]
 default['ros_buildfarm']['rpm_upstream_repos']['bootstrap']['rhel']['8'] = Hash[
   architectures: %w[aarch64 x86_64],
