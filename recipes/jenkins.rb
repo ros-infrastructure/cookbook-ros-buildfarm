@@ -90,6 +90,7 @@ Jenkins.get().doQuietDown()
   mode '0500'
   owner 'jenkins'
   group 'jenkins'
+  notifies :restart, 'service[jenkins]', :delayed
 end
 
 
@@ -175,6 +176,7 @@ cookbook_file "/var/lib/jenkins/init.groovy.d/10-default-view.groovy" do
   mode '0500'
   owner 'jenkins'
   group 'jenkins'
+  notifies :restart, 'service[jenkins]', :delayed
 end
 
 if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
@@ -189,6 +191,7 @@ if node['ros_buildfarm']['jenkins']['auth_strategy'] == 'groovy'
     mode '0500'
     owner 'jenkins'
     group 'jenkins'
+    notifies :restart, 'service[jenkins]', :delayed
   end
 elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
   default_auth_script = <<~GROOVY
@@ -210,6 +213,7 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     mode '0500'
     owner 'jenkins'
     group 'jenkins'
+    notifies :restart, 'service[jenkins]', :delayed
   end
 
   # Restart jenkins after updating the security realm otherwise running without
@@ -275,12 +279,16 @@ elsif node.default['ros_buildfarm']['jenkins']['auth_strategy'] == 'default'
     mode '0500'
     owner 'jenkins'
     group 'jenkins'
+    notifies :restart, 'service[jenkins]', :delayed
   end
 else
   Chef::Log.warn("Jenkins auth_strategy attribute `#{node['ros_buildfarm']['jenkins']['auth_strategy']}` is unknown. No authentication will be configured.")
 end
 
-timezone node['ros_buildfarm']['jenkins']['timezone']
+timezone node['ros_buildfarm']['jenkins']['timezone'] do
+  # The JVM reads the time zone at startup.
+  notifies :restart, 'service[jenkins]', :delayed
+end
 
 ## Configure web proxy ##
 
@@ -528,6 +536,7 @@ cookbook_file "/var/lib/jenkins/init.groovy.d/99-approved_signatures.groovy" do
   mode '0500'
   owner 'jenkins'
   group 'jenkins'
+  notifies :restart, 'service[jenkins]', :delayed
 end
 
 # Remove Jenkins fingerprint files
@@ -560,6 +569,7 @@ group 'jenkins-agent' do
   members ['jenkins']
   append true
   action :manage
+  notifies :restart, 'service[jenkins]', :delayed
 end
 service 'jenkins' do
   action :start
@@ -583,4 +593,5 @@ group 'docker' do
   members ['jenkins']
   append true
   action :manage
+  notifies :restart, 'service[jenkins]', :delayed
 end
