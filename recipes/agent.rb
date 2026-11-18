@@ -11,6 +11,7 @@ end
 # Moves the unattended daily upgrades to 1am
 cookbook_file '/etc/systemd/system/apt-daily-upgrade.timer.d/override.conf' do
   source 'apt-daily-upgrade.timer.override'
+  notifies :run, 'execute[systemctl-daemon-reload]', :immediately
   notifies :reload_or_try_restart, 'systemd_unit[apt-daily-upgrade.timer]', :delayed
 end
 
@@ -169,6 +170,10 @@ ruby_block "needrestart-config" do
     file = Chef::Util::FileEdit.new("/etc/needrestart/needrestart.conf")
     file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins-agent\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins-agent\.service$)} = 0;])
     file.write_file
+  end
+  not_if do
+    ::File.exist?('/etc/needrestart/needrestart.conf') &&
+      ::File.read('/etc/needrestart/needrestart.conf').include?('$nrconf{override_rc}{qr(^jenkins-agent\.service$)} = 0;')
   end
 end
 
