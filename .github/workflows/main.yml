@@ -74,3 +74,41 @@ jobs:
             KITCHEN_LOCAL_YAML=kitchen.dokken.yml /usr/bin/kitchen exec \
                 ${{ matrix.suite }}-${{ matrix.os }} \
                 -c "systemctl status jenkins-agent"
+  kitchen-ci-windows:
+    runs-on: ${{ matrix.os }}
+    name: Kitchen CI (Windows)
+    strategy:
+      matrix:
+        suite:
+          - 'windows-agent'
+        os:
+          - 'windows-2022'
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@main
+      - name: Install Cinc
+        uses: actionshub/chef-install@main
+        with:
+          omnitruckUrl: omnitruck.cinc.sh
+          project: cinc-workstation
+          windowsPath: 'C:\cinc-project\cinc-workstation\'
+      - name: Test-Kitchen
+        uses: actionshub/test-kitchen@main
+        with:
+          suite: ${{ matrix.suite }}
+          os: ${{ matrix.os }}
+        env:
+          CHEF_LICENSE: accept-no-persist
+          KITCHEN_LOCAL_YAML: kitchen.windows.yml
+      - name: Print debug output (jenkins-agent)
+        if: failure()
+        shell: pwsh
+        run: |
+            $ErrorActionPreference = 'Continue'
+            Get-Service jenkins-agent | Format-List *
+            Get-Content C:\jenkins-agent\jenkins-agent.xml
+            Get-ChildItem C:\jenkins-agent\logs -File | ForEach-Object {
+              "=== $($_.FullName)"
+              Get-Content $_.FullName -Tail 200
+            }

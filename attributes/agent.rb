@@ -32,6 +32,27 @@ default['ros_buildfarm']['agent']['labels'] = %w(buildagent)
 
 # JDK version to install
 default['ros_buildfarm']['agent']['jdk_version'] = 25
+default['ros_buildfarm']['agent']['windows_jdk'] = {
+  '25' => {
+    'full_version' => '25.0.5.1',
+    'checksum' => '29e72ad8c1b024f65aa9b710e10405240531c6e6e01ba00181c9d1e3a91b841f',
+  },
+}
+
+# Docker version installed on Windows agents.
+# Must match a docker-<version>.zip available at https://download.docker.com/win/static/stable/x86_64/
+default['ros_buildfarm']['agent']['windows_docker_version'] = '29.10.0'
+
+# Directory on Windows agents holding the swarm client, the service wrapper and its logs.
+default['ros_buildfarm']['agent']['windows_agent_dir'] = 'C:\\jenkins-agent'
+# Jenkins workspace root on Windows agents. Kept short to stay clear of path length limits.
+default['ros_buildfarm']['agent']['windows_fsroot'] = 'C:\\J'
+
+# WinSW wraps the swarm client as a Windows service. https://github.com/winsw/winsw/releases
+default['ros_buildfarm']['agent']['windows_winsw'] = {
+  'version' => '2.14.0',
+  'checksum' => '4ebd9dc3e817f80b2bd8c18f5bfe0d550241c1d08b57bd9694777a6e56a7b24f', # WinSW-x64.exe
+}
 
 # Prevents docker and containerd from getting updates and restarting mid build. See https://github.com/ros2/ci/issues/702
 default['ros_buildfarm']['unattended_upgrades']['package_blacklist'] = %w[docker.io containerd openjdk-]
