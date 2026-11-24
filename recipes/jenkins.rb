@@ -40,6 +40,10 @@ ruby_block "needrestart-config-jenkins" do
     file.insert_line_if_no_match(%r[\$nrconf\{override_rc\}\{qr\(\^jenkins\\\.service\$\)\} = 0;], %q[$nrconf{override_rc}{qr(^jenkins\.service$)} = 0;])
     file.write_file
   end
+  not_if do
+    ::File.exist?('/etc/needrestart/needrestart.conf') &&
+      ::File.read('/etc/needrestart/needrestart.conf').include?('$nrconf{override_rc}{qr(^jenkins\.service$)} = 0;')
+  end
 end
 
 # Jenkins downgrade protection is handled by jenkins::jenkins itself, driven
@@ -60,10 +64,12 @@ cookbook_file '/etc/systemd/system/jenkins.service.d/500-timeout.conf' do
   source 'jenkins/service/500-timeout.conf'
   owner 'root'
   group 'root'
+  notifies :run, 'execute[systemctl-daemon-reload]', :immediately
 end
 
 execute "systemctl-daemon-reload" do
   command "systemctl daemon-reload"
+  action :nothing
 end
 
 # Set up authentication
