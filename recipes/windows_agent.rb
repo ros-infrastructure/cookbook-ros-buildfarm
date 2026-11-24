@@ -7,9 +7,8 @@ windows_service 'w32time' do
   action [:enable, :start]
 end
 
-agent_username = node['ros_buildfarm']['agent']['agent_username']
+# Jenkins workspace root. The agent service runs as LocalSystem, which has full access.
 directory node['ros_buildfarm']['agent']['windows_fsroot'] do
-  owner agent_username
   recursive true
   action :create
 end
