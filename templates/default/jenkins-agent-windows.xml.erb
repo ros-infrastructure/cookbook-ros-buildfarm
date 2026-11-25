@@ -1,0 +1,12 @@
+<service>
+  <id><%= @service_name %></id>
+  <name><%= @service_name %></name>
+  <description><%= @description %></description>
+  <startmode>Automatic</startmode>
+  <env name="JENKINS_HOME" value="<%= @fsroot %>" />
+  <env name="SWARM_PASSWORD" value="<%= @password %>" />
+  <executable>java</executable>
+  <arguments><%= @java_args %> -jar <%= @jarfile %> -url <%= @jenkins_url %> -username <%= @username %> -passwordEnvVariable SWARM_PASSWORD -name <%= @name %> -description "<%= @description %>" -mode normal -executors <%= @executors %> -fsroot <%= @fsroot %> -labels "<%= @labels.join ' ' %>"</arguments>
+  <logpath><%= @logdir %></logpath>
+  <logmode>rotate</logmode>
+</service>

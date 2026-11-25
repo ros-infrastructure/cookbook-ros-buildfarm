@@ -35,3 +35,11 @@ default['ros_buildfarm']['agent']['jdk_version'] = 25
 
 # Prevents docker and containerd from getting updates and restarting mid build. See https://github.com/ros2/ci/issues/702
 default['ros_buildfarm']['unattended_upgrades']['package_blacklist'] = %w[docker.io containerd openjdk-]
+
+# Windows agents only.
+# Windows user that owns the agent directory and whose home holds the swarm client and WinSW.
+default['ros_buildfarm']['agent']['windows']['agent_username'] = 'Administrator'
+# Java command line arguments for the Windows agent process.
+default['ros_buildfarm']['agent']['windows']['java_args'] = '-Xms2g -Xmx4g'
+# Jenkins agent root (fsroot). Kept short to avoid path length problems.
+default['ros_buildfarm']['agent']['windows']['fsroot'] = 'C:\\J'
