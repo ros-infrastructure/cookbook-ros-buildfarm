@@ -77,6 +77,7 @@ jobs:
   kitchen-ci-windows:
     runs-on: ${{ matrix.os }}
     name: Kitchen CI (Windows)
+    timeout-minutes: 60
     strategy:
       matrix:
         suite:
@@ -93,19 +94,37 @@ jobs:
           omnitruckUrl: omnitruck.cinc.sh
           project: cinc-workstation
           windowsPath: 'C:\cinc-project\cinc-workstation\'
-      - name: Test-Kitchen
+      - name: Test-Kitchen (converge)
         uses: actionshub/test-kitchen@main
         with:
           suite: ${{ matrix.suite }}
           os: ${{ matrix.os }}
+          action: converge
         env:
           CHEF_LICENSE: accept-no-persist
           KITCHEN_LOCAL_YAML: kitchen.windows.yml
+      # Verify runs in its own step with a timeout: InSpec's local Windows
+      # backend has no command timeout, so a hang would otherwise only end
+      # when the job does.
+      - name: Test-Kitchen (verify)
+        timeout-minutes: 20
+        uses: actionshub/test-kitchen@main
+        with:
+          suite: ${{ matrix.suite }}
+          os: ${{ matrix.os }}
+          action: verify
+        env:
+          CHEF_LICENSE: accept-no-persist
+          KITCHEN_LOCAL_YAML: kitchen.windows.yml
+          KITCHEN_LOG: debug
       - name: Print debug output (jenkins-agent)
         if: failure()
         shell: pwsh
         run: |
             $ErrorActionPreference = 'Continue'
+            Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe'" |
+              Select-Object ProcessId, ParentProcessId, CommandLine |
+              Format-List
             Get-Service jenkins-agent | Format-List *
             Get-Content C:\jenkins-agent\jenkins-agent.xml
             Get-ChildItem C:\jenkins-agent\logs -File | ForEach-Object {
