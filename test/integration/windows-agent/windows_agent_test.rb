@@ -66,6 +66,17 @@ describe powershell("([xml](Get-Content -Raw '#{agent_dir}\\jenkins-agent.xml'))
   its('stdout') { should include '-labels "buildagent"' }
 end
 
+# The service must run the JDK installed by the recipe, not whatever java is on PATH.
+java_exe = 'C:\\Program Files\\Microsoft\\jdk-25\\bin\\java.exe'
+
+describe file(java_exe) do
+  it { should exist }
+end
+
+describe powershell("([xml](Get-Content -Raw '#{agent_dir}\\jenkins-agent.xml')).service.executable") do
+  its('stdout.strip') { should eq java_exe }
+end
+
 # The token must only be readable by Administrators and SYSTEM.
 describe powershell("(Get-Acl '#{agent_dir}\\token').Access | ForEach-Object { $_.IdentityReference.Value } | Sort-Object -Unique") do
   its('stdout.lines.map(&:strip)') { should match_array ['BUILTIN\\Administrators', 'NT AUTHORITY\\SYSTEM'] }

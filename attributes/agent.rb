@@ -36,6 +36,8 @@ default['ros_buildfarm']['agent']['windows_jdk'] = {
   '25' => {
     'full_version' => '25.0.5.1',
     'checksum' => '29e72ad8c1b024f65aa9b710e10405240531c6e6e01ba00181c9d1e3a91b841f',
+    # Fixed install location, so the agent service can use an absolute path to java.exe.
+    'install_dir' => 'C:\\Program Files\\Microsoft\\jdk-25',
   },
 }
 

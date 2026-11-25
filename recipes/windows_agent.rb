@@ -40,7 +40,7 @@ raise "No Windows JDK defined for version #{jdk_version}" if jdk.nil?
 package "Microsoft Build of OpenJDK #{jdk_version}" do
   source "https://aka.ms/download-jdk/microsoft-jdk-#{jdk['full_version']}-windows-x64.exe"
   checksum jdk['checksum']
-  options '/SILENT /SUPPRESSMSGBOXES /ALLUSERS /TASKS="FeatureEnvironment,FeatureJarFileRunWith" /DIR="C:\Program Files\Microsoft\"'
+  options "/VERYSILENT /SUPPRESSMSGBOXES /ALLUSERS /TASKS=\"FeatureEnvironment,FeatureJarFileRunWith\" /DIR=\"#{jdk['install_dir']}\""
   action :install
 end
 

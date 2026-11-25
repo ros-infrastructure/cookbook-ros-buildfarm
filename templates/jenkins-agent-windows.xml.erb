@@ -2,7 +2,7 @@
   <id><%= @service_name %></id>
   <name><%= @service_name %></name>
   <description>ROS build farm jenkins agent</description>
-  <executable>java</executable>
+  <executable><%= @java_exe %></executable>
   <arguments><![CDATA[<%= @java_args %> -jar "<%= @jarfile %>" -master <%= @jenkins_url %> -username <%= @username %> -passwordFile "<%= @password_file %>" -name <%= @name %> -description "<%= @description %>" -mode exclusive -executors <%= @executors %> -fsroot "<%= @fsroot %>" -labels "<%= @labels.join(' ') %>"]]></arguments>
   <startmode>Automatic</startmode>
   <onfailure action="restart" delay="10 sec"/>

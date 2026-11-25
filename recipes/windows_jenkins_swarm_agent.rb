@@ -44,10 +44,17 @@ file password_file do
   rights :full_control, ['BUILTIN\\Administrators', 'NT AUTHORITY\\SYSTEM']
 end
 
+# Absolute path to the JDK installed by windows_agent. Services only see the system
+# PATH from boot time, so a bare `java` would miss a JDK installed in the same run
+# or pick up another Java already on the machine.
+jdk = node['ros_buildfarm']['agent']['windows_jdk'][node['ros_buildfarm']['agent']['jdk_version'].to_s]
+java_exe = "#{jdk['install_dir']}\\bin\\java.exe"
+
 template "#{agent_dir}\\#{service_name}.xml" do
   source 'jenkins-agent-windows.xml.erb'
   variables Hash[
     service_name: service_name,
+    java_exe: java_exe,
     java_args: node['ros_buildfarm']['agent']['java_args'],
     jarfile: swarm_client_jarfile_path,
     jenkins_url: node['ros_buildfarm']['jenkins_url'],
