@@ -20,12 +20,11 @@ map $http_authorization $anubis_or_jenkins {
 }
 <% end -%>
 
-<% hardening = node['jenkins']['anubis'] && node['jenkins']['bot_hardening'] -%>
 
 limit_req_zone $binary_remote_addr zone=anubis_submit:10m rate=5r/s;
 proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
 
-<% if hardening -%>
+<% if node['jenkins']['bot_hardening'] -%>
 
 
 map $http_user_agent $is_headless_bot {
@@ -126,7 +125,7 @@ server {
   	ignore_invalid_headers off;
     access_log /var/log/nginx/access.log;  
 
-<% if hardening -%>
+<% if node['jenkins']['bot_hardening'] -%>
 	access_log /var/log/nginx/bot_denied.log combined if=$stale_ua_pool;
 <% end -%>
 
@@ -141,7 +140,7 @@ server {
 		root /dev/null;
 		deny all;
 	} 
-<% if hardening -%>
+<% if node['jenkins']['bot_hardening'] -%>
 
 	if ($blackhole_client) {
 		return 444;
