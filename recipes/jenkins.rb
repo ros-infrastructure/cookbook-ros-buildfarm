@@ -354,6 +354,14 @@ if node['ros_buildfarm']['letsencrypt_enabled']
     not_if "test -r #{key_path}"
   end
 
+  # nginx creates only the last component of a proxy_cache_path, and
+  # /var/cache/nginx does not exist on Ubuntu.
+  directory '/var/cache/nginx/jenkins-static' do
+    owner 'www-data'
+    group 'www-data'
+    recursive true
+  end
+
   template '/etc/nginx/sites-enabled/jenkins' do
     source 'nginx/jenkins-webproxy.ssl.conf.erb'
     variables Hash[
