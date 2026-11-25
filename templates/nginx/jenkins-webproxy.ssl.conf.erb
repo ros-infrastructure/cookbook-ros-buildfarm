@@ -29,31 +29,82 @@ proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_st
 
 
 map $http_user_agent $is_headless_bot {
-        default 0;
-        "~*Lightpanda" 1;
-        "~*HeadlessChrome" 1;
-        "~*Puppeteer" 1;
-        "~*Playwright" 1;
-        "~*Selenium" 1;
-	"~*meta-externalagent" 1;
+    default 0;
+    "~*Lightpanda" 1;
+    "~*HeadlessChrome" 1;
+    "~*Puppeteer" 1;
+    "~*Playwright" 1;
+    "~*Selenium" 1;
+    "~*meta-externalagent" 1;
+    "~*meta-webindexer" 1;
+    "~*CorsairBot" 1;
 }
+
 
 map $status $is_499 {
     499 1;
     default 0;
 }
 
+
 geo $remote_addr $blackhole_client {
 	ranges;
-        default 0;
+  default 0;
 	57.141.2.1-57.141.2.78 1;  # This is Meta
 	69.25.91.229-69.25.91.254 1;
 	155.103.64.229-155.103.64.254 1;
-	# 140.82.115.9-140.82.115.255 1;  # This is GitHub
 	151.244.30.99-151.244.30.99 1;
+	154.39.242.2-154.39.242.216 1;  # 5,860+ requests on 2026-11-03
+	206.204.7.236-206.204.7.236 1;
+	206.204.10.26-206.204.10.26 1;
+	206.204.12.145-206.204.12.145 1;
+	206.204.34.215-206.204.34.215 1;
+	206.204.51.117-206.204.51.117 1;
+	180.149.11.19-180.149.11.19 1;
+	180.149.14.243-180.149.14.243 1;
+	180.149.21.92-180.149.21.92 1;
+	180.149.24.86-180.149.24.86 1;
+	161.123.123.29-161.123.123.29 1;
+	161.123.125.21-161.123.125.21 1;
+	161.123.230.58-161.123.230.58 1;
+	45.142.95.72-45.142.95.72 1;
+	45.142.98.67-45.142.98.67 1;
+	161.129.160.57-161.129.160.57 1;
+	161.129.164.211-161.129.164.211 1;
+	94.176.84.239-94.176.84.239 1;
+	94.176.86.245-94.176.86.245 1;
+	188.212.140.78-188.212.140.78 1;
+	89.223.14.214-89.223.14.214 1;
+	213.188.87.75-213.188.87.75 1;
+	167.234.120.48-167.234.120.48 1;
+	136.242.125.227-136.242.125.227 1;
+	154.37.111.80-154.37.111.80 1;
+	194.156.114.125-194.156.114.125 1;
+	150.129.94.155-150.129.94.155 1;
+	216.194.94.63-216.194.94.63 1;
+	95.214.84.207-95.214.84.207 1;
+	45.61.83.243-45.61.83.243 1;
+	172.98.187.143-172.98.187.143 1;
+	46.28.196.237-46.28.196.237 1;
+	93.114.8.138-93.114.8.138 1;
+	91.192.215.74-91.192.215.74 1;
+	84.39.228.6-84.39.228.6 1;
+	34.185.205.127-34.185.205.127 1;
+	34.179.141.185-34.179.141.185 1;
+	34.159.69.218-34.159.69.218 1;
+	35.242.192.216-35.242.192.216 1;
+	34.185.148.119-34.185.148.119 1;
+	34.40.52.17-34.40.52.17 1; # 1200 hits
+	34.40.45.44-34.40.45.44 1; # 1200 hits
+	34.40.98.223-34.40.98.223 1; # 1100 hits
+	35.234.83.193-35.234.83.193 1;
+	35.242.207.64-35.242.207.64 1;
+	34.40.92.76-34.40.92.76 1;
   104.237.242.206-104.237.242.206 1; # 126000+ requests on 2026-10-14
-
+  39.101.88.0-39.101.95.255 1; # 50000+ requests on 2026-11-04
 }
+
+
 
 map $http_user_agent $stale_ua_pool {
     default 0;
@@ -287,23 +338,26 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
   }
 <% end -%>
 
+
   	location / {
-  
-  		# https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-nginx/
-  		sendfile off;
-  		client_max_body_size 10m;
-  		client_body_buffer_size 128k;
-  		proxy_set_header Host $host:$server_port;
-  		proxy_set_header X-Real-IP $remote_addr;
-  		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  		proxy_set_header X-Forwarded-Proto $scheme;
-  		proxy_redirect http:// https://;
-  		proxy_buffering off;
-  		proxy_request_buffering off;
-  		proxy_connect_timeout 120s;
-  		proxy_send_timeout 120s;
-  		proxy_read_timeout 180s;
-  		proxy_pass http://jenkins;
-  	}
+		if ($arg_depth ~* "^(?!0$).+") {
+			return 444;
+		}
+    sendfile off;
+    client_max_body_size 10m;
+    client_body_buffer_size 128k;
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect http:// https://;
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_connect_timeout 120s;
+    proxy_send_timeout 120s;
+    proxy_read_timeout 180s;
+    proxy_pass http://jenkins;
+  }
+
 }
 
