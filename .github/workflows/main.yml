@@ -88,11 +88,15 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@main
+      # Pinned: with the latest workstation, InSpec hangs opening its local
+      # Windows connection. Suspected cause: the named-pipe changes in
+      # train 3.15.0/3.16.x. 25.12.1102 ships train 3.12.13 and Cinc 18.8.
       - name: Install Cinc
         uses: actionshub/chef-install@main
         with:
           omnitruckUrl: omnitruck.cinc.sh
           project: cinc-workstation
+          version: '25.12.1102'
           windowsPath: 'C:\cinc-project\cinc-workstation\'
       - name: Test-Kitchen (converge)
         uses: actionshub/test-kitchen@main
