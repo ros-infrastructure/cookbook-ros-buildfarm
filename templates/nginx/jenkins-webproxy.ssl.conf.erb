@@ -12,8 +12,6 @@ upstream jenkins {
 <% if (node['jenkins']['anubis']) %>
 upstream anubis {
    server unix:/run/anubis/jenkins/instance.sock fail_timeout=0;
-  # Fallback to serving through nginx to avoid downtime if anubis is down
-	# server 127.0.0.1:8080 backup;
 }
 
 map $http_authorization $anubis_or_jenkins {
@@ -23,7 +21,12 @@ map $http_authorization $anubis_or_jenkins {
 <% end -%>
 
 <% hardening = node['jenkins']['anubis'] && node['jenkins']['bot_hardening'] -%>
+
+limit_req_zone $binary_remote_addr zone=anubis_submit:10m rate=5r/s;
+proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
+
 <% if hardening -%>
+
 
 map $http_user_agent $is_headless_bot {
         default 0;
@@ -34,11 +37,10 @@ map $http_user_agent $is_headless_bot {
         "~*Selenium" 1;
 	"~*meta-externalagent" 1;
 }
-limit_req_zone $binary_remote_addr zone=anubis_submit:10m rate=5r/s;
 
 map $status $is_499 {
-        499 1;
-        default 0;
+    499 1;
+    default 0;
 }
 
 geo $remote_addr $blackhole_client {
@@ -63,28 +65,25 @@ map $http_user_agent $stale_ua_pool {
     "~rv:121\.0\)\ Gecko"           1;
 }
 
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=jenkins_api_cache:10m max_size=1g inactive=60m use_temp_path=off;
-proxy_cache_path /var/cache/nginx/jenkins-static levels=1:2 keys_zone=jenkins_static:10m max_size=1g inactive=30d use_temp_path=off;
+<% end -%>
 
-
-# 1. Catch-all block for any unrecognized or malicious domains
+# Catch-all server block for any unrecognized or malicious domains
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name _;
     return 444; # Closes the connection immediately without redirecting
 }
-<% end -%>
 
 # HTTP server is used just for ACME challenge and allowing build status icon
 # links that are already in the wild to be accepted. Otherwise redirect to
 # HTTPS
 server {
-	listen 80<%= ' default_server' unless hardening %>;
+	listen 80;
 	server_name <%= @server_name %>;
 
 	location / {
-		return 301 https://<%= hardening ? @server_name : '$host' %>$request_uri;
+		return 301 https://<%=@server_name%>$request_uri;
 	}
 
 	# Allow ACME challenge to access the webroot directly.
@@ -105,7 +104,6 @@ server {
 	}
 }
 
-<% if hardening -%>
 # Catch-all for HTTPS traffic to unrecognized domains or raw IPs
 server {
     listen 443 ssl default_server;
@@ -117,19 +115,18 @@ server {
     ssl_reject_handshake on;
 }
 
-<% end -%>
 # HTTPS server for proxying most Jenkins requests.
 server {
 	listen 443 ssl;
-	server_name <%= @server_name %> default_server;
+	server_name <%= @server_name %>;
 
 	ssl_certificate <%= @cert_path %>;
 	ssl_certificate_key <%= @key_path %>;
 	  # Pass through jenkins headers nginx may consider invalid.
   	ignore_invalid_headers off;
+    access_log /var/log/nginx/access.log;  
+
 <% if hardening -%>
-	
-	access_log /var/log/nginx/access.log;  
 	access_log /var/log/nginx/bot_denied.log combined if=$stale_ua_pool;
 <% end -%>
 
@@ -157,12 +154,12 @@ server {
 	if ($stale_ua_pool) {
 	 	return 403;
 	}
+<% end -%>
 
 
     client_body_timeout 60s;
     client_header_timeout 60s;
     keepalive_timeout 70s;
-<% end -%>
 
   # Mitigate ghprb SECURITY-2789 (CVE-2023-24434/-24435/-24436) — no upstream fix.
   # Blocks the credential-enumeration + connection-test form-validation endpoints.
@@ -171,7 +168,7 @@ server {
       return 403;
       access_log /var/log/nginx/ghprb_blocked.log;
   }
-<% if hardening -%>
+  # Cache static/adjuncts content aggressively to lessen 
    location ~* ^/(static|adjuncts)/ {
       proxy_set_header Host $host:$server_port;
       proxy_set_header X-Real-IP $remote_addr;
@@ -184,7 +181,6 @@ server {
       add_header X-Cache-Status $upstream_cache_status;
       proxy_pass http://jenkins;
   }
-<% end -%>
 <% if node['jenkins']['block_api_endpoints'] -%>
   
 # API endpoints help bots identify how to query the buildfarm
@@ -193,12 +189,12 @@ server {
       return 503;
   }
 <% end -%>
+
 # Configure endpoints that are passed to Anubis
 # If you need an endpoint to not be challenged by Anubis put it above this 
 # since nginx evaluates sequentially it will otherwise be overwritten by anubis
 <% if (node['jenkins']['anubis']) %>
-  # Serve Anubis images
-<% if hardening -%>
+ 
 
 location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     limit_req zone=anubis_submit;
@@ -214,8 +210,7 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_pass http://anubis;
 
 }
-  
-<% end -%>
+   # Serve Anubis images
     location ^~ /.within.website/ {
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-Ip $remote_addr;
@@ -279,7 +274,6 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_buffering off;
     proxy_pass http://anubis;
   }
-<% if hardening -%>
   location ~* /(timings|changes|polling)(/|$) {
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Real-IP $remote_addr;
@@ -291,7 +285,6 @@ location ^~ /.within.website/x/cmd/anubis/api/pass-challenge {
     proxy_buffering off;
     proxy_pass http://anubis;
   }
-<% end -%>
 <% end -%>
 
   	location / {
