@@ -60,7 +60,7 @@ end
 describe powershell("([xml](Get-Content -Raw '#{agent_dir}\\jenkins-agent.xml')).service.arguments") do
   its('exit_status') { should eq 0 }
   its('stdout') { should match(/-jar "C:\\jenkins-agent\\swarm-client-.*\.jar"/) }
-  its('stdout') { should include '-master http://localhost:8080' }
+  its('stdout') { should include '-url http://localhost:8080' }
   its('stdout') { should include "-passwordFile \"#{agent_dir}\\token\"" }
   its('stdout') { should include '-fsroot "C:\\J"' }
   its('stdout') { should include '-labels "buildagent"' }

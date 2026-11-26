@@ -10,5 +10,4 @@ chef_version '>= 15.0'
 issues_url 'https://github.com/ros-infrastructure/cookbook-ros-buildfarm/issues'
 source_url 'https://github.com/ros-infrastructure/cookbook-ros-buildfarm/'
 
-depends 'chocolatey', '~> 3.0'
 depends 'jenkins'

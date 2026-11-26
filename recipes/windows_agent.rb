@@ -44,7 +44,12 @@ package "Microsoft Build of OpenJDK #{jdk_version}" do
   action :install
 end
 
-include_recipe 'chocolatey'
+# Built into Chef since 18.3, avoids depending on the chocolatey cookbook.
+# https://docs.chef.io/resources/chocolatey_installer/
+chocolatey_installer 'chocolatey' do
+  chocolatey_version '2.7.5'
+  action :install
+end
 
 chocolatey_package 'git' do
   action :install
