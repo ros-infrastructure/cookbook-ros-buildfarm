@@ -89,6 +89,7 @@ end
 
 # The token must only be readable by Administrators and SYSTEM.
 describe powershell("((Get-Acl '#{agent_dir}\\token').Access | ForEach-Object { $_.IdentityReference.Value } | Sort-Object -Unique) -join ','") do
+  its('stderr') { should eq '' }
   its('stdout.strip') { should eq 'BUILTIN\\Administrators,NT AUTHORITY\\SYSTEM' }
 end
 
