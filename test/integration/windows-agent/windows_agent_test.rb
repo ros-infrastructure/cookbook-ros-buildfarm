@@ -67,7 +67,7 @@ describe directory("#{agent_dir}\\logs") do
 end
 
 # The WinSW configuration must be valid XML and pass the expected arguments to the swarm client.
-describe powershell("([xml](Get-Content -Raw '#{agent_dir}\\jenkins-agent.xml')).service.arguments") do
+describe powershell("([xml](Get-Content -Raw '#{agent_dir}\\jenkins-agent.xml')).service.arguments.InnerText") do
   its('exit_status') { should eq 0 }
   its('stdout') { should match(/-jar "C:\\jenkins-agent\\swarm-client-.*\.jar"/) }
   its('stdout') { should include '-url http://localhost:8080' }
@@ -88,8 +88,8 @@ describe powershell("([xml](Get-Content -Raw '#{agent_dir}\\jenkins-agent.xml'))
 end
 
 # The token must only be readable by Administrators and SYSTEM.
-describe powershell("(Get-Acl '#{agent_dir}\\token').Access | ForEach-Object { $_.IdentityReference.Value } | Sort-Object -Unique") do
-  its('stdout.lines.map(&:strip)') { should match_array ['BUILTIN\\Administrators', 'NT AUTHORITY\\SYSTEM'] }
+describe powershell("((Get-Acl '#{agent_dir}\\token').Access | ForEach-Object { $_.IdentityReference.Value } | Sort-Object -Unique) -join ','") do
+  its('stdout.strip') { should eq 'BUILTIN\\Administrators,NT AUTHORITY\\SYSTEM' }
 end
 
 describe service('jenkins-agent') do
