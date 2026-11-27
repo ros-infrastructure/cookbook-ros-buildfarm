@@ -1,0 +1,34 @@
+---
+# Runs Chef directly on a Windows GitHub Actions runner,
+# as dokken cannot run Windows. Cinc Workstation must already be
+# installed and on PATH, see .github/workflows/main.yml.
+driver:
+  name: exec
+
+transport:
+  name: exec
+
+provisioner:
+  name: chef_solo
+  install_strategy: skip
+  chef_solo_path: cinc-solo
+  chef_log_level: info
+  chef_output_format: doc
+
+platforms:
+  - name: windows-2022
+
+verifier:
+  name: inspec
+
+suites:
+  - name: windows-agent
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[ros_buildfarm::windows_agent]
+    verifier:
+      inspec_tests:
+        - test/integration/windows-agent
+    attributes:
+      ros_buildfarm:
+        jenkins_url: 'http://localhost:8080'
