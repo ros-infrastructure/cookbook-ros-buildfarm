@@ -24,11 +24,21 @@ describe command('git --version') do
   its('exit_status') { should eq 0 }
 end
 
+# Chocolatey must be the pinned version, even if the base image shipped another one.
+describe powershell('choco --version') do
+  its('stdout.strip') { should eq '2.7.5' } # keep in sync with windows_chocolatey_version
+end
+
 # Docker
 
 describe service('docker') do
   it { should be_installed }
   it { should be_running }
+end
+
+# The docker service must run the pinned version, even if the base image shipped another one.
+describe powershell('dockerd --version') do
+  its('stdout') { should include 'version 29.10.0,' } # keep in sync with windows_docker_version
 end
 
 describe powershell('(Get-MpPreference).ExclusionPath') do

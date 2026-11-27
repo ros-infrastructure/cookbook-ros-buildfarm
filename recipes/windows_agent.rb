@@ -46,9 +46,22 @@ end
 
 # Built into Chef since 18.3, avoids depending on the chocolatey cookbook.
 # https://docs.chef.io/resources/chocolatey_installer/
+chocolatey_version = node['ros_buildfarm']['agent']['windows_chocolatey_version']
 chocolatey_installer 'chocolatey' do
-  chocolatey_version '2.7.5'
+  chocolatey_version chocolatey_version
   action :install
+end
+
+# chocolatey_installer skips when choco is already installed, and its :upgrade action goes to the
+# latest release. Move an existing install (e.g. from a base image) to the pinned version in place
+# (choco upgrade --version); uninstalling choco would also drop the record of every package it manages.
+chocolatey_package 'chocolatey' do
+  version chocolatey_version
+  options '--allow-downgrade'
+  action :upgrade
+  # Chef's installed-version detection is not reliable here, so ask choco directly.
+  guard_interpreter :powershell_script
+  not_if "(choco --version) -eq '#{chocolatey_version}'"
 end
 
 chocolatey_package 'git' do
@@ -65,8 +78,25 @@ cookbook_file docker_script do
   source 'agent/docker_install.ps1'
 end
 
+docker_version = node['ros_buildfarm']['agent']['windows_docker_version']
+# Path of the dockerd.exe behind the docker service, or nothing when the service does not exist.
+dockerd_exe = %q{$s = Get-CimInstance Win32_Service -Filter "Name='docker'"; if ($s) { $s.PathName -replace '^"?(.+?\.exe)"?.*$', '$1' }}
+
+# A base image may already ship another Docker version, and docker_install.ps1 skips the
+# install whenever a docker service exists. Remove it so the pinned version gets installed.
+powershell_script 'uninstall-unpinned-docker' do
+  code <<-EOH
+    $exe = #{dockerd_exe}
+    Stop-Service docker -Force
+    & $exe --unregister-service
+    if (Get-Service docker -ErrorAction SilentlyContinue) { sc.exe delete docker }
+    Remove-Item (Join-Path (Split-Path $exe) 'dockerd.exe'), (Join-Path (Split-Path $exe) 'docker.exe') -Force -ErrorAction SilentlyContinue
+  EOH
+  only_if "$exe = #{dockerd_exe}; $exe -and -not ((& $exe --version) -match 'version #{docker_version},')"
+end
+
 powershell_script 'install-docker' do
-  code "& '#{docker_script}' -NoRestart -DockerVersion '#{node['ros_buildfarm']['agent']['windows_docker_version']}'"
+  code "& '#{docker_script}' -NoRestart -DockerVersion '#{docker_version}'"
   not_if '(Get-Service docker -ErrorAction SilentlyContinue) -ne $null'
 end
 

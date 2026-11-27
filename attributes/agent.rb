@@ -45,6 +45,9 @@ default['ros_buildfarm']['agent']['windows_jdk'] = {
 # Must match a docker-<version>.zip available at https://download.docker.com/win/static/stable/x86_64/
 default['ros_buildfarm']['agent']['windows_docker_version'] = '29.10.0'
 
+# Chocolatey release installed on Windows agents, see https://github.com/chocolatey/choco/releases
+default['ros_buildfarm']['agent']['windows_chocolatey_version'] = '2.7.5'
+
 # Directory on Windows agents holding the swarm client, the service wrapper and its logs.
 default['ros_buildfarm']['agent']['windows_agent_dir'] = 'C:\\jenkins-agent'
 # Jenkins workspace root on Windows agents. Kept short to stay clear of path length limits.
