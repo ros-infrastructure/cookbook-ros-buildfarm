@@ -112,7 +112,7 @@ jobs:
       # timeout still guards against a hang ending only with the job.
       - name: InSpec (verify)
         timeout-minutes: 20
-        shell: pwsh
+        shell: powershell
         env:
           CHEF_LICENSE: accept-no-persist
         run: |
