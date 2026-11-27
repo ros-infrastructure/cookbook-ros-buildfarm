@@ -79,8 +79,8 @@ cookbook_file docker_script do
 end
 
 docker_version = node['ros_buildfarm']['agent']['windows_docker_version']
-# Path of the dockerd.exe behind the docker service, or nothing when the service does not exist.
-dockerd_exe = %q{$s = Get-CimInstance Win32_Service -Filter "Name='docker'"; if ($s) { $s.PathName -replace '^"?(.+?\.exe)"?.*$', '$1' }}
+# Path of the dockerd.exe behind the docker service, or an empty string when the service does not exist.
+dockerd_exe = %q{((Get-CimInstance Win32_Service -Filter "Name='docker'").PathName -replace '^"?(.+?\.exe)"?.*$', '$1')}
 
 # A base image may already ship another Docker version, and docker_install.ps1 skips the
 # install whenever a docker service exists. Remove it so the pinned version gets installed.
