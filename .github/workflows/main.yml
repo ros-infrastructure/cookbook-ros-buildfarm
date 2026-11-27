@@ -107,20 +107,18 @@ jobs:
         env:
           CHEF_LICENSE: accept-no-persist
           KITCHEN_LOCAL_YAML: kitchen.windows.yml
-      # Verify runs in its own step with a timeout: InSpec's local Windows
-      # backend has no command timeout, so a hang would otherwise only end
-      # when the job does.
-      - name: Test-Kitchen (verify)
+      # `kitchen verify` hangs in InSpec's local Windows named-pipe runner, and
+      # kitchen-inspec cannot switch runners, so run the profile directly. The
+      # timeout still guards against a hang ending only with the job.
+      - name: InSpec (verify)
         timeout-minutes: 20
-        uses: actionshub/test-kitchen@main
-        with:
-          suite: ${{ matrix.suite }}
-          os: ${{ matrix.os }}
-          action: verify
+        shell: pwsh
         env:
           CHEF_LICENSE: accept-no-persist
-          KITCHEN_LOCAL_YAML: kitchen.windows.yml
-          KITCHEN_LOG: debug
+        run: |
+            & C:\cinc-project\cinc-workstation\embedded\bin\ruby.exe `
+              test/integration/run_inspec.rb `
+              test/integration/${{ matrix.suite }}
       - name: Print debug output (jenkins-agent)
         if: failure()
         shell: pwsh
